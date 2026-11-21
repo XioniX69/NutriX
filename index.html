@@ -4516,3 +4516,784 @@ export default {
     return new Response(JSON.stringify({ status: "NutriX Worker Active" }), { headers: corsHeaders });
   }
 };
+        /* =========================================================================
+           21. УМНАЯ КОРЗИНА ПОКУПОК, ЗАМЕНЫ, ЭКСПОРТ И ШЕРИНГ В TELEGRAM
+           ========================================================================= */
+        function setGroceryPeriod(days) {
+            groceryPeriod = days;
+            [1, 3, 7].forEach(d => document.getElementById(`btn-days-${d}`)?.classList.toggle("active", d === days));
+            rebuildGroceryList();
+            saveState();
+            renderGroceriesList();
+            hapticSelect();
+        }
+
+        function setGroceryGroupMode(mode) {
+            groceryGroupMode = mode;
+            document.getElementById("gmode-dept")?.classList.toggle("active", mode === "dept");
+            document.getElementById("gmode-fresh")?.classList.toggle("active", mode === "fresh");
+            rebuildGroceryList();
+            renderGroceriesList();
+            hapticSelect();
+        }
+
+        function toggleOverlapOptimization() {
+            appState.optimizeOverlap = !(appState.optimizeOverlap !== false);
+            NutriXLoader.run([
+                { pct: 55, title: appState.optimizeOverlap ? "Включаем оптимизацию" : "Свободный подбор", sub: "Пересобираем меню и общую корзину…" },
+                { pct: 100, title: "Готово", sub: "Список покупок обновлён" }
+            ], () => {
+                generateWeeklyPlanOptimized();
+                renderApp();
+                showToast(appState.optimizeOverlap ? "Оптимизация остатков включена" : "Оптимизация остатков выключена");
+                haptic("light");
+            }, 560);
+        }
+
+        function toggleHideCheckedGroceries() {
+            hideCheckedGroceries = !hideCheckedGroceries;
+            document.getElementById("btn-hide-checked")?.classList.toggle("active-eat", hideCheckedGroceries);
+            renderGroceriesList();
+            hapticSelect();
+        }
+
+        function toggleGroceryItem(encodedName) {
+            const name = decodeURIComponent(encodedName);
+            if (!appState.checkedGroceries) appState.checkedGroceries = {};
+            appState.checkedGroceries[name] = !appState.checkedGroceries[name];
+            rebuildGroceryList();
+            saveState();
+            renderGroceriesList();
+            hapticSelect();
+        }
+
+        function addCustomGroceryItem() {
+            const inp = document.getElementById("custom-grocery-input");
+            const val = (inp?.value || "").trim();
+            if (!val) return;
+            if (!Array.isArray(appState.customGroceries)) appState.customGroceries = [];
+            appState.customGroceries.push({ name: val, weight: 0, isCustom: true });
+            inp.value = "";
+            rebuildGroceryList();
+            saveState();
+            renderGroceriesList();
+            showToast(`Добавлено: ${val}`);
+            haptic("light");
+        }
+
+        function clearGroceryChecks() {
+            appState.checkedGroceries = {};
+            appState.customGroceries = [];
+            rebuildGroceryList();
+            saveState();
+            renderGroceriesList();
+            showToast("Галочки и личные позиции очищены");
+            haptic("light");
+        }
+
+        function renderGroceriesList() {
+            const container = document.getElementById("groceries-container");
+            if (!container) return;
+
+            const periodTitle = groceryPeriod === 1 ? "Закупка на 1 день" : (groceryPeriod === 3 ? "Закупка на 3 дня" : "Закупка на неделю");
+            document.getElementById("grocery-range-title").innerText = periodTitle;
+            [1, 3, 7].forEach(d => document.getElementById(`btn-days-${d}`)?.classList.toggle("active", d === groceryPeriod));
+            document.getElementById("gmode-dept")?.classList.toggle("active", groceryGroupMode === "dept");
+            document.getElementById("gmode-fresh")?.classList.toggle("active", groceryGroupMode === "fresh");
+
+            const overlapOn = appState.optimizeOverlap !== false;
+            const badge = document.getElementById("overlap-toggle-badge");
+            if (badge) badge.innerText = overlapOn ? "ВКЛ" : "ВЫКЛ";
+
+            const list = appState.groceryList || {};
+            let totalItems = 0, checkedItems = 0, totalGrams = 0;
+
+            Object.values(list).forEach(items => {
+                items.forEach(i => {
+                    totalItems++;
+                    if (i.isChecked) checkedItems++;
+                    totalGrams += Number(i.weight) || 0;
+                });
+            });
+
+            const pct = totalItems ? Math.round((checkedItems / totalItems) * 100) : 0;
+            document.getElementById("grocery-progress-text").innerText = `Куплено ${checkedItems} из ${totalItems}`;
+            document.getElementById("grocery-stats-sub").innerText = `~${(totalGrams / 1000).toFixed(1)} кг (сырой)`;
+            document.getElementById("grocery-progress-bar").style.width = `${pct}%`;
+            document.getElementById("grocery-overlap-stats").innerText = `Пересечение продуктов: ${appState.groceryReusePct || 0}% · Позиций: ${totalItems}`;
+
+            let html = "";
+            Object.entries(list).forEach(([group, items]) => {
+                const visible = hideCheckedGroceries ? items.filter(i => !i.isChecked) : items;
+                if (!visible.length) return;
+                html += `<div class="dept-header">${group}</div>`;
+
+                visible.forEach(item => {
+                    const encName = encodeURIComponent(item.name);
+                    const encAlt = encodeURIComponent(item.alt || "");
+                    const rawStr = item.weight > 0
+                        ? (item.weight >= 1000 ? `${(item.weight / 1000).toFixed(2)} кг` : `${item.weight} г`)
+                        : "по вкусу";
+                    const cookedNote = (item.weight > 0 && item.cookedWeight > 0 && Math.abs(item.cookedWeight - item.weight) >= 15)
+                        ? `<div class="g-cooked-sub">готовый ~${item.cookedWeight} г</div>`
+                        : "";
+                    const hasSubs = findInlineSubs(item.name, item.alt).length > 0;
+
+                    html += `
+                        <div class="grocery-row ${item.isChecked ? "checked" : ""}" onclick="toggleGroceryItem('${encName}')">
+                            <div class="g-left">
+                                <div class="custom-checkbox">${item.isChecked ? "✓" : ""}</div>
+                                <div style="min-width:0;">
+                                    <div class="g-title">${item.name}${item.waveLabel ? `<span class="wave-badge">${item.waveLabel}</span>` : ""}</div>
+                                    <div class="g-meta-dishes">${item.dishes || ""}</div>
+                                    ${hasSubs ? `<button type="button" class="sub-trigger-btn" onclick="event.stopPropagation(); openSubstitutionModal('${encName}', '${encAlt}')">⇄ Заменить продукт</button>` : ""}
+                                </div>
+                            </div>
+                            <div class="g-weight-col">
+                                <div class="g-weight">${rawStr}</div>
+                                ${cookedNote}
+                            </div>
+                        </div>`;
+                });
+            });
+
+            container.innerHTML = html || `<div class="hint-ref-box" style="text-align:center;">Все покупки отмечены ✓</div>`;
+        }
+
+        let activeSubSourceName = null;
+        let activeSubFallbackAlt = "";
+
+        function openSubstitutionModal(encName, encAlt = "") {
+            activeSubSourceName = decodeURIComponent(encName);
+            activeSubFallbackAlt = decodeURIComponent(encAlt || "");
+            const opts = findInlineSubs(activeSubSourceName, activeSubFallbackAlt);
+
+            document.getElementById("sub-modal-source-label").innerText = `Чем заменить «${activeSubSourceName}» в меню и корзине?`;
+            const box = document.getElementById("sub-options-container");
+            box.innerHTML = opts.length ? opts.map((o, idx) => `
+                <div class="sub-option-card" onclick="applyIngredientSubstitution(${idx})">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                        <strong style="font-size:14px;">${o.target}</strong>
+                        <span class="precision-pill">${o.eq || "Аналог"}</span>
+                    </div>
+                    <div style="font-size:12px; color:var(--nx-text-muted); margin-top:4px;">${o.note || "Равноценная замена из справочника"}</div>
+                    ${(o.dKcal !== 0 || o.dP !== 0) ? `
+                    <div class="sub-delta-row">
+                        <span style="color:var(--nx-mint);">${o.dKcal > 0 ? "+" : ""}${o.dKcal} ккал/100г</span>
+                        <span>Б: ${o.dP > 0 ? "+" : ""}${o.dP}г</span>
+                        <span>Ж: ${o.dF > 0 ? "+" : ""}${o.dF}г</span>
+                    </div>` : ""}
+                </div>`).join("") : `<div class="hint-ref-box">Нет замен для этого продукта.</div>`;
+
+            document.getElementById("substitution-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        function applyIngredientSubstitution(optIdx) {
+            if (!activeSubSourceName) return;
+            const chosen = findInlineSubs(activeSubSourceName, activeSubFallbackAlt)[optIdx];
+            if (!chosen) return;
+
+            let replacedCount = 0;
+            (appState.weekPlan || []).forEach(dayObj => {
+                (dayObj.meals || []).forEach(meal => {
+                    if (meal.eaten) return;
+                    (meal.ingredients || []).forEach(ing => {
+                        if (ing.name === activeSubSourceName) {
+                            const s100 = (Number(ing.weight) || 100) / 100;
+                            ing.name = chosen.target;
+                            ing.weight = Math.max(5, Math.round(ing.weight * (chosen.ratio || 1.0)));
+                            meal.kcal = Math.max(80, Math.round(meal.kcal + (chosen.dKcal || 0) * s100));
+                            meal.protein = Math.max(1, Math.round(meal.protein + (chosen.dP || 0) * s100));
+                            meal.fat = Math.max(0, Math.round(meal.fat + (chosen.dF || 0) * s100));
+                            meal.carbs = Math.max(0, Math.round(meal.carbs + (chosen.dC || 0) * s100));
+                            replacedCount++;
+                        }
+                    });
+                });
+            });
+
+            rebuildGroceryList();
+            saveState();
+            renderApp();
+            closeModal("substitution-modal");
+            showToast(`Заменено на «${chosen.target.split("(")[0].trim()}» (${replacedCount} блюд)`);
+            haptic("medium");
+        }
+
+        function buildPlainGroceryText() {
+            const pLbl = groceryPeriod === 1 ? "на 1 день" : (groceryPeriod === 3 ? "на 3 дня" : "на неделю");
+            const lines = [`🛒 NutriX · Список покупок ${pLbl} (сырой вес)`];
+            Object.entries(appState.groceryList || {}).forEach(([group, items]) => {
+                const pending = items.filter(i => !i.isChecked);
+                if (!pending.length) return;
+                lines.push(`\n${group}:`);
+                pending.forEach(i => {
+                    const wt = i.weight > 0
+                        ? (i.weight >= 1000 ? ` — ${(i.weight / 1000).toFixed(2)} кг` : ` — ${i.weight} г`)
+                        : "";
+                    lines.push(`• ${i.name}${wt}`);
+                });
+            });
+            return lines.join("\n");
+        }
+
+        function copyGroceriesToClipboard() {
+            const text = buildPlainGroceryText();
+            const fallbackCopy = () => {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;";
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try { document.execCommand("copy"); showToast("Список покупок скопирован ✓"); }
+                catch (e) { showToast("Не удалось скопировать"); }
+                document.body.removeChild(ta);
+            };
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast("Список покупок скопирован ✓")).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+            haptic("medium");
+        }
+
+        function shareGroceriesToTelegram() {
+            const text = buildPlainGroceryText();
+            const url = `https://t.me/share/url?url=${encodeURIComponent(" ")}&text=${encodeURIComponent(text)}`;
+            if (tg?.openTelegramLink) tg.openTelegramLink(url);
+            else window.open(url, "_blank");
+            haptic("light");
+        }
+
+        /* =========================================================================
+           22. РАСШИРЕННЫЙ СЧЁТЧИК ВОДЫ (ВЕС + АКТИВНОСТЬ + НАПИТКИ)
+           ========================================================================= */
+        let selectedWaterDrink = { type: "water", label: "Вода", factor: 1.0 };
+
+        function computeDailyWaterGoalMl() {
+            const u = appState.user;
+            if (!u) return 2500;
+            const base = Number(u.weight) * 35;
+            const actScore = u.activityScore ?? palToActivityScore(u.activityLevel);
+            const bonus = Math.max(0, (actScore - 1) * 75);
+            return Math.round((base + bonus) / 50) * 50;
+        }
+
+        function quickAddWater250() {
+            selectedWaterDrink = { type: "water", label: "Вода", factor: 1.0 };
+            logWaterIntake(250);
+        }
+
+        function openWaterModal() {
+            renderWaterModal();
+            document.getElementById("water-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        function selectWaterDrink(type, factor, el) {
+            const labels = { water: "Вода", tea: "Чай", iso: "Изотоник", coffee: "Кофе" };
+            selectedWaterDrink = { type, label: labels[type] || "Вода", factor };
+            document.querySelectorAll("#water-drink-chips .water-drink-chip").forEach(c => c.classList.remove("active"));
+            if (el) el.classList.add("active");
+            hapticSelect();
+        }
+
+        function logWaterIntake(rawMl) {
+            const today = getTodayStr();
+            const effMl = Math.round(rawMl * selectedWaterDrink.factor);
+            if (!appState.waterLog) appState.waterLog = {};
+            if (!appState.waterHistory) appState.waterHistory = {};
+            if (!Array.isArray(appState.waterHistory[today])) appState.waterHistory[today] = [];
+
+            const time = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+            appState.waterHistory[today].push({ time, label: selectedWaterDrink.label, rawMl, effMl });
+            appState.waterLog[today] = Number((Number(appState.waterLog[today] || 0) + effMl / 1000).toFixed(3));
+
+            saveState();
+            renderHomeOverview();
+            renderWaterModal();
+            showToast(`+${effMl} мл (${selectedWaterDrink.label})`);
+            haptic("medium");
+        }
+
+        function undoLastWater() {
+            const today = getTodayStr();
+            const hist = appState.waterHistory?.[today];
+            if (!hist?.length) return;
+            const last = hist.pop();
+            appState.waterLog[today] = Math.max(0, Number((Number(appState.waterLog?.[today] || 0) - last.effMl / 1000).toFixed(3)));
+            saveState();
+            renderHomeOverview();
+            renderWaterModal();
+            showToast(`Отменено: −${last.effMl} мл`);
+            haptic("light");
+        }
+
+        function renderWaterModal() {
+            const goalMl = computeDailyWaterGoalMl();
+            const today = getTodayStr();
+            const curMl = Math.round(Number(appState.waterLog?.[today] || 0) * 1000);
+            const pct = Math.min(100, Math.round((curMl / Math.max(1, goalMl)) * 100));
+            const remMl = Math.max(0, goalMl - curMl);
+
+            const u = appState.user || { weight: 70 };
+            const baseMl = Math.round(u.weight * 35);
+            const bonusMl = Math.max(0, goalMl - baseMl);
+
+            document.getElementById("wm-pct-badge").innerText = `${pct}%`;
+            document.getElementById("wm-norm-breakdown").innerText = `База ${baseMl} мл (${u.weight} кг) + активность +${bonusMl} мл`;
+            document.getElementById("wm-cur-l").innerText = (curMl / 1000).toFixed(2);
+            document.getElementById("wm-goal-l").innerText = (goalMl / 1000).toFixed(2);
+            document.getElementById("wm-rem-text").innerText = remMl > 0 ? `До цели осталось ${remMl} мл` : "Суточная норма воды выполнена ✓";
+
+            const hist = (appState.waterHistory?.[today] || []).slice().reverse();
+            document.getElementById("wm-history-list").innerHTML = hist.length
+                ? hist.map(h => `<div class="science-row"><span style="color:var(--nx-text-muted);">${h.time} · ${h.label} (${h.rawMl} мл)</span><strong>+${h.effMl} мл</strong></div>`).join("")
+                : `<div style="font-size:12px; color:var(--nx-text-muted); text-align:center; padding:8px 0;">Записей за сегодня пока нет</div>`;
+        }
+
+        /* =========================================================================
+           23. КОНТРОЛЬНЫЕ ЗАМЕРЫ (CHECK-IN РАЗ В 7 / 14 ДНЕЙ) И АВТОКОРРЕКЦИЯ
+           ========================================================================= */
+        function getDaysSinceLastCheckIn() {
+            const last = appState.checkIns?.[appState.checkIns.length - 1]?.date || appState.startedAt || getTodayStr();
+            return Math.max(0, Math.floor((new Date(getTodayStr()) - new Date(last)) / 86400000));
+        }
+
+        function openCheckInModal() {
+            document.getElementById("ci-weight-input").value = appState.user?.weight || 70;
+            document.getElementById("ci-waist-input").value = appState.user?.waistCm || "";
+            document.getElementById("ci-bf-input").value = appState.user?.bodyFatPct || "";
+            document.getElementById("checkin-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        function submitCheckIn() {
+            const newWeight = parseFloat(document.getElementById("ci-weight-input").value);
+            if (isNaN(newWeight) || newWeight < 35 || newWeight > 250) return;
+
+            const newWaist = parseFloat(document.getElementById("ci-waist-input").value) || null;
+            const newBf = parseFloat(document.getElementById("ci-bf-input").value) || null;
+            if (!Array.isArray(appState.checkIns)) appState.checkIns = [];
+            const prev = appState.checkIns[appState.checkIns.length - 1];
+            const today = getTodayStr();
+
+            let msg = "Замер сохранён ✓";
+            let deltaKcal = 0;
+
+            if (prev && prev.weight > 0) {
+                const days = Math.max(1, Math.round((new Date(today) - new Date(prev.date)) / 86400000));
+                if (days >= 5) {
+                    const ratePct = ((newWeight - prev.weight) / prev.weight) * (7 / days) * 100;
+                    const goal = appState.user.goal;
+                    if (goal === "cut") {
+                        if (ratePct > -0.3) { deltaKcal = -120; msg = "Темп замедлился — мягко убираем 120 ккал"; }
+                        else if (ratePct < -1.15) { deltaKcal = +120; msg = "Слишком быстрый спад — добавляем +120 ккал для мышц"; }
+                        else msg = `Отличный темп похудения (${ratePct.toFixed(2)}%/нед)`;
+                    } else if (goal === "bulk") {
+                        if (ratePct < 0.15) { deltaKcal = +120; msg = "Вес стоит — плавно добавляем +120 ккал"; }
+                        else if (ratePct > 0.70) { deltaKcal = -100; msg = "Набор быстрее нормы — убираем 100 ккал"; }
+                        else msg = `Оптимальный набор массы (+${ratePct.toFixed(2)}%/нед)`;
+                    } else if (goal === "maintain") {
+                        if (ratePct > 0.35) { deltaKcal = -100; msg = "Вес растёт — корректируем −100 ккал"; }
+                        else if (ratePct < -0.35) { deltaKcal = +100; msg = "Вес снижается — возвращаем +100 ккал"; }
+                        else msg = "Вес стабилен — рацион идеально откалиброван";
+                    } else {
+                        msg = "Замер сохранён · Режим здорового питания без давления на вес";
+                    }
+                }
+            }
+
+            appState.checkIns.push({ date: today, weight: newWeight, waist: newWaist, bf: newBf });
+            appState.user.weight = newWeight;
+            if (newWaist) appState.user.waistCm = newWaist;
+            if (newBf) appState.user.bodyFatPct = newBf;
+            appState.adaptiveOffsetKcal = Math.max(-350, Math.min(400, (appState.adaptiveOffsetKcal || 0) + deltaKcal));
+
+            const freshIdeal = calculateTargets(appState.user);
+            const adjusted = scaleTargetsToKcal(freshIdeal, freshIdeal.dailyKcal + appState.adaptiveOffsetKcal);
+            applySmoothTargetTransition(adjusted, "Коррекция по контрольному замеру");
+
+            rebuildUneatenMealsForWeek();
+            saveState();
+            renderApp();
+            closeModal("checkin-modal");
+            showToast(msg);
+            NutriXPerf.notify("success");
+        }
+
+        /* =========================================================================
+           24. МОДАЛКИ ЗАМЕНЫ БЛЮДА, ВЫБОРА СЛОТА И ZERO GUILT AI
+           ========================================================================= */
+        function openChooseMealSheet(fromCatalog = false) {
+            if (!fromCatalog) pendingCatalogRecipeId = null;
+            syncSelectedDayMeals();
+            const listEl = document.getElementById("choose-meal-list");
+            listEl.innerHTML = (appState.meals || []).map(m => `
+                <div class="choice-card" onclick="handleMealChoiceClick('${m.id}')">
+                    <div style="min-width:0;">
+                        <div class="choice-title">${m.name} · ${m.kcal} ккал</div>
+                        <div class="choice-sub">${m.dishTitle}</div>
+                    </div>
+                    <span style="color:var(--nx-mint); font-weight:800;">›</span>
+                </div>`).join("");
+            document.getElementById("choose-meal-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        function handleMealChoiceClick(mealId) {
+            closeModal("choose-meal-modal");
+            if (pendingCatalogRecipeId) {
+                const master = MASTER_RECIPES_DB.find(r => r.recipe_id === pendingCatalogRecipeId);
+                pendingCatalogRecipeId = null;
+                if (master) {
+                    applyMasterRecipeToMealSlot(mealId, master);
+                    return;
+                }
+            }
+            openEditMealModal(mealId);
+        }
+
+        function applyMasterRecipeToMealSlot(mealId, master) {
+            syncSelectedDayMeals();
+            const idx = appState.meals.findIndex(m => m.id === mealId);
+            if (idx === -1) return;
+            const cur = appState.meals[idx];
+            appState.meals[idx] = scaleMasterRecipeToMeal(master, cur.name, cur.slotKey || "lunch", cur.id, cur.kcal);
+            rebuildGroceryList();
+            saveState();
+            renderApp();
+            if (activeDetailMealId === mealId) openMealDetail(mealId);
+            showToast(`Установлено: ${master.title_ru.slice(0, 34)}…`);
+            haptic("medium");
+        }
+
+        function openEditMealModal(mealId) {
+            syncSelectedDayMeals();
+            const meal = appState.meals.find(m => m.id === mealId);
+            if (!meal) return;
+
+            document.getElementById("edit-meal-id").value = mealId;
+            document.getElementById("db-recipe-search-input").value = "";
+            document.getElementById("db-recipe-search-results").classList.add("hidden");
+            document.getElementById("edit-meal-input").value = "";
+            document.getElementById("edit-meal-brand").value = "";
+            document.getElementById("edit-meal-weight").value = "";
+            document.getElementById("edit-source-badge").classList.add("hidden");
+            document.getElementById("manual-kcal").value = meal.kcal;
+            document.getElementById("manual-p").value = meal.protein;
+            document.getElementById("manual-f").value = meal.fat;
+            document.getElementById("manual-c").value = meal.carbs;
+
+            document.getElementById("edit-meal-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        function quickSwapFromModal() {
+            const mealId = document.getElementById("edit-meal-id").value;
+            closeModal("edit-meal-modal");
+            if (mealId) swapSingleMeal(mealId);
+        }
+
+        function searchMasterRecipesInModal(query) {
+            const box = document.getElementById("db-recipe-search-results");
+            const q = (query || "").trim().toLowerCase();
+            if (q.length < 2) { box.classList.add("hidden"); return; }
+
+            const hits = MASTER_RECIPES_DB.filter(r =>
+                r.title_ru.toLowerCase().includes(q) || (r.ingredients || []).some(i => i.name.toLowerCase().includes(q))
+            ).slice(0, 12);
+
+            if (!hits.length) {
+                box.innerHTML = `<div style="padding:10px; font-size:12px; color:var(--nx-text-muted); text-align:center;">Рецепты не найдены</div>`;
+            } else {
+                box.innerHTML = hits.map(r => `
+                    <div class="db-search-item" onclick="selectMasterRecipeInModal('${r.recipe_id}')">
+                        <div style="font-size:13px; font-weight:700;">${r.title_ru}</div>
+                        <span style="font-size:11px; color:var(--nx-mint); white-space:nowrap;">${Math.round(r.nutrition?.serving_kcal || 400)} ккал</span>
+                    </div>`).join("");
+            }
+            box.classList.remove("hidden");
+        }
+
+        function selectMasterRecipeInModal(recipeId) {
+            const mealId = document.getElementById("edit-meal-id").value;
+            const master = MASTER_RECIPES_DB.find(r => r.recipe_id === recipeId);
+            closeModal("edit-meal-modal");
+            if (mealId && master) applyMasterRecipeToMealSlot(mealId, master);
+        }
+
+        async function runAccurateProductLookup() {
+            const name = document.getElementById("edit-meal-input").value.trim();
+            const brand = document.getElementById("edit-meal-brand").value.trim();
+            const weight = parseFloat(document.getElementById("edit-meal-weight").value) || null;
+            if (!name) { showToast("Введите название продукта"); return; }
+
+            const btn = document.getElementById("ai-estimate-btn");
+            const badge = document.getElementById("edit-source-badge");
+            btn.disabled = true;
+            btn.innerText = brand ? `Ищем «${brand}»…` : "Точный расчёт КБЖУ…";
+
+            const res = await calculateAccurateProductNutrition(name, brand, weight);
+            document.getElementById("manual-kcal").value = res.kcal;
+            document.getElementById("manual-p").value = res.protein;
+            document.getElementById("manual-f").value = res.fat;
+            document.getElementById("manual-c").value = res.carbs;
+
+            if (badge) {
+                badge.classList.remove("hidden");
+                badge.innerText = res.source === "openfoodfacts" ? `✓ Этикетка: ${res.matchedLabel}` : `✦ ${res.matchedLabel}`;
+            }
+            btn.disabled = false;
+            btn.innerText = "✦ Пересчитать КБЖУ";
+            haptic("medium");
+        }
+
+        async function submitEditMeal() {
+            const mealId = document.getElementById("edit-meal-id").value;
+            const name = document.getElementById("edit-meal-input").value.trim();
+            const brand = document.getElementById("edit-meal-brand").value.trim();
+            const weight = parseFloat(document.getElementById("edit-meal-weight").value) || 250;
+            const kcal = parseInt(document.getElementById("manual-kcal").value, 10) || 400;
+            const p = parseInt(document.getElementById("manual-p").value, 10) || 20;
+            const f = parseInt(document.getElementById("manual-f").value, 10) || 14;
+            const c = parseInt(document.getElementById("manual-c").value, 10) || 42;
+
+            syncSelectedDayMeals();
+            const meal = appState.meals.find(m => m.id === mealId);
+            if (!meal) return;
+
+            const title = name ? (brand ? `${name} (${brand})` : name) : meal.dishTitle;
+            meal.dishTitle = title;
+            meal.kcal = kcal;
+            meal.protein = p;
+            meal.fat = f;
+            meal.carbs = c;
+            meal.isCustom = true;
+            meal.recipeId = "CUSTOM";
+            meal.cookedWeightG = weight;
+            meal.rawWeightG = weight;
+            meal.ingredients = [{ name: title, weight, state: "готовый", dept: "Собственные блюда", yieldFactor: 1.0 }];
+            meal.stepsStructured = [];
+
+            rebuildGroceryList();
+            saveState();
+            renderApp();
+            closeModal("edit-meal-modal");
+            if (activeDetailMealId === mealId) openMealDetail(mealId);
+            showToast("Блюдо сохранено ✓");
+            haptic("medium");
+        }
+
+        function openZeroGuiltModal() {
+            document.getElementById("zg-food-input").value = "";
+            document.getElementById("zg-brand-input").value = "";
+            document.getElementById("zg-weight-input").value = "";
+            document.getElementById("zg-kcal-override").value = "";
+            document.getElementById("zero-guilt-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        async function submitZeroGuilt() {
+            const food = document.getElementById("zg-food-input").value.trim();
+            if (!food) { showToast("Опишите, что съели"); return; }
+
+            const brand = document.getElementById("zg-brand-input").value.trim();
+            const weight = parseFloat(document.getElementById("zg-weight-input").value) || null;
+            const manualKcal = parseInt(document.getElementById("zg-kcal-override").value, 10) || null;
+
+            const btn = document.getElementById("zg-submit-btn");
+            btn.disabled = true;
+            btn.innerText = "Перебалансировка…";
+
+            let est;
+            if (manualKcal && manualKcal > 20) {
+                est = {
+                    kcal: manualKcal,
+                    protein: Math.round((manualKcal * 0.16) / 4),
+                    fat: Math.round((manualKcal * 0.34) / 9),
+                    carbs: Math.round((manualKcal * 0.50) / 4)
+                };
+            } else {
+                est = await calculateAccurateProductNutrition(food, brand, weight);
+            }
+
+            const todayIdx = getTodayDayIndex();
+            const todayMeals = appState.weekPlan?.[todayIdx]?.meals || [];
+            const title = brand ? `${food} (${brand})` : food;
+
+            todayMeals.push({
+                id: `zg_${Date.now()}`, name: "Вне плана", slotKey: "snack", recipeId: "AI-ZG",
+                dishTitle: title, shortDescription: "Учтено системой Zero Guilt — остаток дня мягко адаптирован.",
+                kcal: est.kcal, protein: est.protein, fat: est.fat, carbs: est.carbs,
+                prepTime: "Вне плана", eaten: true, isCustom: true, isOffPlan: true,
+                rawWeightG: weight || 200, cookedWeightG: weight || 200,
+                ingredients: [{ name: title, weight: weight || 200, state: "готовый", dept: "Собственные блюда", yieldFactor: 1.0 }],
+                stepsStructured: []
+            });
+
+            // Мягко пропорционально уменьшаем оставшиеся несъеденные блюда сегодняшнего дня
+            const dayT = getDayTypeTargets(todayIdx);
+            const eatenTotal = todayMeals.filter(m => m.eaten).reduce((s, m) => s + m.kcal, 0);
+            const uneaten = todayMeals.filter(m => !m.eaten);
+            const uneatenSum = uneaten.reduce((s, m) => s + m.kcal, 0);
+
+            if (uneaten.length && uneatenSum > 0) {
+                const targetRem = Math.max(uneaten.length * 160, dayT.dailyKcal - eatenTotal);
+                const factor = Math.max(0.55, Math.min(1.0, targetRem / uneatenSum));
+                uneaten.forEach(m => scaleMealPortions(m, factor));
+            }
+
+            btn.disabled = false;
+            btn.innerText = "Пересчитать день";
+            closeModal("zero-guilt-modal");
+
+            rebuildGroceryList();
+            saveState();
+            renderApp();
+            NutriXMotion.triggerWave();
+            showToast(`Zero Guilt: +${est.kcal} ккал учтено, остаток сбалансирован`);
+            NutriXPerf.notify("success");
+        }
+
+        /* =========================================================================
+           25. АДМИН-ПАНЕЛЬ ВЛАДЕЛЬЦА (ТОЛЬКО TELEGRAM ID 1696224717) И ТЕЛЕМЕТРИЯ
+           ========================================================================= */
+        function getCurrentTgUserId() {
+            return tg?.initDataUnsafe?.user?.id || null;
+        }
+
+        function isOwnerAdmin() {
+            const uid = getCurrentTgUserId();
+            return Boolean(uid && ADMIN_TG_IDS.includes(Number(uid)));
+        }
+
+        function initOwnerAdminVisibility() {
+            document.getElementById("owner-admin-btn")?.classList.toggle("hidden", !isOwnerAdmin());
+        }
+
+        function sendTelemetryHeartbeat() {
+            const uid = getCurrentTgUserId();
+            const url = getWorkerUrl().replace(/\/$/, "");
+            if (!uid || !url) return;
+            fetch(`${url}/ping`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    tg_id: uid,
+                    platform: tg?.platform || "web",
+                    db_count: MASTER_RECIPES_DB.length
+                })
+            }).catch(() => {});
+        }
+
+        function openAdminModal() {
+            if (!isOwnerAdmin()) return;
+            updateDbStatusBadge();
+            document.getElementById("admin-modal").classList.remove("hidden");
+            refreshAdminStats();
+            haptic("medium");
+        }
+
+        function openDbModal() {
+            updateDbStatusBadge();
+            document.getElementById("db-modal").classList.remove("hidden");
+            haptic("light");
+        }
+
+        async function refreshAdminStats() {
+            const logEl = document.getElementById("adm-log-box");
+            const url = getWorkerUrl().replace(/\/$/, "");
+            const t0 = performance.now();
+            logEl.innerText = `[${new Date().toLocaleTimeString()}] Опрос ${url}/admin/stats…`;
+
+            try {
+                const res = await fetch(`${url}/admin/stats`, {
+                    headers: { "X-Admin-Id": String(getCurrentTgUserId() || "") }
+                });
+                const ms = Math.round(performance.now() - t0);
+                document.getElementById("adm-worker-ping").innerText = `${ms} мс`;
+
+                if (res.ok) {
+                    const st = await res.json();
+                    document.getElementById("adm-online").innerText = String(st.online_5m ?? 1);
+                    document.getElementById("adm-total-users").innerText = String(st.total_users ?? 1);
+                    logEl.innerText = [
+                        `[OK] Latency: ${ms} ms | Platform: ${tg?.platform || "web"}`,
+                        `Online (5 min): ${st.online_5m ?? 1} | Total unique: ${st.total_users ?? 1}`,
+                        `AI requests: ${st.ai_requests ?? 0} | Recipes in RAM: ${MASTER_RECIPES_DB.length}`,
+                        `CloudStorage: ${CloudSync.isSupported() ? "ACTIVE" : "OFF"} | Theme: ${appState.theme}`
+                    ].join("\n");
+                } else {
+                    logEl.innerText = `[WARN] HTTP ${res.status}. Обновите worker.js.\nRecipes in RAM: ${MASTER_RECIPES_DB.length}`;
+                }
+            } catch (e) {
+                document.getElementById("adm-worker-ping").innerText = "ERR";
+                logEl.innerText = `[ERR] Worker недоступен: ${e.message}`;
+            }
+        }
+
+        function inspectCloudStorageAdmin() {
+            const logEl = document.getElementById("adm-log-box");
+            if (!CloudSync.isSupported()) {
+                logEl.innerText = "Telegram CloudStorage недоступен вне Telegram.";
+                return;
+            }
+            tg.CloudStorage.getKeys((err, keys) => {
+                logEl.innerText = err ? `Ошибка: ${err}` : `CloudStorage keys (${keys.length}): ${keys.join(", ")}`;
+            });
+        }
+
+        function simulateCheckInPromptAdmin() {
+            if (appState.checkIns?.length) {
+                const d = new Date();
+                d.setDate(d.getDate() - 8);
+                appState.checkIns[appState.checkIns.length - 1].date = d.toISOString().slice(0, 10);
+                saveState();
+                renderHomeOverview();
+                closeModal("admin-modal");
+                switchTab("home");
+                showToast("Баннер контрольного замера активирован");
+            }
+        }
+
+        function resetAllAppStateAdmin() {
+            if (!confirm("Сбросить локальные данные NutriX на этом устройстве?")) return;
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem("nutrix_seen_welcome");
+            location.reload();
+        }
+
+        /* =========================================================================
+           26. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ (BOOTSTRAP)
+           ========================================================================= */
+        document.addEventListener("DOMContentLoaded", async () => {
+            NutriXPerf.init();
+            applyTheme(localStorage.getItem("nutrix_theme") || "obsidian", false);
+
+            await initMasterDatabase();
+            const hasLocal = loadState();
+            const pulledCloud = await CloudSync.pull();
+
+            initOwnerAdminVisibility();
+            sendTelemetryHeartbeat();
+            setInterval(sendTelemetryHeartbeat, 120000);
+
+            if (hasLocal || pulledCloud) {
+                applyTheme(appState.theme || "obsidian", false);
+                checkAndAdvanceAdaptation();
+                document.getElementById("main-view").classList.remove("hidden");
+                document.getElementById("bottom-nav").classList.remove("hidden");
+                renderApp();
+                switchTab("home");
+            } else if (!localStorage.getItem("nutrix_seen_welcome")) {
+                showWelcomeScreen();
+            } else {
+                showOnboarding(false);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="22" fill="#F3F6F4"/>
+  <defs>
+    <mask id="nx-cut-iconl">
+      <rect x="-100" y="-100" width="400" height="400" fill="white"/>
+      <line x1="50.06" y1="71.69" x2="79.81" y2="28.31" stroke="black" stroke-width="16.61" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <path d="M 45.97 35.87 Q 45.97 27.56 50.43 28.43 L 79.69 71.44" fill="none" stroke="#1FA855" stroke-width="10.91" stroke-linecap="round" stroke-linejoin="round" mask="url(#nx-cut-iconl)"/>
+  <path d="M 18.45 71.44 L 18.45 28.43 L 46.72 71.44 L 45.97 35.87" fill="none" stroke="#1FA855" stroke-width="10.91" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="50.06" y1="71.69" x2="79.81" y2="28.31" stroke="#101913" stroke-width="10.78" stroke-linecap="round"/>
+  <circle cx="82.31" cy="49.91" r="4.65" fill="#101913"/>
+</svg>

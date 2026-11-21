@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 96" fill="none">
+  <g transform="translate(8, 4)">
+    <defs>
+    <mask id="nx-cut-wm-l">
+      <rect x="-100" y="-100" width="400" height="400" fill="white"/>
+      <line x1="60.09" y1="76.83" x2="105.12" y2="11.17" stroke="black" stroke-width="25.14" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <path d="M 53.9 22.61 Q 53.9 10.04 60.66 11.36 L 104.93 76.46" fill="none" stroke="#1FA855" stroke-width="16.51" stroke-linecap="round" stroke-linejoin="round" mask="url(#nx-cut-wm-l)"/>
+  <path d="M 12.25 76.46 L 12.25 11.36 L 55.03 76.46 L 53.9 22.61" fill="none" stroke="#1FA855" stroke-width="16.51" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="60.09" y1="76.83" x2="105.12" y2="11.17" stroke="#101913" stroke-width="16.32" stroke-linecap="round"/>
+  <circle cx="108.91" cy="43.87" r="7.04" fill="#101913"/>
+  </g>
+  <text x="142" y="64" fill="#101913" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="48" font-weight="800" letter-spacing="-1.2">Nutri<tspan fill="#1FA855">X</tspan></text>
+</svg>

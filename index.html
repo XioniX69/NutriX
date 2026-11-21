@@ -5269,19 +5269,20 @@ export default {
         /* =========================================================================
            26. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ (BOOTSTRAP)
            ========================================================================= */
-        document.addEventListener("DOMContentLoaded", async () => {
+   function withTimeout(promise, ms = 1500) {
+            return Promise.race([
+                Promise.resolve(promise).catch(() => false),
+                new Promise(resolve => setTimeout(() => resolve(false), ms))
+            ]);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
             NutriXPerf.init();
             applyTheme(localStorage.getItem("nutrix_theme") || "obsidian", false);
 
-            await initMasterDatabase();
+            // 1. Мгновенно открываем интерфейс без ожидания сети и облака
             const hasLocal = loadState();
-            const pulledCloud = await CloudSync.pull();
-
-            initOwnerAdminVisibility();
-            sendTelemetryHeartbeat();
-            setInterval(sendTelemetryHeartbeat, 120000);
-
-            if (hasLocal || pulledCloud) {
+            if (hasLocal && appState.user) {
                 applyTheme(appState.theme || "obsidian", false);
                 checkAndAdvanceAdaptation();
                 document.getElementById("main-view").classList.remove("hidden");
@@ -5293,6 +5294,28 @@ export default {
             } else {
                 showOnboarding(false);
             }
+
+            initOwnerAdminVisibility();
+            sendTelemetryHeartbeat();
+            setInterval(sendTelemetryHeartbeat, 120000);
+
+            // 2. В фоне подгружаем базу 2500 рецептов и синхронизируем Telegram Cloud
+            withTimeout(initMasterDatabase(), 2000).then(() => {
+                if (appState.user) renderApp();
+            });
+
+            withTimeout(CloudSync.pull(), 1500).then((pulledCloud) => {
+                if (pulledCloud && appState.user) {
+                    applyTheme(appState.theme || "obsidian", false);
+                    checkAndAdvanceAdaptation();
+                    document.getElementById("welcome-view").classList.add("hidden");
+                    document.getElementById("onboarding-view").classList.add("hidden");
+                    document.getElementById("main-view").classList.remove("hidden");
+                    document.getElementById("bottom-nav").classList.remove("hidden");
+                    renderApp();
+                    switchTab("home");
+                }
+            });
         });
     </script>
 </body>

@@ -1,7 +1,8 @@
 /* =========================================================================
-   NUTRIX — src/math.js
-   Константы, научное ядро КБЖУ, сырой/готовый вес, парсер ограничений,
-   EMA-тренд Check-In и утилиты дат/безопасности.
+   NUTRIX v10 — src/math.js
+   Константы, научное ядро КБЖУ (мульти-спорт), русские склонения, адаптивное
+   приветствие, режим «Без весов», фасовки РФ для корзины, парсер ограничений,
+   EMA Check-In и умный «Совет от NutriX».
    ========================================================================= */
 
 export const WEEK_DAYS = [
@@ -36,26 +37,36 @@ export const ACTIVITY_LEVEL_TIERS = {
 };
 
 export const SPORT_PROFILES = {
-    none:      { title: "Не занимаюсь спортом", short: "Без спорта",   sub: "Обычная домашняя еда, комфортный белок (1.3–1.6 г/кг) без спортпита", pBase: 1.35, pCut: 1.60, pBulk: 1.55, fatKg: 1.00, minFatPct: 0.25, avoidSupps: true },
-    fitness:   { title: "Фитнес / Йога / Тонус", short: "Фитнес",      sub: "Поддержание формы и лёгкие тренировки: 1.6–1.85 г/кг белка",         pBase: 1.60, pCut: 1.85, pBulk: 1.75, fatKg: 0.95, minFatPct: 0.23, avoidSupps: false },
-    strength:  { title: "Силовые / Тренажёрный зал", short: "Силовые", sub: "Гипертрофия и сила: 2.0–2.25 г/кг белка + стабильный гликоген",      pBase: 2.00, pCut: 2.25, pBulk: 2.05, fatKg: 0.95, minFatPct: 0.20, avoidSupps: false },
-    team:      { title: "Игровые (волейбол, футбол…)", short: "Игровые", sub: "Взрывная выносливость: 1.8–2.05 г/кг белка + упор на углеводы",    pBase: 1.80, pCut: 2.05, pBulk: 1.90, fatKg: 0.90, minFatPct: 0.20, avoidSupps: false },
-    endurance: { title: "Выносливость (бег, вело, плав.)", short: "Выносл.", sub: "Максимум сложных углеводов (55–63%) и 1.6–1.85 г/кг белка",    pBase: 1.60, pCut: 1.85, pBulk: 1.70, fatKg: 0.85, minFatPct: 0.20, avoidSupps: false },
-    combat:    { title: "Единоборства / Кроссфит", short: "Единобор.", sub: "Интенсивные нагрузки: 1.95–2.2 г/кг белка + плотный энергообмен",    pBase: 1.95, pCut: 2.20, pBulk: 2.00, fatKg: 0.90, minFatPct: 0.20, avoidSupps: false }
+    none:      { title: "Не занимаюсь спортом",         short: "Без спорта",   sub: "Обычная домашняя еда, комфортный белок (1,3–1,6 г/кг) без спортпита", pBase: 1.35, pCut: 1.60, pBulk: 1.55, fatKg: 1.00, minFatPct: 0.25, avoidSupps: true },
+    fitness:   { title: "Фитнес, йога или тонус",       short: "Фитнес",       sub: "Поддержание формы и лёгкие тренировки: 1,6–1,85 г/кг белка",         pBase: 1.60, pCut: 1.85, pBulk: 1.75, fatKg: 0.95, minFatPct: 0.23, avoidSupps: false },
+    strength:  { title: "Силовые и тренажёрный зал",    short: "Силовые",      sub: "Рост мышц и силы: 2,0–2,25 г/кг белка и стабильный гликоген",         pBase: 2.00, pCut: 2.25, pBulk: 2.05, fatKg: 0.95, minFatPct: 0.20, avoidSupps: false },
+    team:      { title: "Игровые (волейбол, футбол…)",  short: "Игровые",      sub: "Взрывная выносливость: 1,8–2,05 г/кг белка и упор на углеводы",      pBase: 1.80, pCut: 2.05, pBulk: 1.90, fatKg: 0.90, minFatPct: 0.20, avoidSupps: false },
+    endurance: { title: "Выносливость (бег, вело…)",    short: "Выносливость", sub: "Максимум сложных углеводов (55–63%) и 1,6–1,85 г/кг белка",          pBase: 1.60, pCut: 1.85, pBulk: 1.70, fatKg: 0.85, minFatPct: 0.20, avoidSupps: false },
+    combat:    { title: "Единоборства или кроссфит",    short: "Единоборства", sub: "Высокая интенсивность: 1,95–2,2 г/кг белка и плотный энергообмен",    pBase: 1.95, pCut: 2.20, pBulk: 2.00, fatKg: 0.90, minFatPct: 0.20, avoidSupps: false }
+};
+
+export const DAY_TYPE_META = {
+    rest:      { key: "rest",      label: "Отдых",        icon: "😴", short: "•",  bonusPct: 0.00, fatDelta: +5,  toast: "День отдыха — ровный баланс БЖУ" },
+    strength:  { key: "strength",  label: "Силовая",      icon: "🏋️", short: "🏋️", bonusPct: 0.10, fatDelta: -5,  toast: "🏋️ Силовой день — добавили углеводы на восстановление" },
+    team:      { key: "team",      label: "Игровая",      icon: "🏐", short: "🏐", bonusPct: 0.11, fatDelta: -7,  toast: "🏐 Игровой день — повысили запас гликогена" },
+    sport:     { key: "team",      label: "Игровая",      icon: "🏐", short: "🏐", bonusPct: 0.11, fatDelta: -7,  toast: "🏐 Игровой день — повысили запас гликогена" },
+    endurance: { key: "endurance", label: "Кардио / Бег", icon: "🏃", short: "🏃", bonusPct: 0.12, fatDelta: -8,  toast: "🏃 Кардио-день — максимум сложных углеводов" },
+    combat:    { key: "combat",    label: "Единоборства", icon: "🥊", short: "🥊", bonusPct: 0.12, fatDelta: -6,  toast: "🥊 Тренировка — повышенный запас энергии и белка" },
+    fitness:   { key: "fitness",   label: "Фитнес",       icon: "🧘", short: "🧘", bonusPct: 0.06, fatDelta: -3,  toast: "🧘 День фитнеса — мягкая прибавка энергии" }
 };
 
 export const GOALS_V4 = [
-    { val: "healthy",  title: "Просто здоровое питание", sub: "Сбалансированный рацион, энергия, клетчатка и полезные жиры без строгих диет" },
-    { val: "cut",      title: "Похудение / Сушка",       sub: "Умеренный дефицит −15..22% ккал + высокий белок для защиты мышц" },
-    { val: "maintain", title: "Поддержание формы",       sub: "Ровный баланс 0% ккал для стабильного веса и рекомпозиции" },
-    { val: "bulk",     title: "Набор мышечной массы",    sub: "Контролируемый профицит +10..15% для качественного роста мышц" }
+    { val: "healthy",  title: "Просто здоровое питание", sub: "Сбалансированный рацион, энергия и полезные жиры без строгих диет" },
+    { val: "cut",      title: "Похудение / Сушка",       sub: "Умеренный дефицит −15…22% и высокий белок для защиты мышц" },
+    { val: "maintain", title: "Поддержание формы",       sub: "Ровный баланс калорий для стабильного веса и рекомпозиции" },
+    { val: "bulk",     title: "Набор мышечной массы",    sub: "Контролируемый профицит +10…15% для качественного роста мышц" }
 ];
 
 export const APPETITE_LEVELS = {
-    1: { title: "Очень низкий", startFactor: 0.82, sub: "Сложно доедать порции — начнём с 82% и плавно раскачаем (+90 ккал / 4 дня) через плотные блюда." },
-    2: { title: "Сниженный",    startFactor: 0.88, sub: "Быстро наедаюсь — старт с 88% и мягкий выход на норму." },
+    1: { title: "Очень низкий", startFactor: 0.82, sub: "Сложно доедать порции — начнём с 82% и плавно раскачаем (+90 ккал каждые 4 дня)." },
+    2: { title: "Сниженный",    startFactor: 0.88, sub: "Быстро наедаешься — стартуем с 88% и мягко выйдем на норму." },
     3: { title: "Нормальный",   startFactor: 1.00, sub: "Комфортный аппетит — сразу выходим на расчётную суточную норму." },
-    4: { title: "Повышенный",   startFactor: 1.00, sub: "Люблю сытные порции — приоритет объёмным блюдам с высоким индексом сытости." },
+    4: { title: "Повышенный",   startFactor: 1.00, sub: "Любишь сытные порции — приоритет объёмным блюдам с высоким индексом сытости." },
     5: { title: "Очень высокий",startFactor: 1.00, sub: "Максимум белка, овощей и клетчатки для долгого чувства сытости." }
 };
 
@@ -390,6 +401,9 @@ export const SUBSTITUTIONS_V4 = [
             { match: /броккол/i, target: "Цветная капуста соцветия", ratio: 1.0, dKcal: -5.0, dP: -0.6, dF: 0, dC: -0.5, eq: "1:1 Точная", note: "Равноценная клетчатка" }
         ];
 
+/* =========================================================================
+   УТИЛИТЫ БЕЗОПАСНОСТИ, СКЛОНЕНИЙ И ДАТ
+   ========================================================================= */
 export function escapeHtml(str) {
     if (str === null || str === undefined) return "";
     return String(str)
@@ -398,6 +412,20 @@ export function escapeHtml(str) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+}
+
+export function pluralRu(n, one, few, many) {
+    const abs = Math.abs(Math.trunc(Number(n) || 0));
+    const mod100 = abs % 100;
+    const mod10 = abs % 10;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+}
+
+export function formatCountRu(n, one, few, many) {
+    return `${n} ${pluralRu(n, one, few, many)}`;
 }
 
 export function byteLengthUtf8(str) {
@@ -436,6 +464,77 @@ export function getDateStrForWeekDay(dayIdx, weekStartStr = null) {
     return formatDateYmd(d);
 }
 
+export function getAdaptiveGreeting(firstName, stats = null, nextMeal = null) {
+    const hour = new Date().getHours();
+    let base = "Добрый день";
+    let period = "day";
+    if (hour >= 5 && hour < 12) {
+        base = "Доброе утро";
+        period = "morning";
+    } else if (hour >= 12 && hour < 17) {
+        base = "Добрый день";
+        period = "day";
+    } else if (hour >= 17 && hour < 23) {
+        base = "Добрый вечер";
+        period = "evening";
+    } else {
+        base = "Доброй ночи";
+        period = "night";
+    }
+
+    const title = firstName ? `${base}, ${firstName}` : base;
+    let subtitle = "";
+
+    if (stats) {
+        if (stats.isOver) {
+            subtitle = `Перебор на ${stats.overKcal} ккал — без стресса, завтра вернёмся в ритм`;
+        } else if (stats.pctKcal >= 95) {
+            subtitle = "Отличный день — суточная норма почти полностью закрыта";
+        } else if (period === "morning" && stats.eatenCount === 0 && nextMeal) {
+            subtitle = `Пора зарядиться — в плане ${nextMeal.name.toLowerCase()}`;
+        } else if (period === "night") {
+            subtitle = "Время отдыха и восстановления — завтра продолжим серию";
+        } else if (stats.remainingKcal > 0) {
+            subtitle = `До нормы дня осталось ${stats.remainingKcal.toLocaleString("ru-RU")} ккал`;
+        }
+    }
+
+    return { title, subtitle, period };
+}
+
+/* =========================================================================
+   МУЛЬТИ-СПОРТ, НАУЧНОЕ ЯДРО КБЖУ И ТИПЫ ДНЕЙ
+   ========================================================================= */
+export function getUserSportTypes(user) {
+    if (!user) return ["none"];
+    if (Array.isArray(user.sportTypes) && user.sportTypes.length) {
+        const valid = user.sportTypes.filter(k => Boolean(SPORT_PROFILES[k]));
+        if (valid.length) return valid;
+    }
+    if (user.sportType && SPORT_PROFILES[user.sportType]) return [user.sportType];
+    return ["none"];
+}
+
+export function getAvailableDayTypesForUser(user) {
+    const sports = getUserSportTypes(user).filter(s => s !== "none");
+    if (!sports.length) return [];
+    const out = ["rest"];
+    sports.forEach(s => {
+        if (DAY_TYPE_META[s] && !out.includes(s)) out.push(s);
+    });
+    return out;
+}
+
+export function formatUserSportsShort(user) {
+    const sports = getUserSportTypes(user);
+    if (sports.length === 1 && sports[0] === "none") return "Без спорта";
+    const active = sports.filter(s => s !== "none");
+    if (!active.length) return "Без спорта";
+    if (active.length === 1) return SPORT_PROFILES[active[0]]?.short || "Спорт";
+    if (active.length === 2) return `${SPORT_PROFILES[active[0]].short} + ${SPORT_PROFILES[active[1]].short}`;
+    return `${SPORT_PROFILES[active[0]].short} + ещё ${active.length - 1}`;
+}
+
 export function activityScoreToPal(score) {
     const s = Math.max(1, Math.min(10, Number(score) || 5));
     return Number((1.20 + ((s - 1) / 9) * 0.80).toFixed(2));
@@ -448,7 +547,8 @@ export function palToActivityScore(pal) {
 
 export function computePrecisionScore(u) {
     let s = 72;
-    if (u?.sportType) s += 3;
+    const sports = getUserSportTypes(u);
+    if (sports.length) s += 3;
     if (u?.preferencesText?.trim()) s += 3;
     if (u?.bodyFatPct) s += 9;
     if (u?.leanBodyMass) s += 8;
@@ -463,8 +563,12 @@ export function calculateTargets(user) {
     const gender = user.gender || "male";
     const pal = Number(user.activityLevel) || activityScoreToPal(user.activityScore || 5);
     const goal = user.goal || "healthy";
-    const sportKey = user.sportType || "none";
-    const sp = SPORT_PROFILES[sportKey] || SPORT_PROFILES.none;
+    const sports = getUserSportTypes(user);
+    const activeSports = sports.filter(s => s !== "none");
+    const profiles = (activeSports.length ? activeSports : ["none"]).map(k => SPORT_PROFILES[k] || SPORT_PROFILES.none);
+
+    const hasHeavySport = activeSports.includes("strength") || activeSports.includes("combat");
+    const avoidSupps = activeSports.length === 0;
 
     let derivedLbm = user.leanBodyMass ? Number(user.leanBodyMass) : null;
     let derivedBf = user.bodyFatPct ? Number(user.bodyFatPct) : null;
@@ -474,12 +578,12 @@ export function calculateTargets(user) {
     let bmr = 0;
     let formulaName = "Mifflin-St Jeor (1990)";
     if (derivedLbm && derivedLbm > 25) {
-        if (pal >= 1.65 || sportKey === "strength" || sportKey === "combat") {
+        if (pal >= 1.65 || hasHeavySport) {
             bmr = Math.round(500 + 22 * derivedLbm);
-            formulaName = "Cunningham (LBM Pro)";
+            formulaName = "Cunningham (по сухой массе)";
         } else {
             bmr = Math.round(370 + 21.6 * derivedLbm);
-            formulaName = "Katch-McArdle (LBM)";
+            formulaName = "Katch-McArdle (по сухой массе)";
         }
     } else {
         bmr = Math.round((10 * weight) + (6.25 * height) - (5 * age) + (gender === "male" ? 5 : -161));
@@ -499,14 +603,16 @@ export function calculateTargets(user) {
 
     const rawDailyKcal = Math.round(tdee * goalFactor);
 
-    let pKg = sp.pBase;
-    if (goal === "healthy") pKg = sportKey === "none" ? 1.30 : sp.pBase;
-    else if (goal === "cut") pKg = sp.pCut;
-    else if (goal === "bulk") pKg = sp.pBulk;
+    // Для мульти-спорта берём максимальную потребность в белке среди выбранных направлений
+    let pKg = Math.max(...profiles.map(p => goal === "cut" ? p.pCut : (goal === "bulk" ? p.pBulk : p.pBase)));
+    if (goal === "healthy" && avoidSupps) pKg = 1.30;
+
+    const avgFatKg = profiles.reduce((s, p) => s + p.fatKg, 0) / profiles.length;
+    const minFatPctBase = Math.min(...profiles.map(p => p.minFatPct));
 
     const protein = derivedLbm ? Math.round(derivedLbm * (pKg * 1.12)) : Math.round(weight * pKg);
-    const minFatPct = goal === "healthy" ? 0.26 : sp.minFatPct;
-    const fatKg = goal === "healthy" ? Math.max(sp.fatKg, 1.05) : (goal === "cut" ? sp.fatKg * 0.9 : sp.fatKg);
+    const minFatPct = goal === "healthy" ? 0.26 : minFatPctBase;
+    const fatKg = goal === "healthy" ? Math.max(avgFatKg, 1.05) : (goal === "cut" ? avgFatKg * 0.9 : avgFatKg);
     const fat = Math.max(Math.round((rawDailyKcal * minFatPct) / 9), Math.round(weight * fatKg));
 
     const minCarbG = Math.round((derivedLbm || weight) * 2.0);
@@ -546,12 +652,9 @@ export function scaleTargetsToKcal(baseTargets, newKcal) {
     });
 }
 
-/*
- * КОНТРАКТ ХРАНЕНИЯ ВЕСА ИНГРЕДИЕНТОВ (ing.weight / amount_g):
- * - Если ing.state содержит "сыр" / "свеж" / "сух", ing.weight — это СЫРОЙ вес (как в магазине).
- * - Если ing.state — термически обработанное состояние ("варёный", "запечённый", "жареный"),
- *   ing.weight — это ГОТОВЫЙ вес на тарелке (соответствует kcal_per_100g в SQL-базе РФ).
- */
+/* =========================================================================
+   СЫРОЙ / ГОТОВЫЙ ВЕС + РЕЖИМ «БЕЗ ВЕСОВ» (БЫТОВЫЕ МЕРЫ) + ФАСОВКИ РФ
+   ========================================================================= */
 export function inferYieldFactor(ingName, state, explicitYield) {
     const y = Number(explicitYield);
     if (y > 0 && y !== 1.0) return y;
@@ -611,7 +714,7 @@ export function computeMealWeightsFromIngredients(ingredients) {
     };
 }
 
-// Согласуем raw_total_weight_g и cooked_total_weight_g у встроенных рецептов EMBEDDED_MASTER_V4
+// Согласуем веса у встроенного ядра
 EMBEDDED_MASTER_V4.forEach(r => {
     const w = computeMealWeightsFromIngredients(r.ingredients);
     if (r.nutrition) {
@@ -621,6 +724,168 @@ EMBEDDED_MASTER_V4.forEach(r => {
     }
 });
 
+function formatHalfStep(val) {
+    const rounded = Math.max(0.5, Math.round(val * 2) / 2);
+    if (rounded === 0.5) return "½";
+    if (Number.isInteger(rounded)) return String(rounded);
+    return String(rounded).replace(".", ",");
+}
+
+const HOUSEHOLD_UNITS = [
+    { match: /яйц/i, grams: 55, forms: ["шт.", "шт.", "шт."] },
+    { match: /белок курин/i, grams: 35, forms: ["белок", "белка", "белков"] },
+    { match: /банан/i, grams: 110, forms: ["банан", "банана", "бананов"] },
+    { match: /яблок/i, grams: 140, forms: ["яблоко", "яблока", "яблок"] },
+    { match: /груш/i, grams: 140, forms: ["груша", "груши", "груш"] },
+    { match: /киви/i, grams: 75, forms: ["шт.", "шт.", "шт."] },
+    { match: /апельсин|хурм|нектарин/i, grams: 140, forms: ["шт.", "шт.", "шт."] },
+    { match: /слив/i, grams: 40, forms: ["шт.", "шт.", "шт."] },
+    { match: /авокад/i, grams: 120, forms: ["авокадо", "авокадо", "авокадо"] },
+    { match: /огурец/i, grams: 100, forms: ["огурец", "огурца", "огурцов"] },
+    { match: /перец/i, grams: 130, forms: ["перец", "перца", "перцев"] },
+    { match: /морков/i, grams: 90, forms: ["морковь", "моркови", "морковок"] },
+    { match: /картофел|батат/i, grams: 90, forms: ["шт.", "шт.", "шт."] },
+    { match: /свёкл/i, grams: 130, forms: ["шт.", "шт.", "шт."] },
+    { match: /лук репчат/i, grams: 70, forms: ["луковица", "луковицы", "луковиц"] },
+    { match: /тортиль/i, grams: 65, forms: ["лепёшка", "лепёшки", "лепёшек"] },
+    { match: /хлебц/i, grams: 10, forms: ["хлебец", "хлебца", "хлебцев"] },
+    { match: /хлеб/i, grams: 30, forms: ["ломтик", "ломтика", "ломтиков"] },
+    { match: /масло/i, tspGrams: 4.5, tbspGrams: 13.5, isSpoon: true },
+    { match: /соевый соус|тамари|песто/i, tspGrams: 5, tbspGrams: 15, isSpoon: true },
+    { match: /паста арахис|урбеч/i, tspGrams: 7, tbspGrams: 18, isSpoon: true },
+    { match: /сметан|йогурт|скир|рикотт|творожный сыр|мягкий творог|пассата|томаты резан|пюре/i, grams: 25, forms: ["ст. л.", "ст. л.", "ст. л."], packGrams: 140, packForms: ["баночка", "баночки", "баночек"] },
+    { match: /творог/i, grams: 180, forms: ["пачка", "пачки", "пачек"], fallbackSpoon: 30 },
+    { match: /молоко|кефир|ряженк|простокваш|бульон|напиток/i, grams: 200, forms: ["стакан", "стакана", "стаканов"] },
+    { match: /овсян.*хлоп|геркулес|отруб|мука|какао/i, grams: 15, forms: ["ст. л.", "ст. л.", "ст. л."] },
+    { match: /гречк|рис|булгур|киноа|полб|перлов|ячнев|пшен|кускус|горох|чечевиц|фасоль|нут|макарон|паста|фунчоз/i, grams: 25, forms: ["ст. л. сухой", "ст. л. сухой", "ст. л. сухой"] },
+    { match: /семен|семечк|изюм|кураг|орех|миндал|кешью|фисташ|пекан|какао-крупк/i, grams: 12, forms: ["ст. л.", "ст. л.", "ст. л."] },
+    { match: /голубик|клубник|малин|вишн|ежевик|ягод|шпинат|руккол|айсберг|кейл|зелень|микрозелен|горошек|кукуруз|эдамаме|броккол|цветная капуста|капуст/i, grams: 35, forms: ["горсть", "горсти", "горстей"] },
+    { match: /сыр|моцарелл|страчателл|халуми|пармезан/i, grams: 20, forms: ["ломтик", "ломтика", "ломтиков"] },
+    { match: /тунец в собств|горбуша в собств|скумбрия в собств|сайра в собств/i, grams: 135, forms: ["банка", "банки", "банок"] },
+    { match: /курин|индейк|говяд|телят|кролик|утк|форел|лосос|кижуч|судак|минта|хек|треск|камбал|сибас|дорад|палтус|муксун|филе|стейк|печен|желуд|сердеч|фарш/i, grams: 150, forms: ["ладонь", "ладони", "ладоней"] }
+];
+
+export function formatHouseholdMeasure(ing, mult = 1) {
+    const rawG = Math.round(toRawStoreGrams(ing) * mult);
+    const name = ing?.name || "";
+    const rule = HOUSEHOLD_UNITS.find(u => u.match.test(name));
+
+    if (!rule) {
+        return { primary: `~${rawG} г`, sub: `сырой вес` };
+    }
+
+    if (rule.isSpoon) {
+        if (rawG >= rule.tbspGrams * 0.85) {
+            const tbsp = rawG / rule.tbspGrams;
+            return { primary: `${formatHalfStep(tbsp)} ст. л.`, sub: `~${rawG} г` };
+        }
+        const tsp = Math.max(0.5, rawG / rule.tspGrams);
+        return { primary: `${formatHalfStep(tsp)} ч. л.`, sub: `~${rawG} г` };
+    }
+
+    if (/творог/i.test(name) && !/мягкий|сыр/i.test(name)) {
+        const ratio = rawG / 180;
+        if (ratio < 0.35) {
+            const sp = Math.max(1, Math.round(rawG / 30));
+            return { primary: `${sp} ст. л.`, sub: `~${rawG} г` };
+        }
+        if (ratio >= 0.65 && ratio < 0.88) return { primary: "¾ пачки", sub: `~${rawG} г` };
+        if (ratio >= 0.40 && ratio < 0.65) return { primary: "½ пачки", sub: `~${rawG} г` };
+        const packs = Math.round(ratio * 2) / 2;
+        const lbl = formatHalfStep(packs);
+        const word = Number.isInteger(packs) ? pluralRu(packs, "пачка", "пачки", "пачек") : "пачки";
+        return { primary: `${lbl} ${word}`, sub: `~${rawG} г` };
+    }
+
+    if (rule.packGrams && rawG >= rule.packGrams * 0.8) {
+        const cnt = Math.round((rawG / rule.packGrams) * 2) / 2;
+        const word = Number.isInteger(cnt) ? pluralRu(cnt, ...rule.packForms) : rule.packForms[1];
+        return { primary: `${formatHalfStep(cnt)} ${word}`, sub: `~${rawG} г` };
+    }
+
+    const qty = rawG / rule.grams;
+    const stepVal = Math.max(0.5, Math.round(qty * 2) / 2);
+    const numStr = formatHalfStep(stepVal);
+    const word = Number.isInteger(stepVal) ? pluralRu(stepVal, ...rule.forms) : rule.forms[1];
+    return { primary: `${numStr} ${word}`, sub: `~${rawG} г` };
+}
+
+const RETAIL_PACKAGING = [
+    { match: /яйц/i, packG: 550, unitG: 55, forms: ["десяток", "десятка", "десятков"], unitForms: ["шт.", "шт.", "шт."], mode: "eggs" },
+    { match: /тунец в собств|горбуша в собств|скумбрия в собств|сайра в собств|горошек|кукуруз|белая фасоль в томат|томаты резан/i, packG: 200, forms: ["банка", "банки", "банок"], packNote: "200 г" },
+    { match: /творог 0\.5|творог 2%|творог 5%|творог безлактоз/i, packG: 180, forms: ["пачка", "пачки", "пачек"], packNote: "180 г" },
+    { match: /мягкий творог|зернёный творог|йогурт|скир|сметан|пудинг|творожный сыр|рикотт|страчателл|козий сыр|моцарелл/i, packG: 180, forms: ["баночка", "баночки", "баночек"], packNote: "180 г" },
+    { match: /молоко|кефир|ряженк|простокваш|бульон/i, packG: 900, forms: ["бутылка", "бутылки", "бутылок"], packNote: "900 мл", checkHomeBelow: 0.25 },
+    { match: /напиток.*exponenta/i, packG: 250, forms: ["стаканчик", "стаканчика", "стаканчиков"], packNote: "250 г" },
+    { match: /сыр(?!оед)|пармезан|халуми|адыгейск/i, packG: 200, forms: ["упаковка", "упаковки", "упаковок"], packNote: "200 г" },
+    { match: /масло/i, packG: 500, forms: ["бутылка", "бутылки", "бутылок"], packNote: "500 мл", checkHomeBelow: 0.30 },
+    { match: /соевый соус|тамари|песто|пассата|урбеч|паста арахис/i, packG: 250, forms: ["банка", "банки", "банок"], packNote: "250 г", checkHomeBelow: 0.30 },
+    { match: /гречк|булгур|киноа|полб|перлов|ячнев|пшен|пшеничн|кускус|овсян|геркулес|горох|чечевиц|фасоль красн|нут|макарон|паста|фунчоз|мука|отруб/i, packG: 500, forms: ["пачка", "пачки", "пачек"], packNote: "500 г", checkHomeBelow: 0.30 },
+    { match: /хлебц/i, packG: 100, forms: ["пачка", "пачки", "пачек"], packNote: "100 г" },
+    { match: /хлеб/i, packG: 350, forms: ["упаковка", "упаковки", "упаковок"], packNote: "350 г" },
+    { match: /тортиль/i, packG: 260, forms: ["упаковка", "упаковки", "упаковок"], packNote: "4 шт." },
+    { match: /орех|миндал|кешью|фисташ|пекан|семен|семечк|изюм|кураг|какао|шоколад|матча/i, packG: 150, forms: ["пачка", "пачки", "пачек"], packNote: "150 г", checkHomeBelow: 0.30 },
+    { match: /курин|индейк|говяд|телят|кролик|утк|фарш|печен|желуд|сердеч|язык|тофу/i, packG: 500, forms: ["подложка", "подложки", "подложек"], packNote: "~500 г" },
+    { match: /форел|лосос|кижуч|судак|минта|хек|треск|камбал|сибас|дорад|палтус|муксун|кревет|кальмар|гребеш|осьминог|краб/i, packG: 400, forms: ["упаковка", "упаковки", "упаковок"], packNote: "~400 г" },
+    { match: /банан/i, unitG: 130, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /яблок|груш|апельсин|хурм|нектарин/i, unitG: 150, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /киви/i, unitG: 80, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /авокад/i, unitG: 160, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /огурец/i, unitG: 110, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /перец/i, unitG: 140, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /морков/i, unitG: 100, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /кабач|цукини|баклажан/i, unitG: 250, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /картофел|батат|свёкл/i, unitG: 120, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /лук репчат/i, unitG: 80, forms: ["шт.", "шт.", "шт."], mode: "pieces" },
+    { match: /зелень|микрозелен|руккол|шпинат|айсберг|кейл/i, packG: 100, forms: ["пучок", "пучка", "пучков"], packNote: "100 г" },
+    { match: /броккол|цветная капуста|брюссельск|спарж|стручков|ягод|голубик|клубник|малин|вишн|ежевик|гриб|вешенк|шампиньон|квашен/i, packG: 300, forms: ["упаковка", "упаковки", "упаковок"], packNote: "300 г" },
+    { match: /белокочан|тыкв|редьк/i, packG: 500, forms: ["кочан/кусок", "куска", "кусков"], packNote: "~500 г" }
+];
+
+export function formatRetailPack(ingName, rawGrams) {
+    const g = Math.max(0, Math.round(Number(rawGrams) || 0));
+    if (g <= 0) {
+        return { packLabel: "по вкусу", gramsSub: "", checkHome: false };
+    }
+    const gramsText = g >= 1000 ? `${(g / 1000).toFixed(2).replace(".", ",")} кг` : `${g} г`;
+    const rule = RETAIL_PACKAGING.find(r => r.match.test(ingName || ""));
+
+    if (!rule) {
+        return { packLabel: gramsText, gramsSub: "", checkHome: false };
+    }
+
+    if (rule.mode === "eggs") {
+        const pcs = Math.max(1, Math.ceil(g / rule.unitG));
+        const boxes = Math.max(1, Math.ceil(pcs / 10));
+        return {
+            packLabel: formatCountRu(boxes, ...rule.forms),
+            gramsSub: `нужно ${pcs} шт. (~${gramsText})`,
+            checkHome: false
+        };
+    }
+
+    if (rule.mode === "pieces") {
+        const pcs = Math.max(1, Math.ceil(g / rule.unitG));
+        return {
+            packLabel: `~${pcs} шт.`,
+            gramsSub: gramsText,
+            checkHome: false
+        };
+    }
+
+    const ratio = g / rule.packG;
+    const packs = Math.max(1, Math.ceil(ratio));
+    const checkHome = Boolean(rule.checkHomeBelow && ratio <= rule.checkHomeBelow);
+    return {
+        packLabel: formatCountRu(packs, ...rule.forms),
+        gramsSub: checkHome ? `нужно ${gramsText} · проверь дома` : `нужно ${gramsText}`,
+        checkHome
+    };
+}
+
+/* =========================================================================
+   ПАРСЕР ОГРАНИЧЕНИЙ, EMA CHECK-IN И «СОВЕТ ОТ NUTRIX»
+   ========================================================================= */
 export function stemRussianWord(word) {
     const clean = (word || "").toLowerCase().replace(/[^а-яёa-z0-9-]/g, "");
     if (clean.length <= 4) return clean;
@@ -663,12 +928,13 @@ export function parseUserExclusions(preferencesText) {
 }
 
 export function recipeMatchesUserConstraints(recipe, user) {
-    const sp = SPORT_PROFILES[user?.sportType || "none"] || SPORT_PROFILES.none;
+    const sports = getUserSportTypes(user);
+    const avoidSupps = sports.every(s => s === "none");
     const ingNames = (recipe.ingredients || []).map(i => i.name).join(" ");
     const blob = `${recipe.title_ru || ""} ${(recipe.allergens_ru || []).join(" ")} ${ingNames}`.toLowerCase();
     const dietBlob = (recipe.dietary_tags_ru || []).join(" ").toLowerCase();
 
-    if (sp.avoidSupps && /изолят|протеин|казеин/i.test(blob)) return false;
+    if (avoidSupps && /изолят|протеин|казеин/i.test(blob)) return false;
 
     const { ruleKeys, customStems } = parseUserExclusions(user?.preferencesText || "");
 
@@ -687,12 +953,71 @@ export function recipeMatchesUserConstraints(recipe, user) {
     return true;
 }
 
+export function generateNutriXAdvice(meal, stats, user, mpInfo = null) {
+    const tips = [];
+    const blob = `${meal.dishTitle || ""} ${(meal.ingredients || []).map(i => i.name).join(" ")}`.toLowerCase();
+    const dayType = stats?.dayType || "rest";
+    const isTrainDay = dayType !== "rest";
+    const p = Number(meal.protein) || 0;
+    const f = Number(meal.fat) || 0;
+    const c = Number(meal.carbs) || 0;
+    const fiber = Number(meal.fiber) || 0;
+
+    // 1. Тренировочный контекст
+    if (isTrainDay) {
+        if (c >= 42 && f <= 12) {
+            tips.push(`Отлично зайдёт за 60–90 минут до тренировки: ${c} г углеводов при умеренных жирах (${f} г) дадут ровную энергию без тяжести.`);
+        } else if (p >= 35 && c >= 35) {
+            tips.push(`Удачный вариант после тренировки: ${p} г белка и ${c} г углеводов ускорят восстановление мышц и гликогена.`);
+        }
+    }
+
+    // 2. Живой баланс остатка дня
+    if (stats && !meal.eaten) {
+        const remP = Math.max(0, stats.goal.protein - stats.eaten.protein);
+        const fatRatio = stats.eaten.fat / Math.max(1, stats.goal.fat);
+        if (remP > 15 && p / remP >= 0.35) {
+            const pctP = Math.min(100, Math.round((p / remP) * 100));
+            tips.push(`Это блюдо закрывает ${pctP}% оставшегося белка на сегодня — старайся не уменьшать порцию белковой основы.`);
+        } else if (fatRatio >= 0.80 && f >= 14) {
+            tips.push(`Дневная норма жиров уже почти выбрана — готовь без лишнего масла или уменьши заправку вдвое (−50…70 ккал).`);
+        }
+    }
+
+    // 3. Цель и аппетит
+    const appetite = Number(user?.appetiteLevel) || 3;
+    if (user?.goal === "bulk" && appetite <= 2) {
+        tips.push("Если порция кажется большой, начни с белка и гарнира, а овощи доешь в конце — так легче добрать калории.");
+    } else if (user?.goal === "cut" && appetite >= 4 && fiber >= 6) {
+        tips.push(`В порции ${fiber} г клетчатки — начни с овощей, чтобы сытость держалась дольше.`);
+    }
+
+    // 4. Нутритивная синергия продуктов
+    if (/печен|говяд|телят|сердц/.test(blob) && /томат|перец|зелен|капуст/.test(blob)) {
+        tips.push("Витамин C из овощей и зелени помогает железу из мяса усваиваться гораздо лучше.");
+    } else if (/форел|лосос|горбуш|скумбр|сайр|кижуч/.test(blob)) {
+        tips.push("Рыба богата Омега-3 — поддерживает сосуды и снижает воспаление после нагрузок.");
+    } else if (/творог|скир|рикотт/.test(blob) && (meal.slotKey === "dinner" || /ужин/i.test(meal.name))) {
+        tips.push("Медленный молочный белок (казеин) плавно питает мышцы всю ночь.");
+    } else if (/квашен|кефир|ряженк|простокваш|йогурт/.test(blob)) {
+        tips.push("Ферментированные продукты и клетчатка поддерживают комфортное пищеварение.");
+    }
+
+    // 5. Милпреп
+    if (mpInfo) {
+        tips.push(`Для завтрашней порции (${mpInfo.label}) держи свежие овощи и соус отдельно — после разогрева блюдо останется сочным.`);
+    }
+
+    if (!tips.length) {
+        tips.push(`Сбалансированная порция: ${p} г белка, ${f} г жиров и ${c} г углеводов помогут ровно держать суточную норму.`);
+    }
+    return tips.slice(0, 2).join(" ");
+}
+
 export function computeSmoothedWeightTrend(checkIns, todayStr, lastAdjustDate) {
     const byDate = {};
     (checkIns || []).forEach(ci => {
-        if (ci?.date && Number(ci.weight) > 0) {
-            byDate[ci.date] = Number(ci.weight);
-        }
+        if (ci?.date && Number(ci.weight) > 0) byDate[ci.date] = Number(ci.weight);
     });
     const series = Object.keys(byDate).sort().map(date => ({ date, weight: byDate[date] }));
     if (series.length < 2) {

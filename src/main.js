@@ -1,7 +1,8 @@
 /* =========================================================================
-   NUTRIX — src/main.js
+   NUTRIX v10 — src/main.js
    Точка входа Vite: подключение стилей, связывание ES-модулей, экспорт
-   обработчиков в window и неблокирующий bootstrapNutriX() без гонки загрузки.
+   обработчиков в window, обновление приветствия при возврате (visibilitychange)
+   и неблокирующий bootstrapNutriX().
    ========================================================================= */
 
 import "./styles.css";
@@ -36,6 +37,7 @@ import {
     openSingleStepEditor,
     cancelOnboarding,
     setDraftVal,
+    toggleDraftSport,
     stepDraftNum,
     setDraftNum,
     setDraftPrefs,
@@ -50,17 +52,24 @@ import {
     switchTab,
     switchNutritionSubtab,
     renderApp,
+    renderHomeOverview,
+    renderCloudStatusCard,
     toggleCompleteWholeDay,
     openMenuSettingsModal,
     selectDay,
+    openDayTypeModal,
     cycleSelectedDayTrainingType,
     setDayTrainingType,
     setCuisineStyle,
+    togglePlanMode,
+    clearAllPlanModes,
     setPlanMode,
     regenerateCurrentDay,
     regenerateFullWeek,
+    deleteExtraMeal,
     setDetailWeightMode,
     setDetailPortionMult,
+    toggleDetailStepDone,
     openMealDetail,
     applyInlineDetailSub,
     revertInlineDetailSub,
@@ -99,6 +108,14 @@ import {
     selectMasterRecipeInModal,
     runAccurateProductLookup,
     submitEditMeal,
+    openAddMealModal,
+    selectAddMealSlotName,
+    setAddMealBalanceMode,
+    addSavedCustomMealAsNew,
+    searchRecipesInAddModal,
+    addMasterRecipeAsNew,
+    runAddMealLookup,
+    submitAddMeal,
     openZeroGuiltModal,
     submitZeroGuilt,
     updateDbStatusBadge,
@@ -125,7 +142,8 @@ registerStorageHooks({
     onDbUpdated: updateDbStatusBadge,
     onCloudRehydrated: () => { if (appState.user) renderApp(); },
     onApplyTheme: applyTheme,
-    onToast: showToast
+    onToast: showToast,
+    onCloudStatusChanged: renderCloudStatusCard
 });
 
 // 2. Автоматическая смена темы Telegram в режиме «Авто»
@@ -138,7 +156,14 @@ if (tg?.onEvent) {
     } catch (e) {}
 }
 
-// 3. Экспорт всех обработчиков HTML-атрибутов в глобальный window
+// 3. Обновление адаптивного приветствия и даты при возврате в Mini App
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && appState.user) {
+        renderHomeOverview();
+    }
+});
+
+// 4. Экспорт всех обработчиков HTML-атрибутов в глобальный window
 Object.assign(window, {
     getTodayDayIndex,
     haptic,
@@ -150,6 +175,7 @@ Object.assign(window, {
     openSingleStepEditor,
     cancelOnboarding,
     setDraftVal,
+    toggleDraftSport,
     stepDraftNum,
     setDraftNum,
     setDraftPrefs,
@@ -166,14 +192,19 @@ Object.assign(window, {
     toggleCompleteWholeDay,
     openMenuSettingsModal,
     selectDay,
+    openDayTypeModal,
     cycleSelectedDayTrainingType,
     setDayTrainingType,
     setCuisineStyle,
+    togglePlanMode,
+    clearAllPlanModes,
     setPlanMode,
     regenerateCurrentDay,
     regenerateFullWeek,
+    deleteExtraMeal,
     setDetailWeightMode,
     setDetailPortionMult,
+    toggleDetailStepDone,
     openMealDetail,
     applyInlineDetailSub,
     revertInlineDetailSub,
@@ -212,6 +243,14 @@ Object.assign(window, {
     selectMasterRecipeInModal,
     runAccurateProductLookup,
     submitEditMeal,
+    openAddMealModal,
+    selectAddMealSlotName,
+    setAddMealBalanceMode,
+    addSavedCustomMealAsNew,
+    searchRecipesInAddModal,
+    addMasterRecipeAsNew,
+    runAddMealLookup,
+    submitAddMeal,
     openZeroGuiltModal,
     submitZeroGuilt,
     openAdminModal,
@@ -262,7 +301,6 @@ function bootstrapNutriX() {
         sendTelemetryHeartbeat();
         setInterval(sendTelemetryHeartbeat, 120000);
 
-        // Строгая последовательность: полная база -> CloudSync.pull()
         withTimeout(initMasterDatabase(), 2500)
             .then(() => withTimeout(CloudSync.pull(), 1600))
             .then((pulledCloud) => {

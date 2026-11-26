@@ -1,12 +1,13 @@
 /* =========================================================================
-   NUTRIX — src/storage.js
-   Состояние приложения (appState), IndexedDB MasterDB v4, парсеры JSON,
-   localStorage, календарные логи, Telegram CloudStorage и Worker/OFF API.
+   NUTRIX v10 — src/storage.js
+   Состояние (appState), IndexedDB, парсеры JSON, загрузка кулинарной базы
+   nutrix_cooking_guides.json, календарные логи, мульти-спорт и CloudStorage.
    ========================================================================= */
 
 import {
     WEEK_DAYS,
     MAX_SAVED_CUSTOM_MEALS,
+    DAY_TYPE_META,
     EMBEDDED_MASTER_V4,
     SUBSTITUTIONS_V4,
     byteLengthUtf8,
@@ -15,6 +16,7 @@ import {
     getTodayDayIndex,
     getWeekStartDateStr,
     getDateStrForWeekDay,
+    getUserSportTypes,
     calculateTargets,
     reconcileMealMacros,
     scaleTargetsToKcal,
@@ -30,19 +32,23 @@ export const ADMIN_TG_IDS = [1696224717];
 export const DEFAULT_WORKER_URL = "https://nutrix.zaharshitov222.workers.dev";
 export const STORAGE_KEY = "nutrix_v8_state";
 export const WORKER_STORAGE_KEY = "nutrix_worker_url";
-export const IDB_NAME = "NutriX_MasterDB_v4";
+export const IDB_NAME = "NutriX_MasterDB_v5";
 export const IDB_STORE = "recipes";
 
 export const store = {
     MASTER_RECIPES_DB: EMBEDDED_MASTER_V4.slice(),
     DYNAMIC_SUBS_V4: [],
+    COOKING_GUIDES: null,
     selectedDayIndex: getTodayDayIndex(),
     groceryPeriod: 3,
     hideCheckedGroceries: false,
-    detailWeightMode: "raw",
+    detailWeightMode: "raw", // "raw" | "cooked" | "visual"
     detailPortionMult: 1,
     variationSeed: 0,
-    activeDetailMealId: null
+    activeDetailMealId: null,
+    checkedStepsByMeal: {},
+    cloudSyncStatus: "local", // "synced" | "local" | "error" | "limit"
+    lastCloudSyncTime: null
 };
 
 export const appState = {
@@ -75,7 +81,6 @@ export const appState = {
     theme: "auto"
 };
 
-// Dependency hooks wired once from src/main.js to keep module graph strictly acyclic
 const hooks = {
     scaleMasterRecipeToMeal: null,
     rebuildGroceryList: null,
@@ -84,7 +89,8 @@ const hooks = {
     onDbUpdated: null,
     onCloudRehydrated: null,
     onApplyTheme: null,
-    onToast: null
+    onToast: null,
+    onCloudStatusChanged: null
 };
 
 export function registerStorageHooks(partial) {
@@ -128,9 +134,7 @@ export function setWorkerUrl(val) {
 }
 
 export function getWorkerHeaders(withJson = true) {
-    const headers = {
-        "X-Telegram-Init-Data": tg?.initData || ""
-    };
+    const headers = { "X-Telegram-Init-Data": tg?.initData || "" };
     if (withJson) headers["Content-Type"] = "application/json";
     return headers;
 }
@@ -160,8 +164,39 @@ export function resolveEffectiveTheme(themeId) {
     return "obsidian";
 }
 
+export function migrateUserProfileFields(user) {
+    if (!user || typeof user !== "object") return user;
+    if ("muscleMass" in user) delete user.muscleMass;
+
+    // Миграция planMode -> planModes[]
+    if (!Array.isArray(user.planModes)) {
+        user.planModes = user.planMode ? [user.planMode] : [];
+    }
+    user.planModes = Array.from(new Set(user.planModes.filter(m => ["quick", "budget", "mealprep", "diverse"].includes(m))));
+    if (user.planModes.includes("mealprep") && user.planModes.includes("diverse")) {
+        user.planModes = user.planModes.filter(m => m !== "diverse");
+    }
+    user.planMode = user.planModes[0] || null;
+
+    // Миграция sportType -> sportTypes[]
+    if (!Array.isArray(user.sportTypes) || !user.sportTypes.length) {
+        user.sportTypes = [user.sportType || "none"];
+    }
+    const nonNone = user.sportTypes.filter(s => s && s !== "none");
+    user.sportTypes = nonNone.length ? Array.from(new Set(nonNone)) : ["none"];
+    user.sportType = user.sportTypes[0];
+
+    // Миграция старого ключа дня "sport" -> "team"
+    if (user.trainingDays && typeof user.trainingDays === "object") {
+        Object.keys(user.trainingDays).forEach(k => {
+            if (user.trainingDays[k] === "sport") user.trainingDays[k] = "team";
+        });
+    }
+    return user;
+}
+
 /* =========================================================================
-   INDEXEDDB + ДЕКОДЕРЫ БАЗЫ V4
+   INDEXEDDB + ДЕКОДЕРЫ БАЗЫ V4 + КУЛИНАРНАЯ БАЗА
    ========================================================================= */
 function openDbIdb() {
     return new Promise((resolve) => {
@@ -184,7 +219,7 @@ async function loadMasterDbFromIndexedDb() {
         if (!db) return null;
         return await new Promise((resolve) => {
             const tx = db.transaction(IDB_STORE, "readonly");
-            const req = tx.objectStore(IDB_STORE).get("master_pack");
+            const req = tx.objectStore(IDB_STORE).get("master_pack_v10");
             req.onsuccess = () => resolve(req.result || null);
             req.onerror = () => resolve(null);
         });
@@ -197,7 +232,7 @@ export async function saveMasterDbToIndexedDb(recipesArr, subsArr = []) {
         if (!db) return;
         await new Promise((resolve) => {
             const tx = db.transaction(IDB_STORE, "readwrite");
-            tx.objectStore(IDB_STORE).put({ recipes: recipesArr, subs: subsArr }, "master_pack");
+            tx.objectStore(IDB_STORE).put({ recipes: recipesArr, subs: subsArr }, "master_pack_v10");
             tx.oncomplete = () => resolve();
             tx.onerror = () => resolve();
         });
@@ -251,7 +286,7 @@ export function parseLiteMasterJson(lite) {
             const sp = full.indexOf(":");
             return {
                 step_number: i + 1,
-                stage_name: sp > 0 ? full.slice(0, sp) : `Этап ${i + 1}`,
+                stage_name: sp > 0 ? full.slice(0, sp) : `Шаг ${i + 1}`,
                 duration_min: 5,
                 temperature_c: row[4] || 100,
                 instruction: sp > 0 ? full.slice(sp + 1).trim() : full
@@ -259,13 +294,15 @@ export function parseLiteMasterJson(lite) {
         });
         const totalMin = row[3] || 18;
         const prepMin = Math.max(3, Math.round(totalMin * 0.3));
+        const priceTier = typeof row[14] === "number" ? row[14] : 1;
         return {
             recipe_id: row[13] || `RCP-${String(idx + 1).padStart(5, "0")}`,
             title_ru: row[0],
             short_description: `Блюдо категории «${row[2] || "Сбалансированное питание"}».`,
             meal_type: meals[row[1]] || "Обед",
             primary_category_ru: row[2] || "Спортивное питание",
-            cuisine: "Российская домашняя",
+            cuisine: "Домашняя",
+            price_tier: priceTier,
             total_time_min: totalMin,
             prep_time_min: prepMin,
             cook_time_min: Math.max(0, totalMin - prepMin),
@@ -301,14 +338,6 @@ export function parseRelationalMasterJson(json) {
     (json.tables.recipe_ingredients || []).forEach(ri => {
         (ingByRcp[ri.recipe_id] ||= []).push(ri);
     });
-    if (Array.isArray(json.tables.ingredient_substitutions)) {
-        store.DYNAMIC_SUBS_V4 = json.tables.ingredient_substitutions.map(s => ({
-            source: s.source_name_ru, target: s.target_name_ru, ratio: s.conversion_ratio || 1.0,
-            dKcal: s.delta_kcal_per_100g || 0, dP: s.delta_protein_g || 0,
-            dF: s.delta_fat_g || 0, dC: s.delta_carbs_g || 0,
-            eq: s.equivalence_level === "high" ? "1:1 Точная" : "Близкая", note: s.dietary_benefit || ""
-        }));
-    }
     return json.tables.recipes.map(r => {
         const n = nutMap[r.recipe_id] || {};
         const ingredients = (ingByRcp[r.recipe_id] || []).map(ri => ({
@@ -326,7 +355,8 @@ export function parseRelationalMasterJson(json) {
             short_description: r.short_description || "",
             meal_type: r.meal_type || "Обед",
             primary_category_ru: r.primary_category_ru || "Спортивное питание",
-            cuisine: r.cuisine || "Сбалансированная",
+            cuisine: r.cuisine || "Домашняя",
+            price_tier: 1,
             prep_time_min: r.prep_time_min || 6,
             cook_time_min: r.cook_time_min || 12,
             total_time_min: r.total_time_min || 18,
@@ -352,12 +382,23 @@ export function parseRelationalMasterJson(json) {
     });
 }
 
+export async function initCookingGuides() {
+    if (store.COOKING_GUIDES) return true;
+    try {
+        const res = await fetch("./nutrix_cooking_guides.json");
+        if (res.ok) {
+            const json = await res.json();
+            if (json && (Array.isArray(json.grains) || Array.isArray(json.proteins))) {
+                store.COOKING_GUIDES = json;
+                return true;
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+
 export async function tryAutoFetchMasterDb(notifyUser = false) {
-    const paths = [
-        "./nutrix_db_lite_2000.json",
-        "./nutrix_db_lite_2500.json",
-        "./sports_nutrition_db_master_1_2500.json"
-    ];
+    const paths = ["./nutrix_db_lite_2000.json", "./nutrix_db_lite_2500.json"];
     for (const path of paths) {
         try {
             const res = await fetch(path);
@@ -374,11 +415,12 @@ export async function tryAutoFetchMasterDb(notifyUser = false) {
             }
         } catch (e) {}
     }
-    if (notifyUser) hooks.onToast?.("Файл базы не найден в корне GitHub");
+    if (notifyUser) hooks.onToast?.("Файл базы не найден");
     return false;
 }
 
 export async function initMasterDatabase() {
+    initCookingGuides();
     const cached = await loadMasterDbFromIndexedDb();
     if (cached?.recipes?.length > EMBEDDED_MASTER_V4.length) {
         store.MASTER_RECIPES_DB = cached.recipes;
@@ -392,16 +434,28 @@ export async function initMasterDatabase() {
 }
 
 /* =========================================================================
-   ТРЕНИРОВОЧНЫЕ ДНИ, СТАТИСТИКА ДНЯ, КАЛЕНДАРНЫЕ ЛОГИ И СЕРИЯ
+   ТРЕНИРОВОЧНЫЕ ДНИ (ДИНАМИЧЕСКИЕ ПОД МУЛЬТИ-СПОРТ), КБЖУ ДНЯ И СЕРИЯ
    ========================================================================= */
 export function getTrainingDaysMap() {
     if (!appState.user) return {};
-    if (!appState.user.trainingDays) {
-        const sp = appState.user.sportType || "none";
-        appState.user.trainingDays = sp === "none"
-            ? {}
-            : { 0: sp === "team" ? "sport" : "strength", 2: sp === "team" ? "sport" : "strength", 4: sp === "team" ? "sport" : "strength" };
+    const sports = getUserSportTypes(appState.user).filter(s => s !== "none");
+    if (!sports.length) {
+        appState.user.trainingDays = {};
+        return appState.user.trainingDays;
     }
+    if (!appState.user.trainingDays || typeof appState.user.trainingDays !== "object") {
+        const s0 = sports[0];
+        const s1 = sports[1] || sports[0];
+        appState.user.trainingDays = { 0: s0, 2: s1, 4: s0 };
+    }
+    // Чистим дни с видами спорта, которые пользователь убрал из профиля
+    Object.keys(appState.user.trainingDays).forEach(k => {
+        let val = appState.user.trainingDays[k];
+        if (val === "sport") { val = "team"; appState.user.trainingDays[k] = val; }
+        if (val !== "rest" && !sports.includes(val)) {
+            delete appState.user.trainingDays[k];
+        }
+    });
     return appState.user.trainingDays;
 }
 
@@ -416,8 +470,15 @@ export function getDayTypeTargets(dayIdx) {
 
     if (nTrain === 0 || nRest === 0) return Object.assign({ dayType }, base);
 
-    let trainBonus = Math.min(320, Math.round(base.dailyKcal * 0.10));
-    let restCut = Math.round((trainBonus * nTrain) / nRest);
+    const meta = DAY_TYPE_META[dayType] || DAY_TYPE_META.rest;
+    const avgTrainBonusPct = trainIndices.reduce((s, idx) => {
+        const m = DAY_TYPE_META[map[idx]] || DAY_TYPE_META.strength;
+        return s + (m.bonusPct || 0.10);
+    }, 0) / nTrain;
+
+    const isTrain = dayType !== "rest";
+    let trainBonus = Math.min(340, Math.round(base.dailyKcal * (meta.bonusPct || avgTrainBonusPct)));
+    let restCut = Math.round((Math.min(340, Math.round(base.dailyKcal * avgTrainBonusPct)) * nTrain) / nRest);
     const maxCut = Math.round(base.dailyKcal * 0.12);
     if (restCut > maxCut) {
         restCut = maxCut;
@@ -425,8 +486,7 @@ export function getDayTypeTargets(dayIdx) {
     }
 
     const p = base.protein;
-    const isTrain = dayType !== "rest";
-    const f = isTrain ? Math.max(Math.round((base.dailyKcal * 0.18) / 9), base.fat - 6) : base.fat + 5;
+    const f = Math.max(Math.round((base.dailyKcal * 0.18) / 9), base.fat + (meta.fatDelta || 0));
     const targetK = isTrain ? base.dailyKcal + trainBonus : base.dailyKcal - restCut;
     const c = Math.max(50, Math.round((targetK - p * 4 - f * 9) / 4));
     return Object.assign({}, base, { dayType, dailyKcal: (p * 4) + (f * 9) + (c * 4), protein: p, fat: f, carbs: c });
@@ -450,7 +510,6 @@ export function getDayNutritionStats(dayIdx) {
     const eaten = sum(eatenMeals);
     const planned = sum(plannedMeals);
 
-    // Единый источник правды: goal ВСЕГДА строго из научного dayT
     const goal = {
         kcal: Math.max(1, Number(dayT.dailyKcal) || 1800),
         protein: Math.max(1, Number(dayT.protein) || 100),
@@ -492,14 +551,8 @@ export function syncDateLogForDay(dayIdx) {
     const meals = dayObj.meals || [];
     const eatenMealIds = meals.filter(m => m.eaten && !m.isOffPlan).map(m => m.id);
     const offPlanMeals = meals.filter(m => m.isOffPlan).map(m => ({
-        id: m.id,
-        dishTitle: m.dishTitle,
-        kcal: m.kcal,
-        protein: m.protein,
-        fat: m.fat,
-        carbs: m.carbs,
-        rawWeightG: m.rawWeightG || 200,
-        cookedWeightG: m.cookedWeightG || 200
+        id: m.id, dishTitle: m.dishTitle, kcal: m.kcal, protein: m.protein, fat: m.fat, carbs: m.carbs,
+        rawWeightG: m.rawWeightG || 200, cookedWeightG: m.cookedWeightG || 200
     }));
 
     if (eatenMealIds.length || offPlanMeals.length) {
@@ -590,7 +643,7 @@ export function ensureCurrentWeekRollover() {
 
         appState.weekPlan.forEach(dayObj => {
             dayObj.meals = (dayObj.meals || [])
-                .filter(m => !m.isOffPlan)
+                .filter(m => !m.isOffPlan && !m.isExtra)
                 .map(m => Object.assign({}, m, { eaten: false }));
         });
     }
@@ -604,6 +657,14 @@ export function ensureCurrentWeekRollover() {
 /* =========================================================================
    TELEGRAM CLOUDSTORAGE + LOCALSTORAGE
    ========================================================================= */
+function setCloudStatus(status) {
+    store.cloudSyncStatus = status;
+    if (status === "synced") {
+        store.lastCloudSyncTime = new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    }
+    hooks.onCloudStatusChanged?.();
+}
+
 export const CloudSync = {
     _pendingCompactWeek: null,
     MAX_VALUE_BYTES: 4000,
@@ -633,9 +694,10 @@ export const CloudSync = {
                         eaten: Boolean(row[7]),
                         isCustom: true,
                         isOffPlan: Boolean(row[8]),
+                        isExtra: Boolean(row[9]),
                         recipeId: row[8] ? "AI-ZG" : "CUSTOM",
                         slotKey: "snack",
-                        prepTime: "Свой",
+                        prepTime: "Своё",
                         rawWeightG: 200,
                         cookedWeightG: 200,
                         ingredients: [{ name: row[2], weight: 200, dept: "Собственные блюда", state: "готовый", yieldFactor: 1.0 }],
@@ -649,6 +711,7 @@ export const CloudSync = {
                 }
                 const sc = hooks.scaleMasterRecipeToMeal(master, row[1], row[2], mealId, row[4]);
                 sc.eaten = Boolean(row[5]);
+                sc.isExtra = Boolean(row[6]);
                 return sc;
             })
         }));
@@ -674,7 +737,7 @@ export const CloudSync = {
 
     packState() {
         const profilePayload = {
-            v: 9,
+            v: 10,
             ts: appState.updatedAt || Date.now(),
             u: appState.user,
             t: appState.activeTargets || appState.targets,
@@ -702,8 +765,8 @@ export const CloudSync = {
 
         const compactWeek = (appState.weekPlan || []).map(d =>
             (d.meals || []).map(m => m.isCustom
-                ? [1, m.name, (m.dishTitle || "").slice(0, 42), m.kcal, m.protein, m.fat, m.carbs, m.eaten ? 1 : 0, m.isOffPlan ? 1 : 0]
-                : [0, m.name, m.slotKey || "lunch", m.recipeId, m.kcal, m.eaten ? 1 : 0]
+                ? [1, m.name, (m.dishTitle || "").slice(0, 42), m.kcal, m.protein, m.fat, m.carbs, m.eaten ? 1 : 0, m.isOffPlan ? 1 : 0, m.isExtra ? 1 : 0]
+                : [0, m.name, m.slotKey || "lunch", m.recipeId, m.kcal, m.eaten ? 1 : 0, m.isExtra ? 1 : 0]
             )
         );
 
@@ -737,12 +800,8 @@ export const CloudSync = {
         };
 
         let metaStr = buildMetaJson(14, 7, 10, 12, 15, true);
-        if (byteLengthUtf8(metaStr) > this.MAX_VALUE_BYTES) {
-            metaStr = buildMetaJson(7, 5, 6, 8, 8, true);
-        }
-        if (byteLengthUtf8(metaStr) > this.MAX_VALUE_BYTES) {
-            metaStr = buildMetaJson(4, 3, 4, 6, 0, false);
-        }
+        if (byteLengthUtf8(metaStr) > this.MAX_VALUE_BYTES) metaStr = buildMetaJson(7, 5, 6, 8, 8, true);
+        if (byteLengthUtf8(metaStr) > this.MAX_VALUE_BYTES) metaStr = buildMetaJson(4, 3, 4, 6, 0, false);
 
         return {
             nx_p: JSON.stringify(profilePayload),
@@ -752,13 +811,16 @@ export const CloudSync = {
     },
 
     async push() {
-        if (!this.isSupported() || !appState.user) return false;
-        const badge = document.getElementById("cloud-sync-badge");
+        if (!this.isSupported()) {
+            setCloudStatus("local");
+            return false;
+        }
+        if (!appState.user) return false;
         const payload = this.packState();
 
         for (const [, v] of Object.entries(payload)) {
             if (byteLengthUtf8(v) > this.MAX_VALUE_BYTES) {
-                if (badge) badge.innerText = "⚠ Лимит облака";
+                setCloudStatus("limit");
                 return false;
             }
         }
@@ -775,30 +837,35 @@ export const CloudSync = {
             );
             const failed = results.find(r => !r.ok);
             if (failed) {
-                if (badge) badge.innerText = "⚠ Ошибка облака";
+                setCloudStatus("error");
                 return false;
             }
-            if (badge) badge.innerText = "☁️ Синхронизировано";
+            setCloudStatus("synced");
             return true;
         } catch (e) {
-            if (badge) badge.innerText = "⚠ Ошибка облака";
+            setCloudStatus("error");
             return false;
         }
     },
 
     async pull() {
-        if (!this.isSupported()) return false;
+        if (!this.isSupported()) {
+            setCloudStatus("local");
+            return false;
+        }
         try {
             const data = await new Promise(res => {
                 tg.CloudStorage.getItems(["nx_p", "nx_w", "nx_m"], (err, vals) => res(err ? null : vals));
             });
-            if (!data?.nx_p) return false;
+            if (!data?.nx_p) {
+                setCloudStatus("synced");
+                return false;
+            }
             const p = JSON.parse(data.nx_p);
 
             if (!appState.user || (p.ts && p.ts >= (appState.updatedAt || 0))) {
-                appState.user = p.u;
-                if (appState.user && "muscleMass" in appState.user) delete appState.user.muscleMass;
-                appState.activeTargets = p.t || calculateTargets(p.u);
+                appState.user = migrateUserProfileFields(p.u);
+                appState.activeTargets = p.t || calculateTargets(appState.user);
                 appState.targets = appState.activeTargets;
                 appState.idealTargets = p.it || appState.activeTargets;
                 appState.adaptation = p.ad || null;
@@ -866,9 +933,13 @@ export const CloudSync = {
                     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch (e) {}
                 }
                 hooks.onApplyTheme?.(appState.theme, false);
+                setCloudStatus("synced");
                 return true;
             }
-        } catch (e) {}
+            setCloudStatus("synced");
+        } catch (e) {
+            setCloudStatus("error");
+        }
         return false;
     }
 };
@@ -894,7 +965,7 @@ export function loadState() {
         const parsed = JSON.parse(raw);
         if (!parsed?.user) return false;
         Object.assign(appState, parsed);
-        if (appState.user && "muscleMass" in appState.user) delete appState.user.muscleMass;
+        appState.user = migrateUserProfileFields(appState.user);
         appState.theme = normalizeThemeId(appState.theme || "auto");
         if (!appState.activeTargets && appState.targets) appState.activeTargets = appState.targets;
         if (!appState.idealTargets) appState.idealTargets = appState.activeTargets;
@@ -1065,7 +1136,7 @@ export async function calculateAccurateProductNutrition(productName, brand = "",
     }
     const desc = [productName, brand ? `(производитель: ${brand})` : "", weightG ? `${weightG} г` : ""].filter(Boolean).join(" ");
     const ai = await calculateFoodWithAI(desc);
-    return Object.assign({ source: "ai", matchedLabel: brand ? `AI учёл бренд «${brand}»` : "AI расчёт" }, ai);
+    return Object.assign({ source: "ai", matchedLabel: brand ? `AI учёл бренд «${brand}»` : "AI-расчёт" }, ai);
 }
 
 export function sendTelemetryHeartbeat() {

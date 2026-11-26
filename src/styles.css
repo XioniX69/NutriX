@@ -2005,3 +2005,219 @@
     accent-color: var(--nx-mint);
     cursor: pointer;
 }
+
+/* =========================================================================
+   NUTRIX v10 ADDITIONS (Пункты 1–14)
+   ========================================================================= */
+.home-greet-sub {
+    font-size: 13px;
+    color: var(--nx-text-muted);
+    margin-top: 4px;
+    line-height: 1.38;
+}
+
+/* 3-режимный переключатель веса (Сырой / Готовый / Без весов) */
+.detail-ing-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.weight-mode-switch {
+    display: inline-flex;
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border-strong);
+    border-radius: 999px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.wm-btn {
+    border: none;
+    background: transparent;
+    color: var(--nx-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 9px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.wm-btn.active {
+    background: var(--nx-mint);
+    color: var(--nx-on-mint);
+}
+
+.ing-qty-col {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.ing-qty-main {
+    font-weight: 800;
+    color: var(--nx-mint);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.ing-qty-sub {
+    font-size: 10px;
+    color: var(--nx-text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+/* Кликабельные шаги приготовления */
+.step-item {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+    padding: 10px 11px;
+    border-radius: 14px;
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border);
+    cursor: pointer;
+    transition: opacity 150ms ease, border-color 150ms ease;
+}
+
+.step-item:active { transform: scale(0.985); }
+
+.step-item.done {
+    opacity: 0.52;
+    border-color: rgba(75, 208, 125, 0.35);
+}
+
+.step-item.done .step-num {
+    background: var(--nx-mint);
+    color: var(--nx-on-mint);
+}
+
+.step-item.done .step-text {
+    text-decoration: line-through;
+}
+
+/* Переработанная чистая плашка закупки (пункт 14) */
+.grocery-hero-v10 {
+    background: var(--nx-surface-tint);
+    border: 1px solid rgba(75, 208, 125, 0.25);
+    border-radius: 22px;
+    padding: 14px 15px;
+    margin-bottom: 12px;
+}
+
+.grocery-top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.grocery-prog-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.g-pack-main {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--nx-text);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.g-pack-sub {
+    font-size: 10px;
+    color: var(--nx-text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.g-pack-sub.home-hint {
+    color: var(--nx-warning);
+    font-weight: 700;
+}
+
+/* Понятная карточка облачного сохранения в Профиле (пункт 10) */
+.cloud-status-card {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: 18px;
+    padding: 13px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: var(--nx-specular);
+}
+
+.cloud-status-card.error {
+    border-color: rgba(245, 184, 65, 0.45);
+}
+
+.cloud-retry-btn {
+    background: var(--nx-mint-dim);
+    border: 1px solid rgba(75, 208, 125, 0.35);
+    color: var(--nx-mint);
+    font-size: 12px;
+    font-weight: 800;
+    padding: 7px 11px;
+    border-radius: 11px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Кнопка удаления доп. приёма пищи */
+.btn-small.danger-act {
+    color: var(--nx-danger);
+    border-color: rgba(255, 91, 82, 0.32);
+}
+
+.mc-footer-actions.with-del {
+    grid-template-columns: 1.15fr 0.9fr 0.65fr 0.65fr 0.85fr;
+}
+
+/* Переключатель режима добавления приёма пищи */
+.add-mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.add-mode-opt {
+    background: var(--nx-surface-2);
+    border: 1.5px solid var(--nx-border);
+    border-radius: 14px;
+    padding: 10px 10px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.add-mode-opt.active {
+    background: var(--nx-mint-dim);
+    border-color: var(--nx-mint);
+}
+
+.add-mode-opt .amo-t {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--nx-text);
+}
+
+.add-mode-opt .amo-s {
+    font-size: 10px;
+    color: var(--nx-text-muted);
+    margin-top: 2px;
+    line-height: 1.3;
+}

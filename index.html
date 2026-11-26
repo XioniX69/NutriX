@@ -91,7 +91,7 @@
                         </div>
                         <div>
                             <div class="wp-title">Меню под твоё тело и график</div>
-                            <div class="wp-desc">Учёт вида спорта, активности 1–10, аппетита, тренировочных дней и точных замеров.</div>
+                            <div class="wp-desc">Учёт твоих видов спорта, активности, аппетита, тренировочных дней и замеров.</div>
                         </div>
                     </div>
 
@@ -101,7 +101,7 @@
                         </div>
                         <div>
                             <div class="wp-title">Умная корзина на 1, 3 или 7 дней</div>
-                            <div class="wp-desc">Реальный сырой вес для магазина, группировка по свежести, замены и экспорт в 1 клик.</div>
+                            <div class="wp-desc">Покупки сразу в пачках и граммах, быстрые замены и отправка списка в 1 клик.</div>
                         </div>
                     </div>
 
@@ -111,7 +111,7 @@
                         </div>
                         <div>
                             <div class="wp-title">Zero Guilt AI и единый профиль</div>
-                            <div class="wp-desc">Синхронизация между телефоном и ПК. Съел вне плана — AI мягко сбалансирует остаток дня.</div>
+                            <div class="wp-desc">Синхронизация между телефоном и ПК. Съел что-то вне плана — AI мягко сбалансирует остаток дня.</div>
                         </div>
                     </div>
                 </div>
@@ -168,6 +168,7 @@
                         <span class="nx-brand-word">NUTRI<strong style="color:var(--nx-text);">X</strong></span>
                     </div>
                     <h1 class="nx-h1" id="home-greeting">Добро пожаловать</h1>
+                    <div class="home-greet-sub" id="home-greeting-sub"></div>
                 </div>
                 <button class="nx-avatar-btn" onclick="switchTab('profile')" id="home-avatar-btn" title="Профиль">
                     <svg width="24" height="18" aria-hidden="true"><use href="#nx-logo-mark"/></svg>
@@ -176,7 +177,7 @@
 
             <div class="nx-date-streak-row">
                 <span class="nx-date-label" id="home-date-label">СЕГОДНЯ</span>
-                <span class="nx-streak-pill" id="home-streak-label">Серия: 1 дн.</span>
+                <span class="nx-streak-pill" id="home-streak-label">Серия: 0 дней</span>
             </div>
 
             <div id="home-checkin-banner" class="checkin-banner hidden" onclick="openCheckInModal()">
@@ -366,45 +367,34 @@
 
                 <div id="meals-container"></div>
 
-                <button class="nx-cta-pill" onclick="openChooseMealSheet(false)">
+                <button class="nx-cta-pill" onclick="openAddMealModal()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Заменить или добавить своё блюдо
+                    Добавить приём пищи
                 </button>
             </div>
 
             <div id="subtab-groceries" class="hidden">
-                <div class="grocery-hero-card">
-                    <div class="grocery-controls-row">
-                        <div>
-                            <div class="nx-kicker" style="margin-bottom:2px;">УМНАЯ ЗАКУПКА (СЫРОЙ ВЕС)</div>
-                            <strong id="grocery-range-title" style="font-size:16px;">Закупка на 3 дня</strong>
-                        </div>
+                <div class="grocery-hero-v10">
+                    <div class="grocery-top-line">
+                        <strong id="grocery-range-title" style="font-size:16px;">Закупка · 3 дня</strong>
                         <div class="period-switch">
-                            <button id="btn-days-1" class="period-btn" onclick="setGroceryPeriod(1)">1 дн</button>
-                            <button id="btn-days-3" class="period-btn active" onclick="setGroceryPeriod(3)">3 дн</button>
-                            <button id="btn-days-7" class="period-btn" onclick="setGroceryPeriod(7)">7 дн</button>
+                            <button id="btn-days-1" class="period-btn" onclick="setGroceryPeriod(1)">1 день</button>
+                            <button id="btn-days-3" class="period-btn active" onclick="setGroceryPeriod(3)">3 дня</button>
+                            <button id="btn-days-7" class="period-btn" onclick="setGroceryPeriod(7)">Неделя</button>
                         </div>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                        <span id="grocery-progress-text" style="font-weight:700;">Куплено 0 из 0</span>
-                        <span id="grocery-stats-sub" style="color:var(--nx-text-muted);">~0.0 кг</span>
+                    <div class="grocery-prog-line">
+                        <span id="grocery-progress-text" style="font-weight:800;">Куплено 0 из 0</span>
+                        <button id="btn-reset-grocery-checks" class="text-btn hidden" style="font-size:12px; padding:0;" onclick="clearGroceryChecks()">Сбросить</button>
                     </div>
                     <div class="nx-bar-track" style="height:6px; margin-bottom:10px;">
                         <div id="grocery-progress-bar" class="nx-bar-fill protein" style="width:0%"></div>
                     </div>
 
-                    <div class="overlap-toggle-row" onclick="toggleOverlapOptimization()">
-                        <div>
-                            <div style="font-size:12px; font-weight:800;">♻️ Меньше остатков (общие продукты)</div>
-                            <div id="grocery-overlap-stats" style="font-size:11px; color:var(--nx-text-muted);">Пересечение продуктов: 0%</div>
-                        </div>
-                        <span id="overlap-toggle-badge" class="precision-pill">ВКЛ</span>
-                    </div>
-
-                    <div class="grocery-toolbar">
-                        <button class="btn-small" onclick="copyGroceriesToClipboard()">📋 Копировать</button>
-                        <button class="btn-small" onclick="shareGroceriesToTelegram()">✈️ В чат</button>
+                    <div class="grocery-toolbar" style="margin-top:0;">
+                        <button class="btn-small" onclick="copyGroceriesToClipboard()">📋 Скопировать</button>
+                        <button class="btn-small" onclick="shareGroceriesToTelegram()">✈️ Поделиться</button>
                         <button class="btn-small" id="btn-hide-checked" onclick="toggleHideCheckedGroceries()">👁 Скрыть ✓</button>
                     </div>
                 </div>
@@ -412,10 +402,6 @@
                 <div class="grocery-add-bar">
                     <input type="text" id="custom-grocery-input" class="form-input" placeholder="Добавить своё (кофе, специи, вода…)" onkeydown="if(event.key==='Enter') addCustomGroceryItem()">
                     <button class="nx-icon-circle" style="background:var(--nx-mint); color:var(--nx-on-mint); border:none; width:46px; height:46px; border-radius:14px; font-size:20px; font-weight:800;" onclick="addCustomGroceryItem()" title="Добавить">+</button>
-                </div>
-
-                <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
-                    <button class="text-btn" style="font-size:12px;" onclick="clearGroceryChecks()">Сбросить все галочки</button>
                 </div>
 
                 <div id="groceries-container"></div>
@@ -457,13 +443,13 @@
 
             <div class="nx-card" data-nx-stagger>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <span class="nx-kicker" style="color:var(--nx-text-muted); margin:0;">ФАКТ КАЛОРИЙ / ДЕНЬ</span>
+                    <span class="nx-kicker" style="color:var(--nx-text-muted); margin:0;">КАЛОРИИ ПО ДНЯМ</span>
                     <span style="font-size:12px; color:var(--nx-text-muted);" id="prog-period-label">День 1</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:baseline; gap:6px;">
                         <span class="tabular" style="font-size:30px; font-weight:800; letter-spacing:-1px;" id="prog-avg-kcal">0</span>
-                        <span style="font-size:13px; color:var(--nx-text-muted);">ккал ср.</span>
+                        <span style="font-size:13px; color:var(--nx-text-muted);">ккал в среднем</span>
                     </div>
                     <span class="precision-pill" id="prog-status-badge">Старт</span>
                 </div>
@@ -520,7 +506,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
                     <div>
                         <div style="font-size:17px; font-weight:800;" id="prof-goal-title">Профиль</div>
-                        <div style="font-size:12px; color:var(--nx-text-muted); margin-top:2px;" id="prof-formula-sub">Уравнение: Mifflin-St Jeor</div>
+                        <div style="font-size:12px; color:var(--nx-text-muted); margin-top:2px;" id="prof-formula-sub">Формула: Mifflin-St Jeor</div>
                     </div>
                     <span class="precision-pill" id="prof-precision-pct">72%</span>
                 </div>
@@ -528,13 +514,13 @@
                     <div id="prof-precision-bar" class="nx-bar-fill protein" style="width:72%;"></div>
                 </div>
                 <div id="prof-precision-hint" style="font-size:11px; color:var(--nx-text-muted); line-height:1.4;">
-                    Укажите % жира или безжировой вес ниже для перехода на расчёт по сухой массе.
+                    Добавь % жира или сухую массу ниже — расчёт станет ещё точнее.
                 </div>
             </div>
 
             <div class="section-header" data-nx-stagger>
                 <div class="section-title" style="font-size:15px;">Основные данные</div>
-                <span style="font-size:11px; color:var(--nx-text-muted);">Нажмите для правки</span>
+                <span style="font-size:11px; color:var(--nx-text-muted);">Нажми для правки</span>
             </div>
             <div class="bio-grid" data-nx-stagger>
                 <div class="bio-item" onclick="openSingleStepEditor('gender')"><span class="bio-edit-hint">›</span><div class="bio-label">Пол</div><div class="bio-val" id="prof-gender">--</div></div>
@@ -542,7 +528,7 @@
                 <div class="bio-item" onclick="openSingleStepEditor('height')"><span class="bio-edit-hint">›</span><div class="bio-label">Рост</div><div class="bio-val" id="prof-height">--</div></div>
                 <div class="bio-item" onclick="openSingleStepEditor('weight')"><span class="bio-edit-hint">›</span><div class="bio-label">Вес тела</div><div class="bio-val" id="prof-weight">--</div></div>
                 <div class="bio-item" onclick="openSingleStepEditor('activityLevel')"><span class="bio-edit-hint">›</span><div class="bio-label">Активность (1–10)</div><div class="bio-val" id="prof-pal">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('sportType')"><span class="bio-edit-hint">›</span><div class="bio-label">Вид спорта</div><div class="bio-val" style="font-size:13px;" id="prof-sport">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('sportType')"><span class="bio-edit-hint">›</span><div class="bio-label">Спорт</div><div class="bio-val" style="font-size:13px;" id="prof-sport">--</div></div>
                 <div class="bio-item" onclick="openSingleStepEditor('goal')"><span class="bio-edit-hint">›</span><div class="bio-label">Цель</div><div class="bio-val" style="font-size:13px;" id="prof-goal-short">--</div></div>
                 <div class="bio-item" onclick="openSingleStepEditor('mealsCount')"><span class="bio-edit-hint">›</span><div class="bio-label">Приёмов пищи</div><div class="bio-val" id="prof-meals-count">--</div></div>
                 <div class="bio-item" onclick="openSingleStepEditor('appetiteLevel')"><span class="bio-edit-hint">›</span><div class="bio-label">Аппетит (1–5)</div><div class="bio-val" style="font-size:13px;" id="prof-appetite">--</div></div>
@@ -556,28 +542,32 @@
             <div class="bio-grid" data-nx-stagger>
                 <div class="bio-item" onclick="openSingleStepEditor('bodyFatPct')"><span class="bio-edit-hint">›</span><div class="bio-label">Процент жира (BF%)</div><div class="bio-val" id="prof-bf"><span class="bio-empty-tag">+ Добавить</span></div></div>
                 <div class="bio-item" onclick="openSingleStepEditor('leanBodyMass')"><span class="bio-edit-hint">›</span><div class="bio-label">Безжировой вес (LBM)</div><div class="bio-val" id="prof-lbm"><span class="bio-empty-tag">+ Добавить</span></div></div>
-                <div class="bio-item full" onclick="openSingleStepEditor('waistCm')"><span class="bio-edit-hint">›</span><div class="bio-label">Окружность талии</div><div class="bio-val" id="prof-waist"><span class="bio-empty-tag">+ Добавить</span></div></div>
+                <div class="bio-item full" onclick="openSingleStepEditor('waistCm')"><span class="bio-edit-hint">›</span><div class="bio-label">Обхват талии</div><div class="bio-val" id="prof-waist"><span class="bio-empty-tag">+ Добавить</span></div></div>
             </div>
 
             <div class="science-box" data-nx-stagger>
-                <div class="science-title">Метаболическая сводка</div>
+                <div class="science-title">Расчёт нормы</div>
                 <div class="science-row"><span style="color:var(--nx-text-muted);">Формула расчёта:</span><strong id="prof-formula-name">Mifflin-St Jeor</strong></div>
                 <div class="science-row"><span style="color:var(--nx-text-muted);">Базовый обмен (BMR):</span><strong class="tabular" id="prof-bmr">0 ккал</strong></div>
                 <div class="science-row"><span style="color:var(--nx-text-muted);">Суточный расход (TDEE):</span><strong class="tabular" id="prof-tdee">0 ккал</strong></div>
                 <div class="science-row"><span style="color:var(--nx-text-muted);">Активный план дня:</span><strong class="tabular" style="color:var(--nx-mint);" id="prof-target-kcal">0 ккал</strong></div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Норма БЖУ (г/кг):</span><strong class="tabular" id="prof-macro-ratios">--</strong></div>
+                <div class="science-row"><span style="color:var(--nx-text-muted);">Норма БЖУ (г на кг):</span><strong class="tabular" id="prof-macro-ratios">--</strong></div>
             </div>
 
             <div class="section-header" data-nx-stagger>
                 <div class="section-title" style="font-size:15px;">Оформление</div>
-                <span class="precision-pill" id="cloud-sync-badge">☁️ Синхронизировано</span>
             </div>
             <div class="theme-grid" id="theme-picker-grid" data-nx-stagger></div>
 
-            <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <button class="nx-btn-ghost" style="margin-top:0; flex:1;" onclick="openWelcomeReplay()">О NutriX</button>
-                <button class="nx-btn-ghost" style="margin-top:0; flex:1;" onclick="forceCloudSyncNow()">☁️ Синхронизировать</button>
+            <div id="cloud-status-card" class="cloud-status-card" data-nx-stagger>
+                <div style="min-width:0;">
+                    <div style="font-size:13px; font-weight:800;" id="cloud-sync-title">☁️ Всё сохраняется само</div>
+                    <div style="font-size:11px; color:var(--nx-text-muted); margin-top:2px; line-height:1.35;" id="cloud-sync-sub">Профиль и меню привязаны к аккаунту Telegram — на другом устройстве всё откроется автоматически.</div>
+                </div>
+                <button id="cloud-retry-btn" class="cloud-retry-btn hidden" onclick="forceCloudSyncNow()">Повторить</button>
             </div>
+
+            <button class="nx-btn-ghost" style="margin-top:0; margin-bottom:10px;" onclick="openWelcomeReplay()">О NutriX</button>
 
             <button id="owner-admin-btn" class="nx-btn-ghost hidden" style="margin-bottom:8px; border-color:rgba(75,208,125,0.45); color:var(--nx-mint);" onclick="openAdminModal()">
                 🛡️ Админ-панель NutriX (Owner)
@@ -601,6 +591,7 @@
                     <div class="chips-wrap" style="margin-bottom:6px;">
                         <span class="meta-tag accent" id="detail-category-tag">Категория</span>
                         <span class="meta-tag" id="detail-cuisine-tag">Кухня</span>
+                        <span class="meta-tag" id="detail-price-tag">₽₽</span>
                         <span class="meta-tag" id="detail-status-tag">По плану</span>
                     </div>
                     <h2 class="recipe-hero-title" id="detail-dish-title">Название блюда</h2>
@@ -612,7 +603,7 @@
                     <div class="r-macro-box"><div class="r-macro-val" id="detail-p">0г</div><div class="r-macro-lbl">Белки</div></div>
                     <div class="r-macro-box"><div class="r-macro-val" id="detail-f">0г</div><div class="r-macro-lbl">Жиры</div></div>
                     <div class="r-macro-box"><div class="r-macro-val" id="detail-c">0г</div><div class="r-macro-lbl">Углеводы</div></div>
-                    <div class="r-macro-box"><div class="r-macro-val" id="detail-fiber">0г</div><div class="r-macro-lbl">Клетч.</div></div>
+                    <div class="r-macro-box"><div class="r-macro-val" id="detail-fiber">0г</div><div class="r-macro-lbl">Клетчатка</div></div>
                 </div>
 
                 <div class="passport-grid">
@@ -640,27 +631,28 @@
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
-                    <div class="section-title" style="font-size:15px; margin:0;">Ингредиенты и замены</div>
+                <div class="detail-ing-head">
+                    <div class="section-title" style="font-size:15px; margin:0;">Ингредиенты</div>
                     <div class="weight-mode-switch">
                         <button id="wm-raw-btn" class="wm-btn active" onclick="setDetailWeightMode('raw')">Сырой</button>
                         <button id="wm-cooked-btn" class="wm-btn" onclick="setDetailWeightMode('cooked')">Готовый</button>
+                        <button id="wm-visual-btn" class="wm-btn" onclick="setDetailWeightMode('visual')">Без весов</button>
                     </div>
                 </div>
                 <div id="detail-yield-hint" style="font-size:11px; color:var(--nx-text-muted); margin-bottom:10px;">
-                    Показан сырой вес для магазина и взвешивания до готовки. Нажмите на замену под продуктом, чтобы пересчитать КБЖУ.
+                    Показан сырой вес для взвешивания до готовки. Нажми на замену под продуктом, чтобы пересчитать КБЖУ.
                 </div>
 
                 <div id="detail-ingredients-list" style="border-top:1px solid var(--nx-border); padding-top:4px; margin-bottom:16px;"></div>
 
-                <div class="section-title" style="font-size:15px; margin-bottom:10px;">Приготовление</div>
+                <div class="section-title" style="font-size:15px; margin-bottom:10px;">Приготовление <span style="font-size:11px; font-weight:600; color:var(--nx-text-muted); margin-left:6px;">(нажми на шаг, чтобы отметить)</span></div>
                 <div id="detail-steps-list" style="margin-bottom:16px;"></div>
 
                 <div class="section-title" style="font-size:14px; margin-bottom:8px;">Особенности и аллергены</div>
                 <div id="detail-tags-list" class="chips-wrap"></div>
 
                 <div class="science-box" style="margin-bottom:0;">
-                    <div class="science-title">Совет нутрициолога</div>
+                    <div class="science-title">Совет от NutriX</div>
                     <div id="detail-science-tip" style="font-size:12px; color:var(--nx-text-muted); line-height:1.45;"></div>
                 </div>
             </div>
@@ -688,13 +680,100 @@
     </nav>
 
     <!-- МОДАЛЬНЫЕ ШТОРКИ -->
+    <div id="add-meal-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('add-meal-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title">Добавить приём пищи</div>
+            <div class="modal-sub">Выбери блюдо из «Моих блюд», найди в каталоге или введи свой продукт.</div>
+
+            <div class="form-group">
+                <label class="form-label">Название приёма пищи</label>
+                <div class="quick-chips-row" id="add-meal-slot-chips">
+                    <button type="button" class="q-chip active" onclick="selectAddMealSlotName('Перекус', this)">Перекус</button>
+                    <button type="button" class="q-chip" onclick="selectAddMealSlotName('До тренировки', this)">До тренировки</button>
+                    <button type="button" class="q-chip" onclick="selectAddMealSlotName('После тренировки', this)">После тренировки</button>
+                    <button type="button" class="q-chip" onclick="selectAddMealSlotName('Поздний ужин', this)">Поздний ужин</button>
+                </div>
+                <input type="text" id="add-meal-slot-name" class="form-input" value="Перекус" placeholder="Например: Второй завтрак">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Как учесть в норме дня?</label>
+                <div class="add-mode-toggle">
+                    <div id="add-mode-fit" class="add-mode-opt active" onclick="setAddMealBalanceMode('fit')">
+                        <div class="amo-t">⚖️ Вписать в норму</div>
+                        <div class="amo-s">Мягко уменьшит остаток дня</div>
+                    </div>
+                    <div id="add-mode-extra" class="add-mode-opt" onclick="setAddMealBalanceMode('extra')">
+                        <div class="amo-t">➕ Добавить сверху</div>
+                        <div class="amo-s">Не трогает остальные блюда</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="add-saved-meals-section" class="form-group hidden">
+                <label class="form-label">⭐ Мои блюда (вставка в 1 тап)</label>
+                <div id="add-saved-meals-list" class="saved-meals-list"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Найти рецепт в базе (2 000 блюд)</label>
+                <input type="text" id="add-recipe-search-input" class="form-input" placeholder="Курица, творог, гречка…" oninput="searchRecipesInAddModal(this.value)">
+                <div id="add-recipe-search-results" class="db-search-results hidden"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Или введи свой продукт / блюдо</label>
+                <input type="text" id="add-meal-title" class="form-input" placeholder="Например: Протеиновый батончик, творог 5%">
+                <div class="brand-weight-grid">
+                    <input type="text" id="add-meal-brand" class="form-input" placeholder="Бренд (необязательно)">
+                    <input type="number" id="add-meal-weight" class="form-input" placeholder="Вес (г)">
+                </div>
+                <button type="button" id="add-ai-btn" class="btn-ai-spark" onclick="runAddMealLookup()">
+                    ✦ Найти точное КБЖУ (этикетка / AI)
+                </button>
+                <div id="add-source-badge" class="source-verified-tag hidden">✓ Найдено</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">КБЖУ порции:</label>
+                <div class="manual-macros-grid">
+                    <div class="mini-inp-wrap"><label>Ккал</label><input type="number" id="add-kcal" class="mini-inp" placeholder="280"></div>
+                    <div class="mini-inp-wrap"><label>Белки</label><input type="number" id="add-p" class="mini-inp" placeholder="20"></div>
+                    <div class="mini-inp-wrap"><label>Жиры</label><input type="number" id="add-f" class="mini-inp" placeholder="10"></div>
+                    <div class="mini-inp-wrap"><label>Углеводы</label><input type="number" id="add-c" class="mini-inp" placeholder="28"></div>
+                </div>
+            </div>
+
+            <label class="nx-check-row" for="add-save-to-my-meals-cb">
+                <input type="checkbox" id="add-save-to-my-meals-cb" checked>
+                <span>Сохранить в «Мои блюда»</span>
+            </label>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal('add-meal-modal')">Отмена</button>
+                <button id="add-meal-submit-btn" class="btn-submit" onclick="submitAddMeal()">Добавить в день</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="day-type-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('day-type-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title" id="day-type-modal-title">Тип дня</div>
+            <div class="modal-sub">Выбери нагрузку на этот день — NutriX подстроит углеводы и жиры под тренировку.</div>
+            <div id="day-type-options-list" class="choice-stack"></div>
+            <button class="btn-cancel" style="width:100%;" onclick="closeModal('day-type-modal')">Закрыть</button>
+        </div>
+    </div>
+
     <div id="zero-guilt-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('zero-guilt-modal')">
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
             <div class="modal-title">Zero Guilt · Перебалансировка</div>
-            <div class="modal-sub">Опишите, что съели вне плана. При желании укажите бренд/производителя и вес для точного поиска по этикетке.</div>
+            <div class="modal-sub">Опиши, что съел вне плана. Если укажешь бренд и вес — найдём точное КБЖУ по этикетке.</div>
             <div class="form-group">
-                <label class="form-label">Что вы съели?</label>
+                <label class="form-label">Что ты съел?</label>
                 <input type="text" id="zg-food-input" class="form-input" placeholder="Например: сырок творожный, шаурма, капучино">
                 <div class="brand-weight-grid">
                     <input type="text" id="zg-brand-input" class="form-input" placeholder="Бренд / кафе (необязательно)">
@@ -702,8 +781,8 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Калорийность вручную (если знаете с упаковки)</label>
-                <input type="number" id="zg-kcal-override" class="form-input" placeholder="Оставьте пустым для авторасчёта">
+                <label class="form-label">Калорийность вручную (если знаешь с упаковки)</label>
+                <input type="number" id="zg-kcal-override" class="form-input" placeholder="Оставь пустым для авторасчёта">
             </div>
             <div class="modal-btns">
                 <button class="btn-cancel" onclick="closeModal('zero-guilt-modal')">Отмена</button>
@@ -716,7 +795,7 @@
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
             <div class="modal-title">Заменить приём пищи</div>
-            <div class="modal-sub">Вставьте своё блюдо в 1 тап, найдите рецепт в каталоге или введите новый продукт.</div>
+            <div class="modal-sub">Вставь своё блюдо в 1 тап, найди рецепт в каталоге или введи новый продукт.</div>
             <input type="hidden" id="edit-meal-id">
 
             <button class="nx-btn-ghost" style="margin-top:0; margin-bottom:14px; border-color:rgba(75,208,125,0.35); color:var(--nx-mint);" onclick="quickSwapFromModal()">
@@ -738,7 +817,7 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Или введите свой продукт / блюдо</label>
+                <label class="form-label">Или введи свой продукт / блюдо</label>
                 <input type="text" id="edit-meal-input" class="form-input" placeholder="Например: Творог 5%, батончик, сырники">
                 <div class="brand-weight-grid">
                     <input type="text" id="edit-meal-brand" class="form-input" placeholder="Производитель (необязательно)">
@@ -775,7 +854,7 @@
     <div id="choose-meal-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('choose-meal-modal')">
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
-            <div class="modal-title">Выберите приём пищи</div>
+            <div class="modal-title">Выбери приём пищи</div>
             <div class="modal-sub">Какой приём пищи заменить или дополнить?</div>
             <div id="choose-meal-list" class="choice-stack"></div>
             <button class="btn-cancel" style="width:100%;" onclick="closeModal('choose-meal-modal')">Закрыть</button>
@@ -786,7 +865,7 @@
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
             <div class="modal-title">Настроить меню</div>
-            <div class="modal-sub">Все изменения применяются мгновенно и сразу обновляют корзину покупок.</div>
+            <div class="modal-sub">Можно выбрать сразу несколько режимов — изменения применяются мгновенно.</div>
 
             <div class="form-label">Стиль блюд:</div>
             <div class="sheet-style-row" id="cuisine-style-pills">
@@ -796,26 +875,34 @@
             </div>
 
             <div class="plan-mode-header">
-                <span class="form-label" style="margin:0;">Режим под задачу (необязательно):</span>
-                <button id="plan-mode-reset-btn" class="text-btn hidden" style="font-size:12px;" onclick="setPlanMode(null)">Сбросить</button>
+                <span class="form-label" style="margin:0;">Режимы меню <span id="plan-modes-counter" style="opacity:0.75;">(можно несколько)</span>:</span>
+                <button id="plan-mode-reset-btn" class="text-btn hidden" style="font-size:12px;" onclick="clearAllPlanModes()">Сбросить все</button>
             </div>
             <div class="plan-mode-grid" id="plan-mode-grid">
-                <div class="plan-mode-card" data-mode="quick" onclick="setPlanMode('quick')">
-                    <div class="pm-title">⚡ Быстро (≤ 20 мин)</div>
+                <div class="plan-mode-card" data-mode="quick" onclick="togglePlanMode('quick')">
+                    <div class="pm-title">⚡ Быстро (до 20 мин)</div>
                     <div class="pm-sub">Минимум времени у плиты</div>
                 </div>
-                <div class="plan-mode-card" data-mode="budget" onclick="setPlanMode('budget')">
+                <div class="plan-mode-card" data-mode="budget" onclick="togglePlanMode('budget')">
                     <div class="pm-title">💰 Экономно</div>
-                    <div class="pm-sub">Базовые продукты РФ</div>
+                    <div class="pm-sub">Доступные базовые продукты</div>
                 </div>
-                <div class="plan-mode-card" data-mode="mealprep" onclick="setPlanMode('mealprep')">
+                <div class="plan-mode-card" data-mode="mealprep" onclick="togglePlanMode('mealprep')">
                     <div class="pm-title">🍱 На 2 дня</div>
-                    <div class="pm-sub">1 готовка на два дня</div>
+                    <div class="pm-sub">Одна готовка сразу на два дня</div>
                 </div>
-                <div class="plan-mode-card" data-mode="diverse" onclick="setPlanMode('diverse')">
+                <div class="plan-mode-card" data-mode="diverse" onclick="togglePlanMode('diverse')">
                     <div class="pm-title">🌈 Разнообразие</div>
-                    <div class="pm-sub">Новые блюда каждый день</div>
+                    <div class="pm-sub">Максимум новых вкусов</div>
                 </div>
+            </div>
+
+            <div class="overlap-toggle-row" style="margin-bottom:14px;" onclick="toggleOverlapOptimization()">
+                <div>
+                    <div style="font-size:12px; font-weight:800;">♻️ Меньше остатков в холодильнике</div>
+                    <div style="font-size:11px; color:var(--nx-text-muted);">Собирать разные блюда из общих базовых продуктов</div>
+                </div>
+                <span id="overlap-toggle-badge" class="precision-pill">ВКЛ</span>
             </div>
 
             <button class="nx-cta-pill" onclick="closeModal('menu-settings-modal')">Готово</button>
@@ -859,7 +946,7 @@
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
             <div class="modal-title">Контрольный замер</div>
-            <div class="modal-sub">Взвесьтесь утром натощак. По реальной динамике NutriX плавно адаптирует рацион без резких скачков.</div>
+            <div class="modal-sub">Взвесься утром натощак. По реальному тренду веса NutriX плавно адаптирует рацион.</div>
 
             <div class="form-group">
                 <label class="form-label">Текущий вес (кг)</label>
@@ -868,11 +955,11 @@
 
             <div class="brand-weight-grid" style="margin-bottom:12px;">
                 <div class="form-group" style="margin:0;">
-                    <label class="form-label">Талия, см (опц.)</label>
+                    <label class="form-label">Талия, см (по желанию)</label>
                     <input type="number" id="ci-waist-input" class="form-input" step="0.5" placeholder="Необязательно">
                 </div>
                 <div class="form-group" style="margin:0;">
-                    <label class="form-label">Жир BF%, % (опц.)</label>
+                    <label class="form-label">Жир тела, % (по желанию)</label>
                     <input type="number" id="ci-bf-input" class="form-input" step="0.5" placeholder="Необязательно">
                 </div>
             </div>
@@ -892,7 +979,7 @@
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
             <div class="modal-title">Умная замена продукта</div>
-            <div class="modal-sub" id="sub-modal-source-label">Выберите равноценный аналог с пересчётом КБЖУ.</div>
+            <div class="modal-sub" id="sub-modal-source-label">Выбери равноценный аналог — КБЖУ пересчитается само.</div>
             <div id="sub-options-container"></div>
             <button class="btn-cancel" style="width:100%; margin-top:4px;" onclick="closeModal('substitution-modal')">Оставить как есть</button>
         </div>

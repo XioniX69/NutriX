@@ -1,8 +1,9 @@
 /* =========================================================================
-   NUTRIX — src/ui.js
-   Темы (auto/obsidian/daylight), 5-шаговый онбординг, все экраны, шторка
-   настроек меню, Мои блюда, закрепление, Милпреп ×2, Check-In, Zero Guilt,
-   упрощённый трекер воды, админка и 60 FPS анимации.
+   NUTRIX v10 — src/ui.js
+   Темы (auto/obsidian/daylight), 5-шаговый онбординг (мульти-спорт),
+   адаптивное приветствие, режим «Без весов», пошаговое приготовление из
+   кулинарной базы, «Совет от NutriX», мульти-режимы, добавление/удаление
+   приёма пищи, корзина по пачкам + граммам и понятная карточка облака.
    ========================================================================= */
 
 import {
@@ -11,12 +12,19 @@ import {
     NUTRIX_THEMES,
     ACTIVITY_LEVEL_TIERS,
     SPORT_PROFILES,
+    DAY_TYPE_META,
     GOALS_V4,
     APPETITE_LEVELS,
     escapeHtml,
+    pluralRu,
+    formatCountRu,
     getTodayStr,
     getTodayDayIndex,
     getWeekStartDateStr,
+    getAdaptiveGreeting,
+    getUserSportTypes,
+    getAvailableDayTypesForUser,
+    formatUserSportsShort,
     activityScoreToPal,
     palToActivityScore,
     computePrecisionScore,
@@ -24,6 +32,8 @@ import {
     scaleTargetsToKcal,
     toRawStoreGrams,
     toCookedPlateGrams,
+    formatHouseholdMeasure,
+    generateNutriXAdvice,
     recipeMatchesUserConstraints,
     computeSmoothedWeightTrend,
     evaluatePlanAdherence
@@ -60,6 +70,7 @@ import {
 } from "./storage.js";
 
 import {
+    getUserPlanModes,
     getMealDistribution,
     filterMasterRecipesForUser,
     scoreRecipeForUser,
@@ -73,6 +84,8 @@ import {
     getMealPrepPairInfo,
     saveCustomMealToLibrary,
     findInlineSubs,
+    buildDetailedCookingSteps,
+    getIncludedDaysForGrocery,
     rebuildGroceryList
 } from "./planner.js";
 
@@ -295,6 +308,8 @@ let wizardSingleEditField = null;
 function createDefaultDraft() {
     const u = appState.user || {};
     const score = u.activityScore ?? palToActivityScore(u.activityLevel || 1.50);
+    const sportTypes = getUserSportTypes(u);
+    const planModes = getUserPlanModes(u);
     return {
         gender: u.gender || "male",
         age: u.age || 20,
@@ -302,18 +317,37 @@ function createDefaultDraft() {
         weight: u.weight || 70,
         activityScore: score,
         activityLevel: u.activityLevel || activityScoreToPal(score),
-        sportType: u.sportType || "none",
+        sportTypes: sportTypes.slice(),
+        sportType: sportTypes[0] || "none",
         goal: u.goal || "healthy",
         mealsCount: u.mealsCount || 4,
         appetiteLevel: u.appetiteLevel || 3,
         preferencesText: u.preferencesText || "",
         cuisineStyle: u.cuisineStyle || "balanced",
-        planMode: u.planMode ?? null,
-        trainingDays: u.trainingDays || null,
+        planModes: planModes.slice(),
+        planMode: planModes[0] || null,
+        trainingDays: u.trainingDays ? Object.assign({}, u.trainingDays) : null,
         bodyFatPct: u.bodyFatPct || "",
         leanBodyMass: u.leanBodyMass || "",
         waistCm: u.waistCm || ""
     };
+}
+
+export function toggleDraftSport(sportKey) {
+    let list = Array.isArray(wizardDraft.sportTypes) ? wizardDraft.sportTypes.slice() : ["none"];
+    if (sportKey === "none") {
+        list = ["none"];
+    } else {
+        list = list.filter(s => s !== "none");
+        const idx = list.indexOf(sportKey);
+        if (idx >= 0) list.splice(idx, 1);
+        else list.push(sportKey);
+        if (!list.length) list = ["none"];
+    }
+    wizardDraft.sportTypes = list;
+    wizardDraft.sportType = list[0];
+    renderWizardStep();
+    hapticSelect();
 }
 
 export function showOnboarding(canCancel = false) {
@@ -483,7 +517,7 @@ export function renderWizardStep() {
         bodyHtml = `
             <div>
                 <span class="wizard-badge">Базовый обмен</span>
-                <h2 class="wizard-q-title">Укажите ваш пол</h2>
+                <h2 class="wizard-q-title">Укажи свой пол</h2>
                 <p class="wizard-q-desc">Используется в формулах расчёта базового расхода энергии.</p>
                 <div class="choice-stack">
                     <div class="choice-card ${wizardDraft.gender === "male" ? "active" : ""}" onclick="setDraftVal('gender','male',false)">
@@ -500,7 +534,7 @@ export function renderWizardStep() {
         bodyHtml = `
             <div>
                 <span class="wizard-badge">Биометрия</span>
-                <h2 class="wizard-q-title">Сколько вам лет?</h2>
+                <h2 class="wizard-q-title">Сколько тебе лет?</h2>
                 <p class="wizard-q-desc">Возраст корректирует скорость базового метаболизма.</p>
                 <div class="big-num-box">
                     <button class="stepper-btn" onclick="stepDraftNum('age',-1,14,90)">−</button>
@@ -515,7 +549,7 @@ export function renderWizardStep() {
         bodyHtml = `
             <div>
                 <span class="wizard-badge">Биометрия</span>
-                <h2 class="wizard-q-title">Ваш рост?</h2>
+                <h2 class="wizard-q-title">Твой рост?</h2>
                 <p class="wizard-q-desc">Используется в расчёте обмена веществ и индекса талия/рост.</p>
                 <div class="big-num-box">
                     <button class="stepper-btn" onclick="stepDraftNum('height',-1,130,225)">−</button>
@@ -550,7 +584,7 @@ export function renderWizardStep() {
             <div>
                 <span class="wizard-badge">Дневной расход</span>
                 <h2 class="wizard-q-title">Уровень активности</h2>
-                <p class="wizard-q-desc">Выберите общую подвижность за неделю (шаги + тренировки) от 1 до 10.</p>
+                <p class="wizard-q-desc">Выбери общую подвижность за неделю (шаги + тренировки) от 1 до 10.</p>
                 <div class="nx-act-hero">
                     <div id="act-halo" class="nx-act-halo" style="--act-scale:${(0.85 + (sc / 10) * 0.55).toFixed(2)}; --act-opacity:${(0.28 + (sc / 10) * 0.52).toFixed(2)};"></div>
                     <div id="act-score-big" class="nx-act-score-big">${Number.isInteger(sc) ? sc : sc.toFixed(1)}</div>
@@ -567,18 +601,23 @@ export function renderWizardStep() {
                 <div class="nx-slider-anchors"><span>1 · Минимум</span><span>5 · Фитнес</span><span>10 · Максимум</span></div>
             </div>`;
     } else if (key === "sportType") {
-        const cur = wizardDraft.sportType || "none";
+        const curList = Array.isArray(wizardDraft.sportTypes) && wizardDraft.sportTypes.length
+            ? wizardDraft.sportTypes
+            : [wizardDraft.sportType || "none"];
         bodyHtml = `
             <div>
                 <span class="wizard-badge">Профиль нагрузок</span>
-                <h2 class="wizard-q-title">Занимаетесь ли вы спортом?</h2>
-                <p class="wizard-q-desc">Настраивает баланс белка и углеводов и убирает лишний спортпит, если вы не тренируетесь.</p>
+                <h2 class="wizard-q-title">Каким спортом занимаешься?</h2>
+                <p class="wizard-q-desc">Можно выбрать сразу несколько вариантов — под них подстроятся типы тренировочных дней и норма БЖУ.</p>
                 <div class="choice-stack">
-                    ${Object.entries(SPORT_PROFILES).map(([k, sp]) => `
-                        <div class="choice-card ${cur === k ? "active" : ""}" onclick="setDraftVal('sportType','${k}',true)">
+                    ${Object.entries(SPORT_PROFILES).map(([k, sp]) => {
+                        const active = curList.includes(k);
+                        return `
+                        <div class="choice-card ${active ? "active" : ""}" onclick="toggleDraftSport('${k}')">
                             <div><div class="choice-title">${escapeHtml(sp.title)}</div><div class="choice-sub">${escapeHtml(sp.sub)}</div></div>
-                            <div class="choice-check">${cur === k ? "✓" : ""}</div>
-                        </div>`).join("")}
+                            <div class="choice-check">${active ? "✓" : ""}</div>
+                        </div>`;
+                    }).join("")}
                 </div>
             </div>`;
     } else if (key === "goal") {
@@ -586,7 +625,7 @@ export function renderWizardStep() {
         bodyHtml = `
             <div>
                 <span class="wizard-badge">Цель питания</span>
-                <h2 class="wizard-q-title">Какая у вас главная цель?</h2>
+                <h2 class="wizard-q-title">Какая у тебя главная цель?</h2>
                 <p class="wizard-q-desc">Определяет дефицит, баланс или контролируемый профицит калорий.</p>
                 <div class="choice-stack">
                     ${GOALS_V4.map(g => `
@@ -604,11 +643,11 @@ export function renderWizardStep() {
             <div>
                 <span class="wizard-badge">Финальный шаг</span>
                 <h2 class="wizard-q-title">Режим и ограничения</h2>
-                <p class="wizard-q-desc">Выберите число приёмов пищи и, если нужно, укажите продукты для исключения.</p>
+                <p class="wizard-q-desc">Выбери число приёмов пищи и, если нужно, укажи продукты, которые не ешь.</p>
                 <div class="form-label">Приёмов пищи в день</div>
                 <div class="meals-pill-row">
                     ${[3, 4, 5].map(n => `
-                        <button type="button" class="meals-pill-btn ${curMeals === n ? "active" : ""}" onclick="setDraftVal('mealsCount', ${n}, false)">${n} раза</button>
+                        <button type="button" class="meals-pill-btn ${curMeals === n ? "active" : ""}" onclick="setDraftVal('mealsCount', ${n}, false)">${formatCountRu(n, 'раз', 'раза', 'раз')}</button>
                     `).join("")}
                 </div>
                 <div class="form-label">Исключения и аллергены (необязательно)</div>
@@ -623,11 +662,11 @@ export function renderWizardStep() {
             <div>
                 <span class="wizard-badge">Режим дня</span>
                 <h2 class="wizard-q-title">Сколько приёмов пищи в день?</h2>
-                <p class="wizard-q-desc">Выберите ритм, который удобно соблюдать в вашем расписании.</p>
+                <p class="wizard-q-desc">Выбери ритм, который удобно соблюдать каждый день.</p>
                 <div class="choice-stack">
                     ${[
                         { n: 3, t: "3 приёма пищи", s: "Завтрак, Обед, Ужин — плотные и простые порции" },
-                        { n: 4, t: "4 приёма пищи", s: "Завтрак, Обед, Перекус, Ужин — золотой стандарт" },
+                        { n: 4, t: "4 приёма пищи", s: "Завтрак, Обед, Полдник, Ужин — золотой стандарт" },
                         { n: 5, t: "5 приёмов пищи", s: "Дробное питание — удобно при большом калораже" }
                     ].map(m => `
                         <div class="choice-card ${cur === m.n ? "active" : ""}" onclick="setDraftVal('mealsCount',${m.n},false)">
@@ -641,7 +680,7 @@ export function renderWizardStep() {
         bodyHtml = `
             <div>
                 <span class="wizard-badge">Комфорт рациона</span>
-                <h2 class="wizard-q-title">Как оцените свой аппетит?</h2>
+                <h2 class="wizard-q-title">Как оценишь свой аппетит?</h2>
                 <p class="wizard-q-desc">Влияет на плотность порций и плавную раскачку калорий.</p>
                 <div class="choice-stack">
                     ${Object.entries(APPETITE_LEVELS).map(([lvl, info]) => `
@@ -658,7 +697,7 @@ export function renderWizardStep() {
             <div>
                 <span class="wizard-badge optional">Ограничения</span>
                 <h2 class="wizard-q-title">Ограничения и вкусы</h2>
-                <p class="wizard-q-desc">Укажите непереносимости или продукты через запятую — исключим их из меню и вкладки «Для тебя».</p>
+                <p class="wizard-q-desc">Укажи непереносимости или продукты через запятую — исключим их из меню и каталога.</p>
                 <div class="quick-chips-row">
                     ${chips.map(c => `<button type="button" class="q-chip ${low.includes(c.toLowerCase()) ? "active" : ""}" onclick="togglePrefChip('${c}')">${escapeHtml(c)}</button>`).join("")}
                 </div>
@@ -699,7 +738,7 @@ export function renderWizardStep() {
         bodyHtml = `
             <div>
                 <span class="wizard-badge optional">Точный расчёт (Pro)</span>
-                <h2 class="wizard-q-title">Окружность талии</h2>
+                <h2 class="wizard-q-title">Обхват талии</h2>
                 <p class="wizard-q-desc">Уточняет безопасный темп профицита на наборе массы (индекс талия/рост).</p>
                 <div class="big-num-box">
                     <button class="stepper-btn" onclick="stepDraftNum('waistCm',-1,45,170,true)">−</button>
@@ -761,13 +800,15 @@ export function finishOnboardingWizard() {
         weight: Math.max(35, Math.min(240, Number(wizardDraft.weight) || 70)),
         activityScore: Number(wizardDraft.activityScore) || 5,
         activityLevel: activityScoreToPal(Number(wizardDraft.activityScore) || 5),
-        sportType: wizardDraft.sportType || "none",
+        sportTypes: (Array.isArray(wizardDraft.sportTypes) && wizardDraft.sportTypes.length) ? wizardDraft.sportTypes.slice() : [wizardDraft.sportType || "none"],
+        sportType: (Array.isArray(wizardDraft.sportTypes) && wizardDraft.sportTypes[0]) || wizardDraft.sportType || "none",
         goal: wizardDraft.goal || "healthy",
         mealsCount: Number(wizardDraft.mealsCount) || 4,
         appetiteLevel: Number(wizardDraft.appetiteLevel) || 3,
         preferencesText: (wizardDraft.preferencesText || "").trim(),
         cuisineStyle: wizardDraft.cuisineStyle || "balanced",
-        planMode: wizardDraft.planMode ?? null,
+        planModes: Array.isArray(wizardDraft.planModes) ? wizardDraft.planModes.slice() : (wizardDraft.planMode ? [wizardDraft.planMode] : []),
+        planMode: (Array.isArray(wizardDraft.planModes) && wizardDraft.planModes[0]) || wizardDraft.planMode || null,
         trainingDays: wizardDraft.trainingDays || null,
         bodyFatPct: Number(wizardDraft.bodyFatPct) || null,
         leanBodyMass: Number(wizardDraft.leanBodyMass) || null,
@@ -885,24 +926,24 @@ function getMealSlotVisual(meal) {
     const k = meal.slotKey || "";
     if (k === "breakfast" || /завтрак/i.test(meal.name)) {
         return {
-            cls: "breakfast", time: "07:00 – 10:00",
+            cls: "breakfast", time: "Утро",
             svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 2v3"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h20"/><path d="m19.07 10.93-1.41 1.41"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>`
         };
     }
     if (k === "lunch" || /обед/i.test(meal.name)) {
         return {
-            cls: "lunch", time: "12:00 – 15:00",
+            cls: "lunch", time: "День",
             svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`
         };
     }
     if (k === "dinner" || /ужин/i.test(meal.name)) {
         return {
-            cls: "dinner", time: "18:00 – 21:00",
+            cls: "dinner", time: "Вечер",
             svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
         };
     }
     return {
-        cls: "snack", time: "Перекус",
+        cls: "snack", time: meal.isExtra ? "Доп. приём" : "Полдник",
         svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`
     };
 }
@@ -912,14 +953,19 @@ export function createMealRowElement(meal, isHomePreview = false) {
     shell.className = "nx-swipe-shell";
     const vis = getMealSlotVisual(meal);
     const dayIdx = isHomePreview ? getTodayDayIndex() : store.selectedDayIndex;
-    const pinned = !meal.isOffPlan && isSlotPinned(meal.name);
+    const pinned = !meal.isOffPlan && !meal.isExtra && isSlotPinned(meal.name);
     const mpInfo = getMealPrepPairInfo(dayIdx, meal);
+    const canDelete = Boolean(meal.isExtra || meal.isOffPlan);
 
     const badgesHtml = (pinned || mpInfo) ? `
         <div class="mc-badges-row">
             ${pinned ? `<span class="pin-badge">📌 Закреплено на неделю</span>` : ""}
-            ${mpInfo ? `<span class="mealprep-badge">🍱 Заготовка на 2 дня (${escapeHtml(mpInfo.label)})</span>` : ""}
+            ${mpInfo ? `<span class="mealprep-badge">🍱 На 2 дня (${escapeHtml(mpInfo.label)})</span>` : ""}
         </div>` : "";
+
+    const slotMeta = vis.time && vis.time.toLowerCase() !== String(meal.name || "").toLowerCase()
+        ? `${escapeHtml(meal.name)} · ${escapeHtml(vis.time)}`
+        : escapeHtml(meal.name);
 
     const card = document.createElement("div");
     card.className = "nx-meal-card-lg" + (meal.eaten ? " eaten" : "");
@@ -928,7 +974,7 @@ export function createMealRowElement(meal, isHomePreview = false) {
             <div class="meal-slot-icon ${vis.cls}">${vis.svg}</div>
             <div class="mc-header-info">
                 <div class="mc-slot-line">
-                    <span class="mc-slot-label">${escapeHtml(meal.name)} · ${escapeHtml(vis.time)}</span>
+                    <span class="mc-slot-label">${slotMeta}</span>
                     <span class="mc-kcal-pill">${Number(meal.kcal) || 0} ккал</span>
                 </div>
                 <div class="mc-dish-title">${escapeHtml(meal.dishTitle || meal.name)}</div>
@@ -937,17 +983,20 @@ export function createMealRowElement(meal, isHomePreview = false) {
         ${badgesHtml}
         <div class="mc-macros-row">
             <div class="mc-macro-pills">
-                <span class="mc-mpill p"><b>Б</b> ${Number(meal.protein) || 0}г</span>
-                <span class="mc-mpill f"><b>Ж</b> ${Number(meal.fat) || 0}г</span>
-                <span class="mc-mpill c"><b>У</b> ${Number(meal.carbs) || 0}г</span>
+                <span class="mc-mpill p"><b>Б</b> ${Number(meal.protein) || 0} г</span>
+                <span class="mc-mpill f"><b>Ж</b> ${Number(meal.fat) || 0} г</span>
+                <span class="mc-mpill c"><b>У</b> ${Number(meal.carbs) || 0} г</span>
             </div>
             <div class="mc-meta-right">${meal.cookedWeightG ? `${Number(meal.cookedWeightG)} г · ` : ""}${escapeHtml(meal.prepTime || "15 мин")}</div>
         </div>
         ${isHomePreview ? "" : `
-        <div class="mc-footer-actions">
+        <div class="mc-footer-actions ${canDelete ? "with-del" : ""}">
             <button class="btn-small ${meal.eaten ? "active-eat" : ""}" data-act="eat">${meal.eaten ? "✓ Съел" : "Отметить"}</button>
             <button class="btn-small" data-act="swap">↻ Другое</button>
-            <button class="btn-small ${pinned ? "active-pin" : ""}" data-act="pin" title="${pinned ? "Открепить" : "Закрепить на все дни недели"}">📌</button>
+            ${canDelete
+                ? `<button class="btn-small danger-act" data-act="delete" title="Удалить приём пищи">🗑</button>`
+                : `<button class="btn-small ${pinned ? "active-pin" : ""}" data-act="pin" title="${pinned ? "Открепить" : "Закрепить на всю неделю"}">📌</button>`}
+            ${canDelete ? `<button class="btn-small" data-act="edit" title="Изменить">✎</button>` : ""}
             <button class="btn-small" data-act="detail">Рецепт ›</button>
         </div>`}
     `;
@@ -960,6 +1009,8 @@ export function createMealRowElement(meal, isHomePreview = false) {
             if (act === "eat") toggleMealEaten(meal.id);
             else if (act === "swap") swapSingleMeal(meal.id);
             else if (act === "pin") togglePinMealForWeek(meal.id);
+            else if (act === "delete") deleteExtraMeal(meal.id);
+            else if (act === "edit") openEditMealModal(meal.id);
             else openMealDetail(meal.id);
             return;
         }
@@ -978,6 +1029,21 @@ export function createMealRowElement(meal, isHomePreview = false) {
 
     shell.appendChild(card);
     return shell;
+}
+
+export function deleteExtraMeal(mealId) {
+    syncSelectedDayMeals();
+    const dayObj = appState.weekPlan?.[store.selectedDayIndex];
+    if (!dayObj) return;
+    const before = dayObj.meals.length;
+    dayObj.meals = dayObj.meals.filter(m => m.id !== mealId);
+    if (dayObj.meals.length === before) return;
+    syncSelectedDayMeals();
+    rebuildGroceryList();
+    saveState();
+    renderApp();
+    showToast("Приём пищи удалён");
+    haptic("light");
 }
 
 export function toggleMealEaten(mealId) {
@@ -999,13 +1065,21 @@ export function swapSingleMeal(mealId) {
     const idx = appState.meals.findIndex(m => m.id === mealId);
     if (idx === -1) return;
     const cur = appState.meals[idx];
+    const usedIds = new Set();
+    (appState.weekPlan || []).forEach(d => (d.meals || []).forEach(m => { if (m.recipeId) usedIds.add(m.recipeId); }));
+
     const pool = filterMasterRecipesForUser(cur.slotKey || "lunch", appState.user, cur.recipeId)
-        .sort((a, b) => scoreRecipeForUser(b, appState.user) - scoreRecipeForUser(a, appState.user));
-    const top = pool.slice(0, Math.min(pool.length, 8));
+        .sort((a, b) => {
+            const aRep = usedIds.has(a.recipe_id) ? -60 : 0;
+            const bRep = usedIds.has(b.recipe_id) ? -60 : 0;
+            return (scoreRecipeForUser(b, appState.user) + bRep) - (scoreRecipeForUser(a, appState.user) + aRep);
+        });
+    const top = pool.slice(0, Math.min(pool.length, 10));
     const nextMaster = top[Math.floor(Math.random() * top.length)] || store.MASTER_RECIPES_DB[0];
 
     const replaced = scaleMasterRecipeToMeal(nextMaster, cur.name, cur.slotKey || "lunch", cur.id, cur.kcal);
     replaced.eaten = false;
+    replaced.isExtra = Boolean(cur.isExtra);
     appState.meals[idx] = replaced;
 
     rebuildGroceryList();
@@ -1151,21 +1225,25 @@ export function renderHomeOverview() {
     const todayIdx = getTodayDayIndex();
     const stats = getDayNutritionStats(todayIdx);
 
+    const todayMealsForGreet = appState.weekPlan?.[todayIdx]?.meals || [];
+    const nextMealForGreet = todayMealsForGreet.find(m => !m.eaten) || todayMealsForGreet[todayMealsForGreet.length - 1];
     const firstName = tg?.initDataUnsafe?.user?.first_name;
-    const hour = new Date().getHours();
-    const timeGreet = hour < 12 ? "Доброе утро" : (hour < 18 ? "Добрый день" : "Добрый вечер");
-    document.getElementById("home-greeting").innerText = firstName ? `${timeGreet}, ${firstName}` : timeGreet;
+    const greet = getAdaptiveGreeting(firstName, stats, nextMealForGreet);
+    document.getElementById("home-greeting").innerText = greet.title;
+    const subEl = document.getElementById("home-greeting-sub");
+    if (subEl) subEl.innerText = greet.subtitle || "";
 
     const avatarBtn = document.getElementById("home-avatar-btn");
     if (avatarBtn && firstName) avatarBtn.innerText = firstName[0].toUpperCase();
 
     const dateStr = new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
     document.getElementById("home-date-label").innerText = dateStr.toUpperCase();
-    document.getElementById("home-streak-label").innerText = `Серия: ${appState.streakDays || 0} дн.`;
+    document.getElementById("home-streak-label").innerText = `Серия: ${formatCountRu(appState.streakDays || 0, "день", "дня", "дней")}`;
 
-    const dayTypeLbl = stats.dayType === "strength" ? "Баланс · 🏋️ Силовой день"
-        : (stats.dayType === "sport" ? "Баланс · 🏐 Игровой день" : "Баланс калорий");
-    document.getElementById("home-day-type-title").innerText = dayTypeLbl;
+    const dayMeta = DAY_TYPE_META[stats.dayType] || DAY_TYPE_META.rest;
+    document.getElementById("home-day-type-title").innerText = stats.dayType !== "rest"
+        ? `Баланс · ${dayMeta.icon} ${dayMeta.label}`
+        : "Баланс калорий";
 
     const ringArc = document.getElementById("home-ring-arc");
     const ringSub = document.querySelector(".nx-ring-sub");
@@ -1252,15 +1330,20 @@ function syncMenuSettingsSheetState() {
     document.querySelectorAll("#cuisine-style-pills .sheet-style-btn").forEach(b => {
         b.classList.toggle("active", b.dataset.style === curStyle);
     });
-    const curMode = appState.user.planMode || null;
+    const modes = getUserPlanModes(appState.user);
     document.querySelectorAll("#plan-mode-grid .plan-mode-card").forEach(c => {
-        c.classList.toggle("active", Boolean(curMode) && c.dataset.mode === curMode);
+        c.classList.toggle("active", modes.includes(c.dataset.mode));
     });
-    document.getElementById("plan-mode-reset-btn")?.classList.toggle("hidden", !curMode);
+    document.getElementById("plan-mode-reset-btn")?.classList.toggle("hidden", modes.length === 0);
+    const cntEl = document.getElementById("plan-modes-counter");
+    if (cntEl) cntEl.innerText = modes.length ? `(выбрано: ${modes.length})` : "(можно несколько)";
+
+    const overlapBadge = document.getElementById("overlap-toggle-badge");
+    if (overlapBadge) overlapBadge.innerText = appState.optimizeOverlap !== false ? "ВКЛ" : "ВЫКЛ";
 }
 
 function getActiveMenuBadgeLabel() {
-    const mode = appState.user?.planMode || null;
+    const modes = getUserPlanModes(appState.user);
     const style = appState.user?.cuisineStyle || "balanced";
     const modeChips = {
         quick: "⚡ Быстро",
@@ -1268,7 +1351,12 @@ function getActiveMenuBadgeLabel() {
         mealprep: "🍱 На 2 дня",
         diverse: "🌈 Разнообразие"
     };
-    if (mode && modeChips[mode]) return modeChips[mode];
+    const modeIcons = { quick: "⚡", budget: "💰", mealprep: "🍱", diverse: "🌈" };
+    if (modes.length === 1 && modeChips[modes[0]]) return modeChips[modes[0]];
+    if (modes.length >= 2) {
+        const icons = modes.map(m => modeIcons[m] || "").join("");
+        return `${icons} ${formatCountRu(modes.length, "режим", "режима", "режимов")}`;
+    }
     if (style === "simple") return "⚡ Простые";
     if (style === "exotic") return "✨ Необычные";
     return "";
@@ -1279,6 +1367,8 @@ function renderWeekStrip() {
     if (!container) return;
     const todayIdx = getTodayDayIndex();
     const map = getTrainingDaysMap();
+    const availTypes = getAvailableDayTypesForUser(appState.user);
+    const hasSports = availTypes.length > 0;
     const now = new Date();
     const mondayOffset = now.getDay() === 0 ? -6 : 1 - now.getDay();
 
@@ -1286,19 +1376,22 @@ function renderWeekStrip() {
         const dt = new Date(now);
         dt.setDate(now.getDate() + mondayOffset + idx);
         const tType = map[idx] || "rest";
-        const badge = tType === "strength" ? "🏋️" : (tType === "sport" ? "🏐" : "•");
+        const meta = DAY_TYPE_META[tType] || DAY_TYPE_META.rest;
+        const badge = hasSports ? (tType !== "rest" ? meta.short : "•") : "";
         return `
             <div class="nx-day-oval ${idx === todayIdx ? "today" : ""} ${idx === store.selectedDayIndex ? "active" : ""}" onclick="selectDay(${idx})">
                 <span class="d-let">${d.short}</span>
                 <span class="d-num">${dt.getDate()}</span>
-                <div class="nx-day-train-badge">${badge}</div>
+                ${hasSports ? `<div class="nx-day-train-badge">${badge}</div>` : ""}
             </div>`;
     }).join("");
 }
 
 export function selectDay(dayIdx) {
     if (dayIdx === store.selectedDayIndex) {
-        cycleSelectedDayTrainingType();
+        if (getAvailableDayTypesForUser(appState.user).length > 0) {
+            cycleSelectedDayTrainingType();
+        }
         return;
     }
     store.selectedDayIndex = dayIdx;
@@ -1307,10 +1400,43 @@ export function selectDay(dayIdx) {
     hapticSelect();
 }
 
-export function cycleSelectedDayTrainingType() {
-    const order = ["rest", "strength", "sport"];
+export function openDayTypeModal() {
+    const avail = getAvailableDayTypesForUser(appState.user);
+    if (!avail.length) return;
     const cur = getTrainingDaysMap()[store.selectedDayIndex] || "rest";
-    const next = order[(order.indexOf(cur) + 1) % order.length];
+    const dayName = WEEK_DAYS[store.selectedDayIndex]?.full || "День";
+    const titleEl = document.getElementById("day-type-modal-title");
+    if (titleEl) titleEl.innerText = `${dayName} · тип дня`;
+
+    const listEl = document.getElementById("day-type-options-list");
+    if (listEl) {
+        listEl.innerHTML = avail.map(k => {
+            const m = DAY_TYPE_META[k] || DAY_TYPE_META.rest;
+            const active = cur === k;
+            return `
+                <div class="choice-card ${active ? "active" : ""}" onclick="setDayTrainingType('${k}'); closeModal('day-type-modal');">
+                    <div>
+                        <div class="choice-title">${m.icon} ${escapeHtml(m.label)}</div>
+                        <div class="choice-sub">${escapeHtml(m.toast)}</div>
+                    </div>
+                    <div class="choice-check">${active ? "✓" : ""}</div>
+                </div>`;
+        }).join("");
+    }
+    document.getElementById("day-type-modal")?.classList.remove("hidden");
+    haptic("light");
+}
+
+export function cycleSelectedDayTrainingType() {
+    const order = getAvailableDayTypesForUser(appState.user);
+    if (!order.length) return;
+    if (order.length >= 4) {
+        openDayTypeModal();
+        return;
+    }
+    const cur = getTrainingDaysMap()[store.selectedDayIndex] || "rest";
+    const idx = order.indexOf(cur);
+    const next = order[(idx + 1) % order.length];
     setDayTrainingType(next);
 }
 
@@ -1324,12 +1450,8 @@ export function setDayTrainingType(type) {
     saveState();
     renderApp();
 
-    const labels = {
-        rest: "День отдыха — базовый баланс БЖУ",
-        strength: "🏋️ Силовая — добавлены углеводы",
-        sport: "🏐 Игровая — повышен запас гликогена"
-    };
-    showToast(labels[type] || "Тип дня обновлён");
+    const meta = DAY_TYPE_META[type] || DAY_TYPE_META.rest;
+    showToast(meta.toast || "Тип дня обновлён");
     haptic("medium");
 }
 
@@ -1345,24 +1467,55 @@ export function setCuisineStyle(style) {
     haptic("medium");
 }
 
-export function setPlanMode(mode) {
+export function togglePlanMode(mode) {
     if (!appState.user) return;
-    const nextMode = (appState.user.planMode === mode) ? null : mode;
-    appState.user.planMode = nextMode;
-    if (nextMode === "budget" || nextMode === "mealprep") appState.optimizeOverlap = true;
+    let modes = getUserPlanModes(appState.user).slice();
+    let conflictMsg = "";
 
-    const modeTitles = {
-        quick: "Быстрый рацион (≤ 20 мин)",
-        budget: "Экономный рацион",
-        mealprep: "Готовка на 2 дня",
-        diverse: "Максимум разнообразия"
-    };
+    if (modes.includes(mode)) {
+        modes = modes.filter(m => m !== mode);
+    } else {
+        if (mode === "mealprep" && modes.includes("diverse")) {
+            modes = modes.filter(m => m !== "diverse");
+            conflictMsg = "Включён режим «На 2 дня» — «Разнообразие» снято";
+        } else if (mode === "diverse" && modes.includes("mealprep")) {
+            modes = modes.filter(m => m !== "mealprep");
+            conflictMsg = "Включено «Разнообразие» — «На 2 дня» снято";
+        }
+        modes.push(mode);
+    }
+
+    appState.user.planModes = modes;
+    appState.user.planMode = modes[0] || null;
+    if (modes.includes("budget") || modes.includes("mealprep")) appState.optimizeOverlap = true;
 
     generateWeeklyPlanOptimized();
     syncMenuSettingsSheetState();
     renderApp();
-    showToast(nextMode ? `Режим: ${modeTitles[nextMode]}` : "Режим сброшен");
+    if (conflictMsg) {
+        showToast(conflictMsg);
+    } else if (modes.length) {
+        showToast(`Активно: ${formatCountRu(modes.length, "режим", "режима", "режимов")} ✓`);
+    } else {
+        showToast("Все режимы сброшены");
+    }
     haptic("medium");
+}
+
+export function clearAllPlanModes() {
+    if (!appState.user) return;
+    appState.user.planModes = [];
+    appState.user.planMode = null;
+    generateWeeklyPlanOptimized();
+    syncMenuSettingsSheetState();
+    renderApp();
+    showToast("Режимы меню сброшены");
+    haptic("light");
+}
+
+export function setPlanMode(mode) {
+    if (mode === null) clearAllPlanModes();
+    else togglePlanMode(mode);
 }
 
 export function renderNutritionDiary() {
@@ -1376,14 +1529,23 @@ export function renderNutritionDiary() {
         const chipText = getActiveMenuBadgeLabel();
         chipEl.innerText = chipText;
         chipEl.classList.toggle("hidden", !chipText);
+        chipEl.onclick = openMenuSettingsModal;
+        chipEl.style.cursor = "pointer";
     }
 
+    const availTypes = getAvailableDayTypesForUser(appState.user);
     const dayType = getTrainingDaysMap()[store.selectedDayIndex] || "rest";
     const cycleBtn = document.getElementById("day-type-cycle-btn");
     if (cycleBtn) {
-        const typeLabels = { rest: "Отдых ↻", strength: "🏋️ Силовая ↻", sport: "🏐 Игровая ↻" };
-        cycleBtn.innerText = typeLabels[dayType] || "Отдых ↻";
-        cycleBtn.classList.toggle("train", dayType !== "rest");
+        if (!availTypes.length) {
+            cycleBtn.classList.add("hidden");
+        } else {
+            cycleBtn.classList.remove("hidden");
+            const meta = DAY_TYPE_META[dayType] || DAY_TYPE_META.rest;
+            const suffix = availTypes.length >= 4 ? " ▾" : " ↻";
+            cycleBtn.innerText = `${dayType !== "rest" ? `${meta.icon} ` : ""}${meta.label}${suffix}`;
+            cycleBtn.classList.toggle("train", dayType !== "rest");
+        }
     }
 
     const stats = getDayNutritionStats(store.selectedDayIndex);
@@ -1442,9 +1604,10 @@ export function regenerateFullWeek() {
    ПАСПОРТ БЛЮДА, СЫРОЙ/ГОТОВЫЙ ВЕС, МИЛПРЕП ×2 И 1-CLICK ЗАМЕНЫ
    ========================================================================= */
 export function setDetailWeightMode(mode) {
-    store.detailWeightMode = mode;
-    document.getElementById("wm-raw-btn")?.classList.toggle("active", mode === "raw");
-    document.getElementById("wm-cooked-btn")?.classList.toggle("active", mode === "cooked");
+    store.detailWeightMode = ["raw", "cooked", "visual"].includes(mode) ? mode : "raw";
+    document.getElementById("wm-raw-btn")?.classList.toggle("active", store.detailWeightMode === "raw");
+    document.getElementById("wm-cooked-btn")?.classList.toggle("active", store.detailWeightMode === "cooked");
+    document.getElementById("wm-visual-btn")?.classList.toggle("active", store.detailWeightMode === "visual");
     if (store.activeDetailMealId) {
         syncSelectedDayMeals();
         const meal = appState.meals.find(m => m.id === store.activeDetailMealId);
@@ -1465,6 +1628,38 @@ export function setDetailPortionMult(mult) {
     hapticSelect();
 }
 
+export function toggleDetailStepDone(mealId, stepIdx) {
+    if (!store.checkedStepsByMeal[mealId]) store.checkedStepsByMeal[mealId] = {};
+    store.checkedStepsByMeal[mealId][stepIdx] = !store.checkedStepsByMeal[mealId][stepIdx];
+    syncSelectedDayMeals();
+    const meal = appState.meals.find(m => m.id === mealId);
+    if (meal) renderDetailCookingSteps(meal);
+    hapticSelect();
+}
+
+function renderDetailCookingSteps(meal) {
+    const stepsEl = document.getElementById("detail-steps-list");
+    if (!stepsEl) return;
+    const mult = store.detailPortionMult === 2 ? 2 : 1;
+    const steps = buildDetailedCookingSteps(meal, store.detailWeightMode, mult);
+    const doneMap = store.checkedStepsByMeal[meal.id] || {};
+
+    stepsEl.innerHTML = steps.length ? steps.map((st, i) => {
+        const isDone = Boolean(doneMap[i]);
+        return `
+        <div class="step-item ${isDone ? "done" : ""}" onclick="toggleDetailStepDone('${escapeHtml(meal.id)}', ${i})">
+            <div class="step-num">${isDone ? "✓" : (Number(st.step_number) || i + 1)}</div>
+            <div style="flex:1;">
+                <div class="step-stage-header">
+                    <span>${escapeHtml(st.stage_name || `Шаг ${i + 1}`)}</span>
+                    <span style="color:var(--nx-text-muted);">${st.duration_min ? `${Number(st.duration_min)} мин` : ""}</span>
+                </div>
+                <div class="step-text">${escapeHtml(st.instruction)}</div>
+            </div>
+        </div>`;
+    }).join("") : `<div class="hint-ref-box">Соедини ингредиенты согласно порциям и подавай к столу.</div>`;
+}
+
 function updateDetailWeightsAndIngredients(meal) {
     const mult = store.detailPortionMult === 2 ? 2 : 1;
     const rawW = (meal.rawWeightG || 340) * mult;
@@ -1475,14 +1670,17 @@ function updateDetailWeightsAndIngredients(meal) {
 
     const hint = document.getElementById("detail-yield-hint");
     if (hint) {
-        const baseText = store.detailWeightMode === "raw"
-            ? "Показан сырой вес для магазина и взвешивания до готовки."
-            : "Показан готовый вес ингредиентов на тарелке после готовки.";
+        const baseText = store.detailWeightMode === "visual"
+            ? "Режим «Без весов»: ориентируйся на ложки, штуки, пачки и размер ладони (ориентир в граммах указан снизу)."
+            : (store.detailWeightMode === "raw"
+                ? "Показан сырой вес для взвешивания до готовки."
+                : "Показан готовый вес ингредиентов на тарелке.");
         hint.innerText = mult === 2
-            ? `${baseText} Граммовки умножены на ×2 сразу для двух дней.`
-            : `${baseText} Нажмите на замену под продуктом для пересчёта КБЖУ.`;
+            ? `${baseText} Порции умножены на ×2 сразу для двух дней.`
+            : `${baseText} Нажми на замену под продуктом, чтобы пересчитать КБЖУ.`;
     }
     renderDetailIngredientsWithOneClickSubs(meal);
+    renderDetailCookingSteps(meal);
 }
 
 export function openMealDetail(mealId) {
@@ -1500,18 +1698,23 @@ export function openMealDetail(mealId) {
     document.getElementById("detail-slot-badge").innerText = meal.name;
     document.getElementById("detail-category-tag").innerText = meal.primaryCategory || "Сбалансированное";
     document.getElementById("detail-cuisine-tag").innerText = meal.cuisine || "Домашняя";
+    const priceTag = document.getElementById("detail-price-tag");
+    if (priceTag) {
+        const pt = typeof meal.priceTier === "number" ? meal.priceTier : 1;
+        priceTag.innerText = pt === 0 ? "₽ Бюджет" : (pt === 2 ? "₽₽₽ Премиум" : "₽₽ Средний");
+    }
     document.getElementById("detail-status-tag").innerText = meal.eaten ? "✓ Съедено" : "По плану";
     document.getElementById("detail-dish-title").innerText = meal.dishTitle;
     document.getElementById("detail-short-desc").innerText = meal.shortDescription || "";
 
     document.getElementById("detail-kcal").innerText = meal.kcal;
-    document.getElementById("detail-p").innerText = `${meal.protein}г`;
-    document.getElementById("detail-f").innerText = `${meal.fat}г`;
-    document.getElementById("detail-c").innerText = `${meal.carbs}г`;
-    document.getElementById("detail-fiber").innerText = `${meal.fiber || 5}г`;
+    document.getElementById("detail-p").innerText = `${meal.protein} г`;
+    document.getElementById("detail-f").innerText = `${meal.fat} г`;
+    document.getElementById("detail-c").innerText = `${meal.carbs} г`;
+    document.getElementById("detail-fiber").innerText = `${meal.fiber || 5} г`;
 
     document.getElementById("detail-time-breakdown").innerText = meal.prepTime || "15 мин";
-    document.getElementById("detail-temp").innerText = meal.cookingTempC ? `${meal.cookingTempC} °C` : "Без нагрева";
+    document.getElementById("detail-temp").innerText = meal.cookingTempC && meal.cookingTempC > 30 ? `${meal.cookingTempC} °C` : "Без нагрева";
     document.getElementById("detail-shelf-life").innerText = `до ${meal.shelfLifeHours || 36} ч (+4 °C)`;
 
     const eatBtn = document.getElementById("detail-eat-btn");
@@ -1520,11 +1723,15 @@ export function openMealDetail(mealId) {
 
     const pinBtn = document.getElementById("detail-pin-btn");
     if (pinBtn) {
-        const pinned = !meal.isOffPlan && isSlotPinned(meal.name);
-        pinBtn.disabled = Boolean(meal.isOffPlan);
+        const pinned = !meal.isOffPlan && !meal.isExtra && isSlotPinned(meal.name);
+        pinBtn.disabled = Boolean(meal.isOffPlan || meal.isExtra);
         pinBtn.innerText = pinned ? "📌 Закреплено" : "📌 На всю неделю";
         pinBtn.classList.toggle("active-pin", pinned);
     }
+
+    document.getElementById("wm-raw-btn")?.classList.toggle("active", store.detailWeightMode === "raw");
+    document.getElementById("wm-cooked-btn")?.classList.toggle("active", store.detailWeightMode === "cooked");
+    document.getElementById("wm-visual-btn")?.classList.toggle("active", store.detailWeightMode === "visual");
 
     const mpInfo = getMealPrepPairInfo(store.selectedDayIndex, meal);
     const mpBar = document.getElementById("detail-mealprep-bar");
@@ -1532,7 +1739,7 @@ export function openMealDetail(mealId) {
         if (mpInfo) {
             mpBar.classList.remove("hidden");
             document.getElementById("detail-mealprep-title").innerText = `🍱 Заготовка на 2 дня (${mpInfo.label})`;
-            document.getElementById("detail-mealprep-sub").innerText = `Готовьте один раз — разделите на ${mpInfo.label}`;
+            document.getElementById("detail-mealprep-sub").innerText = `Готовь один раз — раздели на ${mpInfo.label}`;
             document.getElementById("pm-x1-btn")?.classList.toggle("active", store.detailPortionMult === 1);
             document.getElementById("pm-x2-btn")?.classList.toggle("active", store.detailPortionMult === 2);
         } else {
@@ -1543,28 +1750,15 @@ export function openMealDetail(mealId) {
 
     updateDetailWeightsAndIngredients(meal);
 
-    const stepsEl = document.getElementById("detail-steps-list");
-    const steps = meal.stepsStructured || [];
-    stepsEl.innerHTML = steps.length ? steps.map((st, i) => `
-        <div class="step-item">
-            <div class="step-num">${Number(st.step_number) || i + 1}</div>
-            <div style="flex:1;">
-                <div class="step-stage-header">
-                    <span>${escapeHtml(st.stage_name || `Шаг ${i + 1}`)}</span>
-                    <span style="color:var(--nx-text-muted);">${st.duration_min ? `${Number(st.duration_min)} мин` : ""}</span>
-                </div>
-                <div class="step-text">${escapeHtml(st.instruction)}</div>
-            </div>
-        </div>
-    `).join("") : `<div class="hint-ref-box">Смешайте ингредиенты согласно указанным граммовкам и подавайте к столу.</div>`;
-
     const tagsEl = document.getElementById("detail-tags-list");
     const dTags = (meal.dietaryTags || []).map(t => `<span class="chip-item dietary">${escapeHtml(t)}</span>`);
     const aTags = (meal.allergens || []).length
         ? meal.allergens.map(a => `<span class="chip-item allergen">⚠ ${escapeHtml(a)}</span>`)
         : [`<span class="chip-item dietary">Без частых аллергенов</span>`];
     tagsEl.innerHTML = [...dTags, ...aTags].join("");
-    document.getElementById("detail-science-tip").innerText = meal.scienceTip || "Сбалансированный состав КБЖУ.";
+
+    const dayStats = getDayNutritionStats(store.selectedDayIndex);
+    document.getElementById("detail-science-tip").innerText = generateNutriXAdvice(meal, dayStats, appState.user, mpInfo);
 
     window.scrollTo({ top: 0, behavior: "instant" });
     haptic("light");
@@ -1576,9 +1770,19 @@ function renderDetailIngredientsWithOneClickSubs(meal) {
     const mult = store.detailPortionMult === 2 ? 2 : 1;
 
     container.innerHTML = (meal.ingredients || []).map((ing, idx) => {
-        const baseG = store.detailWeightMode === "raw" ? toRawStoreGrams(ing) : toCookedPlateGrams(ing);
-        const displayG = Math.round(baseG * mult);
-        const stateLbl = store.detailWeightMode === "raw" ? "сырой (весы)" : "готовый (тарелка)";
+        let qtyHtml = "";
+        let stateLbl = "";
+        if (store.detailWeightMode === "visual") {
+            const hm = formatHouseholdMeasure(ing, mult);
+            qtyHtml = `<div class="ing-qty-col"><div class="ing-qty-main">${escapeHtml(hm.primary)}</div><div class="ing-qty-sub">${escapeHtml(hm.sub)}</div></div>`;
+            stateLbl = "на глаз";
+        } else {
+            const baseG = store.detailWeightMode === "raw" ? toRawStoreGrams(ing) : toCookedPlateGrams(ing);
+            const displayG = Math.round(baseG * mult);
+            qtyHtml = `<div class="ing-qty-col"><div class="ing-qty-main tabular">${displayG} г</div></div>`;
+            stateLbl = store.detailWeightMode === "raw" ? "сырой (весы)" : "готовый (тарелка)";
+        }
+
         const subs = findInlineSubs(ing.name, ing.alt);
 
         const subChips = subs.map((s, sIdx) => {
@@ -1598,7 +1802,7 @@ function renderDetailIngredientsWithOneClickSubs(meal) {
                     <div style="font-size:11px; color:var(--nx-text-muted);">${stateLbl}${ing.dept ? ` · ${escapeHtml(ing.dept)}` : ""}${mult === 2 ? " · ×2 дня" : ""}</div>
                     ${(subChips || revertBtn) ? `<div class="inline-sub-strip">${revertBtn || subChips}</div>` : ""}
                 </div>
-                <strong class="tabular" style="white-space:nowrap; color:var(--nx-mint);">${displayG} г</strong>
+                ${qtyHtml}
             </div>`;
     }).join("");
 }
@@ -1822,32 +2026,63 @@ export function renderProgressTab() {
     document.getElementById("prog-pct-c").innerText = `${cP}%`;
 }
 
+export function renderCloudStatusCard() {
+    const card = document.getElementById("cloud-status-card");
+    const titleEl = document.getElementById("cloud-sync-title");
+    const subEl = document.getElementById("cloud-sync-sub");
+    const btn = document.getElementById("cloud-retry-btn");
+    if (!card || !titleEl || !subEl) return;
+
+    const supported = CloudSync.isSupported();
+    const st = store.cloudSyncStatus;
+    card.classList.toggle("error", st === "error" || st === "limit");
+
+    if (!supported) {
+        titleEl.innerText = "💾 Сохранено на этом устройстве";
+        subEl.innerText = "Открой NutriX через бота в Telegram, чтобы включить автоматический перенос профиля между телефоном и ПК.";
+        btn?.classList.add("hidden");
+    } else if (st === "error") {
+        titleEl.innerText = "⚠ Не удалось сохранить в облако";
+        subEl.innerText = "Локальная копия в порядке — нажми «Повторить», когда вернётся стабильная сеть.";
+        btn?.classList.remove("hidden");
+    } else if (st === "limit") {
+        titleEl.innerText = "⚠ Облако переполнено";
+        subEl.innerText = "Слишком много сохранённых записей — почисти лишние «Мои блюда» и повтори сохранение.";
+        btn?.classList.remove("hidden");
+    } else {
+        titleEl.innerText = "☁️ Всё сохраняется само";
+        const timeNote = store.lastCloudSyncTime ? ` · обновлено в ${store.lastCloudSyncTime}` : "";
+        subEl.innerText = `Данные привязаны к аккаунту Telegram — на другом телефоне или ПК всё откроется автоматически${timeNote}.`;
+        btn?.classList.add("hidden");
+    }
+}
+
 export function renderProfileTab() {
     const u = appState.user;
     const t = appState.activeTargets || appState.targets;
     if (!u || !t) return;
 
     const goalObj = GOALS_V4.find(g => g.val === u.goal) || GOALS_V4[0];
-    const sportObj = SPORT_PROFILES[u.sportType || "none"] || SPORT_PROFILES.none;
+    const sportsLabel = formatUserSportsShort(u);
     const appObj = APPETITE_LEVELS[Number(u.appetiteLevel) || 3] || APPETITE_LEVELS[3];
     const actScore = u.activityScore ?? palToActivityScore(u.activityLevel);
 
     document.getElementById("prof-goal-title").innerText = goalObj.title;
-    document.getElementById("prof-formula-sub").innerText = `Модель: ${t.formulaName}`;
+    document.getElementById("prof-formula-sub").innerText = `Формула: ${t.formulaName}`;
     document.getElementById("prof-precision-pct").innerText = `${t.precisionScore || 75}%`;
     document.getElementById("prof-precision-bar").style.width = `${t.precisionScore || 75}%`;
     document.getElementById("prof-precision-hint").innerText = t.derivedLbm
-        ? `Расчёт идёт по сухой массе тела (${t.derivedLbm} кг LBM) с учётом профиля «${sportObj.short}».`
-        : "Добавьте % жира или безжировой вес ниже для перехода на Pro-расчёт по сухой массе.";
+        ? `Расчёт идёт по сухой массе тела (${t.derivedLbm} кг) с учётом профиля «${sportsLabel}».`
+        : "Добавь % жира или сухую массу ниже — расчёт станет ещё точнее.";
 
     document.getElementById("prof-gender").innerText = u.gender === "female" ? "Женский" : "Мужской";
-    document.getElementById("prof-age").innerText = `${u.age} лет`;
+    document.getElementById("prof-age").innerText = formatCountRu(u.age, "год", "года", "лет");
     document.getElementById("prof-height").innerText = `${u.height} см`;
     document.getElementById("prof-weight").innerText = `${u.weight} кг`;
     document.getElementById("prof-pal").innerText = `${Number.isInteger(actScore) ? actScore : actScore.toFixed(1)} / 10`;
-    document.getElementById("prof-sport").innerText = sportObj.short;
+    document.getElementById("prof-sport").innerText = sportsLabel;
     document.getElementById("prof-goal-short").innerText = goalObj.title.split(" ").slice(0, 2).join(" ");
-    document.getElementById("prof-meals-count").innerText = `${u.mealsCount} в день`;
+    document.getElementById("prof-meals-count").innerText = `${formatCountRu(u.mealsCount, "приём", "приёма", "приёмов")} в день`;
     document.getElementById("prof-appetite").innerText = `${u.appetiteLevel || 3} / 5 · ${appObj.title.split(" ")[0]}`;
     document.getElementById("prof-prefs-short").innerText = u.preferencesText ? u.preferencesText.slice(0, 18) : "Без ограничений";
 
@@ -1867,6 +2102,7 @@ export function renderProfileTab() {
     document.getElementById("prof-macro-ratios").innerText = `Б ${t.proteinPerKg} · Ж ${t.fatPerKg} · У ${t.carbsPerKg}`;
 
     renderThemePicker();
+    renderCloudStatusCard();
 }
 
 /* =========================================================================
@@ -1934,8 +2170,15 @@ export function renderGroceriesList() {
     const container = document.getElementById("groceries-container");
     if (!container) return;
 
-    const periodTitle = store.groceryPeriod === 1 ? "Закупка на 1 день" : (store.groceryPeriod === 3 ? "Закупка на 3 дня" : "Закупка на неделю");
-    document.getElementById("grocery-range-title").innerText = periodTitle;
+    const incDays = getIncludedDaysForGrocery();
+    let rangeLbl = "Закупка · Неделя";
+    if (store.groceryPeriod === 1 && incDays.length) {
+        rangeLbl = `Закупка · ${incDays[0].full}`;
+    } else if (store.groceryPeriod === 3 && incDays.length >= 2) {
+        rangeLbl = `Закупка · ${incDays[0].short}–${incDays[incDays.length - 1].short}`;
+    }
+    const titleEl = document.getElementById("grocery-range-title");
+    if (titleEl) titleEl.innerText = rangeLbl;
     [1, 3, 7].forEach(d => document.getElementById(`btn-days-${d}`)?.classList.toggle("active", d === store.groceryPeriod));
 
     const overlapOn = appState.optimizeOverlap !== false;
@@ -1943,21 +2186,23 @@ export function renderGroceriesList() {
     if (badge) badge.innerText = overlapOn ? "ВКЛ" : "ВЫКЛ";
 
     const list = appState.groceryList || {};
-    let totalItems = 0, checkedItems = 0, totalGrams = 0;
+    let totalItems = 0, checkedItems = 0;
 
     Object.values(list).forEach(items => {
         items.forEach(i => {
             totalItems++;
             if (i.isChecked) checkedItems++;
-            totalGrams += Number(i.weight) || 0;
         });
     });
 
     const pct = totalItems ? Math.round((checkedItems / totalItems) * 100) : 0;
-    document.getElementById("grocery-progress-text").innerText = `Куплено ${checkedItems} из ${totalItems}`;
-    document.getElementById("grocery-stats-sub").innerText = `~${(totalGrams / 1000).toFixed(1)} кг (сырой)`;
-    document.getElementById("grocery-progress-bar").style.width = `${pct}%`;
-    document.getElementById("grocery-overlap-stats").innerText = `Пересечение продуктов: ${appState.groceryReusePct || 0}% · Позиций: ${totalItems}`;
+    const progTxt = document.getElementById("grocery-progress-text");
+    if (progTxt) progTxt.innerText = `Куплено ${checkedItems} из ${totalItems}`;
+    const progBar = document.getElementById("grocery-progress-bar");
+    if (progBar) progBar.style.width = `${pct}%`;
+
+    const hasResettable = checkedItems > 0 || (Array.isArray(appState.customGroceries) && appState.customGroceries.length > 0);
+    document.getElementById("btn-reset-grocery-checks")?.classList.toggle("hidden", !hasResettable);
 
     let html = "";
     Object.entries(list).forEach(([group, items]) => {
@@ -1968,12 +2213,8 @@ export function renderGroceriesList() {
         visible.forEach(item => {
             const encName = encodeURIComponent(item.name);
             const encAlt = encodeURIComponent(item.alt || "");
-            const rawStr = item.weight > 0
-                ? (item.weight >= 1000 ? `${(item.weight / 1000).toFixed(2)} кг` : `${item.weight} г`)
-                : "по вкусу";
-            const cookedNote = (item.weight > 0 && item.cookedWeight > 0 && Math.abs(item.cookedWeight - item.weight) >= 15)
-                ? `<div class="g-cooked-sub">готовый ~${item.cookedWeight} г</div>`
-                : "";
+            const packMain = item.packLabel || (item.weight > 0 ? `${item.weight} г` : "по вкусу");
+            const packSub = item.gramsSub ? `<div class="g-pack-sub ${item.checkHome ? "home-hint" : ""}">${escapeHtml(item.gramsSub)}</div>` : "";
             const hasSubs = findInlineSubs(item.name, item.alt).length > 0;
 
             html += `
@@ -1983,12 +2224,12 @@ export function renderGroceriesList() {
                         <div style="min-width:0;">
                             <div class="g-title">${escapeHtml(item.name)}${item.waveLabel ? `<span class="wave-badge">${escapeHtml(item.waveLabel)}</span>` : ""}</div>
                             <div class="g-meta-dishes">${escapeHtml(item.dishes || "")}</div>
-                            ${hasSubs ? `<button type="button" class="sub-trigger-btn" onclick="event.stopPropagation(); openSubstitutionModal('${encName}', '${encAlt}')">⇄ Заменить продукт</button>` : ""}
+                            ${hasSubs ? `<button type="button" class="sub-trigger-btn" onclick="event.stopPropagation(); openSubstitutionModal('${encName}', '${encAlt}')">⇄ Заменить</button>` : ""}
                         </div>
                     </div>
                     <div class="g-weight-col">
-                        <div class="g-weight">${rawStr}</div>
-                        ${cookedNote}
+                        <div class="g-pack-main">${escapeHtml(packMain)}</div>
+                        ${packSub}
                     </div>
                 </div>`;
         });
@@ -2054,22 +2295,21 @@ export function applyIngredientSubstitution(optIdx) {
     saveState();
     renderApp();
     closeModal("substitution-modal");
-    showToast(`Заменено на «${chosen.target.split("(")[0].trim()}» (${replacedCount} блюд)`);
+    showToast(`Заменено на «${chosen.target.split("(")[0].trim()}» (${formatCountRu(replacedCount, "блюдо", "блюда", "блюд")})`);
     haptic("medium");
 }
 
 function buildPlainGroceryText() {
     const pLbl = store.groceryPeriod === 1 ? "на 1 день" : (store.groceryPeriod === 3 ? "на 3 дня" : "на неделю");
-    const lines = [`🛒 NutriX · Список покупок ${pLbl} (сырой вес)`];
+    const lines = [`🛒 NutriX · Список покупок ${pLbl}`];
     Object.entries(appState.groceryList || {}).forEach(([group, items]) => {
         const pending = items.filter(i => !i.isChecked);
         if (!pending.length) return;
         lines.push(`\n${group}:`);
         pending.forEach(i => {
-            const wt = i.weight > 0
-                ? (i.weight >= 1000 ? ` — ${(i.weight / 1000).toFixed(2)} кг` : ` — ${i.weight} г`)
-                : "";
-            lines.push(`• ${i.name}${wt}`);
+            const pack = i.packLabel ? ` — ${i.packLabel}` : "";
+            const sub = i.gramsSub ? ` (${i.gramsSub})` : "";
+            lines.push(`• ${i.name}${pack}${sub}`);
         });
     });
     return lines.join("\n");
@@ -2723,9 +2963,240 @@ export function resetAllAppStateAdmin() {
     location.reload();
 }
 
+
+/* =========================================================================
+   ДОБАВЛЕНИЕ ДОПОЛНИТЕЛЬНОГО ПРИЁМА ПИЩИ В ДЕНЬ (ПУНКТ 13)
+   ========================================================================= */
+let addMealBalanceMode = "fit"; // "fit" | "extra"
+
+export function selectAddMealSlotName(label, btnEl) {
+    const inp = document.getElementById("add-meal-slot-name");
+    if (inp) inp.value = label;
+    document.querySelectorAll("#add-meal-slot-chips .q-chip").forEach(b => b.classList.remove("active"));
+    if (btnEl) btnEl.classList.add("active");
+    hapticSelect();
+}
+
+export function setAddMealBalanceMode(mode) {
+    addMealBalanceMode = mode === "extra" ? "extra" : "fit";
+    document.getElementById("add-mode-fit")?.classList.toggle("active", addMealBalanceMode === "fit");
+    document.getElementById("add-mode-extra")?.classList.toggle("active", addMealBalanceMode === "extra");
+    hapticSelect();
+}
+
+function renderSavedMealsInAddModal() {
+    const section = document.getElementById("add-saved-meals-section");
+    const listEl = document.getElementById("add-saved-meals-list");
+    if (!section || !listEl) return;
+    const saved = Array.isArray(appState.savedCustomMeals) ? appState.savedCustomMeals : [];
+    if (!saved.length) {
+        section.classList.add("hidden");
+        return;
+    }
+    section.classList.remove("hidden");
+    listEl.innerHTML = saved.slice(0, 12).map(item => `
+        <div class="saved-meal-row" onclick="addSavedCustomMealAsNew('${escapeHtml(item.id)}')">
+            <div style="min-width:0; flex:1;">
+                <div style="font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
+                <div style="font-size:11px; color:var(--nx-text-muted);">${Number(item.kcal)} ккал · Б ${Number(item.protein)} · Ж ${Number(item.fat)} · У ${Number(item.carbs)}</div>
+            </div>
+            <span style="color:var(--nx-mint); font-weight:800; font-size:16px;">+</span>
+        </div>`).join("");
+}
+
+export function openAddMealModal() {
+    addMealBalanceMode = "fit";
+    document.getElementById("add-mode-fit")?.classList.add("active");
+    document.getElementById("add-mode-extra")?.classList.remove("active");
+    const slotInp = document.getElementById("add-meal-slot-name");
+    if (slotInp) slotInp.value = "Перекус";
+    document.querySelectorAll("#add-meal-slot-chips .q-chip").forEach((b, idx) => b.classList.toggle("active", idx === 0));
+
+    ["add-recipe-search-input", "add-meal-title", "add-meal-brand", "add-meal-weight", "add-kcal", "add-p", "add-f", "add-c"]
+        .forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+    document.getElementById("add-recipe-search-results")?.classList.add("hidden");
+    document.getElementById("add-source-badge")?.classList.add("hidden");
+
+    renderSavedMealsInAddModal();
+    document.getElementById("add-meal-modal")?.classList.remove("hidden");
+    haptic("light");
+}
+
+function insertExtraMealIntoSelectedDay(newMeal) {
+    syncSelectedDayMeals();
+    const dayObj = appState.weekPlan?.[store.selectedDayIndex];
+    if (!dayObj) return;
+
+    if (addMealBalanceMode === "fit") {
+        const uneaten = (dayObj.meals || []).filter(m => !m.eaten && !m.isOffPlan);
+        const remSum = uneaten.reduce((s, m) => s + (Number(m.kcal) || 0), 0);
+        if (remSum > 220 && newMeal.kcal > 0) {
+            const factor = Math.max(0.65, (remSum - newMeal.kcal) / remSum);
+            uneaten.forEach(m => scaleMealPortions(m, factor));
+        }
+    }
+
+    dayObj.meals.push(newMeal);
+    syncSelectedDayMeals();
+    rebuildGroceryList();
+    saveState();
+    renderApp();
+    closeModal("add-meal-modal");
+    showToast(`Добавлено: ${newMeal.dishTitle.slice(0, 32)} (+${newMeal.kcal} ккал)`);
+    NutriXPerf.notify("success");
+}
+
+export function addSavedCustomMealAsNew(savedId) {
+    const item = (appState.savedCustomMeals || []).find(s => s.id === savedId);
+    if (!item) return;
+    const slotName = (document.getElementById("add-meal-slot-name")?.value || "Перекус").trim() || "Перекус";
+    const w = Number(item.weight) || 220;
+    insertExtraMealIntoSelectedDay({
+        id: `extra_${Date.now()}`,
+        name: slotName,
+        slotKey: "snack",
+        recipeId: "CUSTOM",
+        dishTitle: item.title,
+        shortDescription: "Добавлено из «Моих блюд».",
+        primaryCategory: "Мои блюда",
+        cuisine: "Своё блюдо",
+        prepTime: "Своё",
+        kcal: Number(item.kcal) || 300,
+        protein: Number(item.protein) || 18,
+        fat: Number(item.fat) || 10,
+        carbs: Number(item.carbs) || 32,
+        fiber: 3,
+        rawWeightG: w,
+        cookedWeightG: w,
+        shelfLifeHours: 24,
+        eaten: false,
+        isCustom: true,
+        isOffPlan: false,
+        isExtra: true,
+        ingredients: [{ name: item.title, weight: w, state: "готовый", dept: "Собственные блюда", yieldFactor: 1.0 }],
+        stepsStructured: []
+    });
+}
+
+export function searchRecipesInAddModal(query) {
+    const box = document.getElementById("add-recipe-search-results");
+    if (!box) return;
+    const q = (query || "").trim().toLowerCase();
+    if (q.length < 2) {
+        box.classList.add("hidden");
+        return;
+    }
+    const hits = store.MASTER_RECIPES_DB.filter(r =>
+        (r.title_ru || "").toLowerCase().includes(q)
+        || (r.ingredients || []).some(i => (i.name || "").toLowerCase().includes(q))
+    ).slice(0, 10);
+
+    if (!hits.length) {
+        box.innerHTML = `<div style="padding:10px 12px; font-size:12px; color:var(--nx-text-muted);">Ничего не нашлось — введи продукт ниже.</div>`;
+        box.classList.remove("hidden");
+        return;
+    }
+
+    box.innerHTML = hits.map(r => `
+        <div class="db-search-item" onclick="addMasterRecipeAsNew('${escapeHtml(r.recipe_id)}')">
+            <div style="min-width:0; flex:1;">
+                <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(r.title_ru)}</div>
+                <div style="font-size:10px; color:var(--nx-text-muted);">${Math.round(r.nutrition?.serving_kcal || 350)} ккал · ${r.total_time_min || 15} мин</div>
+            </div>
+            <span style="color:var(--nx-mint); font-weight:800;">+</span>
+        </div>`).join("");
+    box.classList.remove("hidden");
+}
+
+export function addMasterRecipeAsNew(recipeId) {
+    const master = store.MASTER_RECIPES_DB.find(r => r.recipe_id === recipeId);
+    if (!master) return;
+    const slotName = (document.getElementById("add-meal-slot-name")?.value || "Перекус").trim() || "Перекус";
+    const targetKcal = Math.round(master.nutrition?.serving_kcal || 350);
+    const meal = scaleMasterRecipeToMeal(master, slotName, "snack", `extra_${Date.now()}`, targetKcal);
+    meal.isExtra = true;
+    insertExtraMealIntoSelectedDay(meal);
+}
+
+export async function runAddMealLookup() {
+    const title = (document.getElementById("add-meal-title")?.value || "").trim();
+    const brand = (document.getElementById("add-meal-brand")?.value || "").trim();
+    const weight = Number(document.getElementById("add-meal-weight")?.value) || null;
+    if (!title) { showToast("Введи название продукта или блюда"); return; }
+
+    const btn = document.getElementById("add-ai-btn");
+    const badge = document.getElementById("add-source-badge");
+    if (btn) { btn.disabled = true; btn.innerText = "Ищем точное КБЖУ…"; }
+
+    const res = await calculateAccurateProductNutrition(title, brand, weight);
+    document.getElementById("add-kcal").value = res.kcal;
+    document.getElementById("add-p").value = res.protein;
+    document.getElementById("add-f").value = res.fat;
+    document.getElementById("add-c").value = res.carbs;
+
+    if (badge) {
+        badge.innerText = `✓ ${res.matchedLabel}`;
+        badge.classList.remove("hidden");
+    }
+    if (btn) { btn.disabled = false; btn.innerText = "✦ Найти точное КБЖУ (этикетка / AI)"; }
+    haptic("light");
+}
+
+export async function submitAddMeal() {
+    const slotName = (document.getElementById("add-meal-slot-name")?.value || "Перекус").trim() || "Перекус";
+    const title = (document.getElementById("add-meal-title")?.value || "").trim();
+    const brand = (document.getElementById("add-meal-brand")?.value || "").trim();
+    const weight = Number(document.getElementById("add-meal-weight")?.value) || 200;
+    if (!title) { showToast("Введи название блюда или выбери его из списка выше"); return; }
+
+    let kcal = Number(document.getElementById("add-kcal")?.value) || 0;
+    let protein = Number(document.getElementById("add-p")?.value) || 0;
+    let fat = Number(document.getElementById("add-f")?.value) || 0;
+    let carbs = Number(document.getElementById("add-c")?.value) || 0;
+
+    const submitBtn = document.getElementById("add-meal-submit-btn");
+    if (kcal <= 0) {
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = "Считаем КБЖУ…"; }
+        const res = await calculateAccurateProductNutrition(title, brand, weight);
+        kcal = res.kcal; protein = res.protein; fat = res.fat; carbs = res.carbs;
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = "Добавить в день"; }
+    }
+
+    const fullTitle = brand ? `${title} (${brand})` : title;
+    if (document.getElementById("add-save-to-my-meals-cb")?.checked) {
+        saveCustomMealToLibrary({ title: fullTitle, kcal, protein, fat, carbs, weight });
+    }
+
+    insertExtraMealIntoSelectedDay({
+        id: `extra_${Date.now()}`,
+        name: slotName,
+        slotKey: "snack",
+        recipeId: "CUSTOM",
+        dishTitle: fullTitle,
+        shortDescription: "Добавлено вручную.",
+        primaryCategory: "Мои блюда",
+        cuisine: "Своё блюдо",
+        prepTime: "Своё",
+        kcal: Math.round(kcal),
+        protein: Math.round(protein),
+        fat: Math.round(fat),
+        carbs: Math.round(carbs),
+        fiber: 2,
+        rawWeightG: weight,
+        cookedWeightG: weight,
+        shelfLifeHours: 24,
+        eaten: false,
+        isCustom: true,
+        isOffPlan: false,
+        isExtra: true,
+        ingredients: [{ name: fullTitle, weight, state: "готовый", dept: "Собственные блюда", yieldFactor: 1.0 }],
+        stepsStructured: []
+    });
+}
+
 export async function forceCloudSyncNow() {
     const ok = await CloudSync.push();
-    showToast(ok ? "Профиль синхронизирован с Telegram Cloud ✓" : "Ошибка или облако недоступно вне Telegram");
+    showToast(ok ? "Данные сохранены в облако Telegram ✓" : "Не удалось сохранить — проверь сеть или открой в Telegram");
     haptic("medium");
 }
 

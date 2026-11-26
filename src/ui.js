@@ -6,6 +6,8 @@
    приёма пищи, корзина по пачкам + граммам и понятная карточка облака.
    ========================================================================= */
 
+import { renderIcon } from "./icons.js";
+
 import {
     WEEK_DAYS,
     MAX_SAVED_CUSTOM_MEALS,
@@ -228,7 +230,7 @@ export const NutriXMotion = {
 export function applyTheme(themeId, persist = true) {
     const modeId = normalizeThemeId(themeId);
     const effective = resolveEffectiveTheme(modeId);
-    const bgHex = effective === "daylight" ? "#F3F6F4" : "#0B0D0C";
+    const bgHex = effective === "daylight" ? "#F6F5F0" : "#0C0F0D";
 
     document.documentElement.setAttribute("data-theme", effective);
     try { localStorage.setItem("nutrix_theme", modeId); } catch (e) {}
@@ -240,6 +242,7 @@ export function applyTheme(themeId, persist = true) {
         try {
             tg.setHeaderColor?.(bgHex);
             tg.setBackgroundColor?.(bgHex);
+            tg.setBottomBarColor?.(bgHex);
         } catch (e) {}
     }
 
@@ -258,8 +261,8 @@ export function renderThemePicker() {
         <div class="theme-card ${t.id === current ? "active" : ""}" onclick="applyTheme('${t.id}', true); hapticSelect();">
             <div class="theme-swatch" style="background:${t.bg}; --swatch-accent:${t.accent};"></div>
             <div>
-                <div style="font-size:13px; font-weight:800;">${escapeHtml(t.name)}</div>
-                <div style="font-size:10px; color:var(--nx-text-muted);">${escapeHtml(t.sub)}</div>
+                <div class="cloud-sync-title">${escapeHtml(t.name)}</div>
+                <div class="bio-label nx-mb-0">${escapeHtml(t.sub)}</div>
             </div>
         </div>
     `).join("");
@@ -522,11 +525,11 @@ export function renderWizardStep() {
                 <div class="choice-stack">
                     <div class="choice-card ${wizardDraft.gender === "male" ? "active" : ""}" onclick="setDraftVal('gender','male',false)">
                         <div><div class="choice-title">Мужской</div><div class="choice-sub">Мужские коэффициенты BMR</div></div>
-                        <div class="choice-check">${wizardDraft.gender === "male" ? "✓" : ""}</div>
+                        <div class="choice-check">${wizardDraft.gender === "male" ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                     </div>
                     <div class="choice-card ${wizardDraft.gender === "female" ? "active" : ""}" onclick="setDraftVal('gender','female',false)">
                         <div><div class="choice-title">Женский</div><div class="choice-sub">Женские коэффициенты BMR</div></div>
-                        <div class="choice-check">${wizardDraft.gender === "female" ? "✓" : ""}</div>
+                        <div class="choice-check">${wizardDraft.gender === "female" ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                     </div>
                 </div>
             </div>`;
@@ -615,7 +618,7 @@ export function renderWizardStep() {
                         return `
                         <div class="choice-card ${active ? "active" : ""}" onclick="toggleDraftSport('${k}')">
                             <div><div class="choice-title">${escapeHtml(sp.title)}</div><div class="choice-sub">${escapeHtml(sp.sub)}</div></div>
-                            <div class="choice-check">${active ? "✓" : ""}</div>
+                            <div class="choice-check">${active ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                         </div>`;
                     }).join("")}
                 </div>
@@ -631,7 +634,7 @@ export function renderWizardStep() {
                     ${GOALS_V4.map(g => `
                         <div class="choice-card ${cur === g.val ? "active" : ""}" onclick="setDraftVal('goal','${g.val}',true)">
                             <div><div class="choice-title">${escapeHtml(g.title)}</div><div class="choice-sub">${escapeHtml(g.sub)}</div></div>
-                            <div class="choice-check">${cur === g.val ? "✓" : ""}</div>
+                            <div class="choice-check">${cur === g.val ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                         </div>`).join("")}
                 </div>
             </div>`;
@@ -671,7 +674,7 @@ export function renderWizardStep() {
                     ].map(m => `
                         <div class="choice-card ${cur === m.n ? "active" : ""}" onclick="setDraftVal('mealsCount',${m.n},false)">
                             <div><div class="choice-title">${m.t}</div><div class="choice-sub">${m.s}</div></div>
-                            <div class="choice-check">${cur === m.n ? "✓" : ""}</div>
+                            <div class="choice-check">${cur === m.n ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                         </div>`).join("")}
                 </div>
             </div>`;
@@ -686,7 +689,7 @@ export function renderWizardStep() {
                     ${Object.entries(APPETITE_LEVELS).map(([lvl, info]) => `
                         <div class="choice-card ${cur === Number(lvl) ? "active" : ""}" onclick="setDraftVal('appetiteLevel',${lvl},false)">
                             <div><div class="choice-title">${lvl} / 5 · ${escapeHtml(info.title)}</div><div class="choice-sub">${escapeHtml(info.sub)}</div></div>
-                            <div class="choice-check">${cur === Number(lvl) ? "✓" : ""}</div>
+                            <div class="choice-check">${cur === Number(lvl) ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                         </div>`).join("")}
                 </div>
             </div>`;
@@ -753,7 +756,7 @@ export function renderWizardStep() {
 
     const nextLabel = isSingle
         ? "Сохранить изменение"
-        : (wizardStepIdx === total - 1 ? "Создать мой рацион ✓" : "Далее →");
+        : (wizardStepIdx === total - 1 ? "Создать мой рацион" : "Далее");
 
     const footerHtml = `
         <div style="margin-top:16px;">
@@ -840,7 +843,7 @@ export function finishOnboardingWizard() {
         saveState();
         renderApp();
         switchTab(isSingle ? "profile" : "home");
-        if (isSingle) showToast("Параметр обновлён ✓");
+        if (isSingle) showToast("Параметр обновлён");
         NutriXPerf.notify("success");
     };
 
@@ -870,8 +873,36 @@ export function closeModal(id) {
     haptic("light");
 }
 
+let _tgBackBound = false;
+function handleTelegramBackButton() {
+    if (store.activeDetailMealId) {
+        closeMealDetail();
+    }
+}
+
+function syncTelegramBackButton(show) {
+    const bb = tg?.BackButton;
+    if (!bb) return;
+    try {
+        if (show) {
+            if (!_tgBackBound) {
+                bb.onClick(handleTelegramBackButton);
+                _tgBackBound = true;
+            }
+            bb.show();
+        } else {
+            bb.hide();
+            if (_tgBackBound) {
+                bb.offClick?.(handleTelegramBackButton);
+                _tgBackBound = false;
+            }
+        }
+    } catch (e) {}
+}
+
 export function switchTab(tabName) {
     currentTab = tabName;
+    syncTelegramBackButton(false);
     ["home", "nutrition", "progress", "profile"].forEach(t => {
         document.getElementById(`tab-${t}`)?.classList.toggle("hidden", t !== tabName);
         document.getElementById(`nav-${t}`)?.classList.toggle("active", t === tabName);
@@ -920,31 +951,31 @@ function getMealSlotVisual(meal) {
     if (meal.isOffPlan) {
         return {
             cls: "offplan", time: "Вне плана",
-            svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
+            svg: renderIcon("bolt", { size: 19, active: true })
         };
     }
     const k = meal.slotKey || "";
     if (k === "breakfast" || /завтрак/i.test(meal.name)) {
         return {
             cls: "breakfast", time: "Утро",
-            svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 2v3"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h20"/><path d="m19.07 10.93-1.41 1.41"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>`
+            svg: renderIcon("sunrise", { size: 19, active: Boolean(meal.eaten) })
         };
     }
     if (k === "lunch" || /обед/i.test(meal.name)) {
         return {
             cls: "lunch", time: "День",
-            svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`
+            svg: renderIcon("sun", { size: 19, active: Boolean(meal.eaten) })
         };
     }
     if (k === "dinner" || /ужин/i.test(meal.name)) {
         return {
             cls: "dinner", time: "Вечер",
-            svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+            svg: renderIcon("moon", { size: 19, active: Boolean(meal.eaten) })
         };
     }
     return {
         cls: "snack", time: meal.isExtra ? "Доп. приём" : "Полдник",
-        svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`
+        svg: renderIcon("leaf", { size: 19, active: Boolean(meal.eaten) })
     };
 }
 
@@ -959,8 +990,8 @@ export function createMealRowElement(meal, isHomePreview = false) {
 
     const badgesHtml = (pinned || mpInfo) ? `
         <div class="mc-badges-row">
-            ${pinned ? `<span class="pin-badge">📌 Закреплено на неделю</span>` : ""}
-            ${mpInfo ? `<span class="mealprep-badge">🍱 На 2 дня (${escapeHtml(mpInfo.label)})</span>` : ""}
+            ${pinned ? `<span class="pin-badge">${renderIcon("pin", { size: 12, active: true })}<span>Закреплено на неделю</span></span>` : ""}
+            ${mpInfo ? `<span class="mealprep-badge">${renderIcon("layers", { size: 12, active: true })}<span>На 2 дня (${escapeHtml(mpInfo.label)})</span></span>` : ""}
         </div>` : "";
 
     const slotMeta = vis.time && vis.time.toLowerCase() !== String(meal.name || "").toLowerCase()
@@ -990,14 +1021,19 @@ export function createMealRowElement(meal, isHomePreview = false) {
             <div class="mc-meta-right">${meal.cookedWeightG ? `${Number(meal.cookedWeightG)} г · ` : ""}${escapeHtml(meal.prepTime || "15 мин")}</div>
         </div>
         ${isHomePreview ? "" : `
-        <div class="mc-footer-actions ${canDelete ? "with-del" : ""}">
-            <button class="btn-small ${meal.eaten ? "active-eat" : ""}" data-act="eat">${meal.eaten ? "✓ Съел" : "Отметить"}</button>
-            <button class="btn-small" data-act="swap">↻ Другое</button>
-            ${canDelete
-                ? `<button class="btn-small danger-act" data-act="delete" title="Удалить приём пищи">🗑</button>`
-                : `<button class="btn-small ${pinned ? "active-pin" : ""}" data-act="pin" title="${pinned ? "Открепить" : "Закрепить на всю неделю"}">📌</button>`}
-            ${canDelete ? `<button class="btn-small" data-act="edit" title="Изменить">✎</button>` : ""}
-            <button class="btn-small" data-act="detail">Рецепт ›</button>
+        <div class="mc-actions-bar">
+            <button type="button" class="mc-eat-toggle ${meal.eaten ? "active-eat" : ""}" data-act="eat">
+                <span class="mc-eat-check-dot">${meal.eaten ? renderIcon("check", { size: 11, strokeWidth: 2.4 }) : ""}</span>
+                <span>${meal.eaten ? "Съедено" : "Отметить"}</span>
+            </button>
+            <div class="mc-icon-actions">
+                <button type="button" class="mc-icon-btn" data-act="swap" title="Подобрать другое блюдо" aria-label="Подобрать другое блюдо">${renderIcon("refresh", { size: 16 })}</button>
+                ${canDelete
+                    ? `<button type="button" class="mc-icon-btn" data-act="edit" title="Изменить" aria-label="Изменить">${renderIcon("edit", { size: 16 })}</button>
+                       <button type="button" class="mc-icon-btn danger-act" data-act="delete" title="Удалить приём пищи" aria-label="Удалить">${renderIcon("trash", { size: 16 })}</button>`
+                    : `<button type="button" class="mc-icon-btn ${pinned ? "active-pin" : ""}" data-act="pin" title="${pinned ? "Открепить" : "Закрепить на всю неделю"}" aria-label="${pinned ? "Открепить" : "Закрепить"}">${renderIcon("pin", { size: 16, active: pinned })}</button>`}
+                <button type="button" class="mc-icon-btn" data-act="detail" title="Открыть рецепт" aria-label="Открыть рецепт">${renderIcon("chevronRight", { size: 17 })}</button>
+            </div>
         </div>`}
     `;
 
@@ -1022,7 +1058,7 @@ export function createMealRowElement(meal, isHomePreview = false) {
     if (!isHomePreview) {
         const bg = document.createElement("div");
         bg.className = "nx-swipe-bg";
-        bg.innerHTML = `<span class="nx-swipe-left-hint">✓ ${meal.eaten ? "Снять" : "Съедено"}</span><span class="nx-swipe-right-hint">↻ Заменить</span>`;
+        bg.innerHTML = `<span class="nx-swipe-left-hint">${renderIcon("check", { size: 15, strokeWidth: 2 })}<span>${meal.eaten ? "Снять" : "Съедено"}</span></span><span class="nx-swipe-right-hint">${renderIcon("refresh", { size: 15 })}<span>Заменить</span></span>`;
         shell.appendChild(bg);
         NutriXMotion.attachSwipe(card, meal.id);
     }
@@ -1149,7 +1185,7 @@ export function togglePinMealForWeek(mealId) {
     saveState();
     renderApp();
     if (store.activeDetailMealId === mealId) openMealDetail(mealId);
-    showToast(`📌 «${meal.dishTitle.slice(0, 30)}» закреплено на всю неделю`);
+    showToast(`«${meal.dishTitle.slice(0, 30)}» закреплено на всю неделю`);
     haptic("medium");
 }
 
@@ -1204,7 +1240,7 @@ function updateCompleteDayButton() {
 
     btn.classList.toggle("done", allDone);
     document.getElementById("home-complete-day-label").innerText =
-        allDone ? "✓ План дня выполнен (снять отметку)" : "✓ Отметить: план дня выполнен";
+        allDone ? "План дня выполнен (снять отметку)" : "Отметить: план дня выполнен";
     document.getElementById("home-complete-day-meta").innerText = `${doneCount} / ${todayMeals.length}`;
 }
 
@@ -1216,7 +1252,7 @@ export function toggleCompleteWholeDay(dayIdx) {
     rebuildGroceryList();
     saveState();
     renderApp();
-    showToast(allDone ? "Отметка выполнения дня снята" : "План дня выполнен на 100% ✓");
+    showToast(allDone ? "Отметка выполнения дня снята" : "План дня выполнен на 100%");
     NutriXPerf.notify("success");
 }
 
@@ -1241,9 +1277,12 @@ export function renderHomeOverview() {
     document.getElementById("home-streak-label").innerText = `Серия: ${formatCountRu(appState.streakDays || 0, "день", "дня", "дней")}`;
 
     const dayMeta = DAY_TYPE_META[stats.dayType] || DAY_TYPE_META.rest;
-    document.getElementById("home-day-type-title").innerText = stats.dayType !== "rest"
-        ? `Баланс · ${dayMeta.icon} ${dayMeta.label}`
-        : "Баланс калорий";
+    const dayTitleEl = document.getElementById("home-day-type-title");
+    if (dayTitleEl) {
+        dayTitleEl.innerHTML = stats.dayType !== "rest"
+            ? `<span>Баланс ·</span>${renderIcon(dayMeta.iconKey, { size: 15, active: true })}<span>${escapeHtml(dayMeta.label)}</span>`
+            : "Баланс калорий";
+    }
 
     const ringArc = document.getElementById("home-ring-arc");
     const ringSub = document.querySelector(".nx-ring-sub");
@@ -1252,7 +1291,7 @@ export function renderHomeOverview() {
 
     if (stats.isOver) {
         const overRatio = stats.overKcal / Math.max(1, stats.goal.kcal);
-        const overColor = overRatio > 0.10 ? "var(--nx-danger)" : "var(--nx-warning)";
+        const overColor = overRatio > 0.15 ? "var(--nx-danger)" : "var(--nx-warning)";
         ringArc.style.stroke = overColor;
         ringArc.style.strokeDashoffset = "0";
         if (ringSub) {
@@ -1342,23 +1381,25 @@ function syncMenuSettingsSheetState() {
     if (overlapBadge) overlapBadge.innerText = appState.optimizeOverlap !== false ? "ВКЛ" : "ВЫКЛ";
 }
 
-function getActiveMenuBadgeLabel() {
+function getActiveMenuBadgeHtml() {
     const modes = getUserPlanModes(appState.user);
     const style = appState.user?.cuisineStyle || "balanced";
-    const modeChips = {
-        quick: "⚡ Быстро",
-        budget: "💰 Экономно",
-        mealprep: "🍱 На 2 дня",
-        diverse: "🌈 Разнообразие"
+    const modeMeta = {
+        quick:    { icon: "clock",    label: "Быстро" },
+        budget:   { icon: "wallet",   label: "Экономно" },
+        mealprep: { icon: "layers",   label: "На 2 дня" },
+        diverse:  { icon: "sparkles", label: "Разнообразие" }
     };
-    const modeIcons = { quick: "⚡", budget: "💰", mealprep: "🍱", diverse: "🌈" };
-    if (modes.length === 1 && modeChips[modes[0]]) return modeChips[modes[0]];
-    if (modes.length >= 2) {
-        const icons = modes.map(m => modeIcons[m] || "").join("");
-        return `${icons} ${formatCountRu(modes.length, "режим", "режима", "режимов")}`;
+    if (modes.length === 1 && modeMeta[modes[0]]) {
+        const m = modeMeta[modes[0]];
+        return `${renderIcon(m.icon, { size: 12, active: true })}<span>${m.label}</span>`;
     }
-    if (style === "simple") return "⚡ Простые";
-    if (style === "exotic") return "✨ Необычные";
+    if (modes.length >= 2) {
+        const icons = modes.slice(0, 3).map(k => renderIcon(modeMeta[k]?.icon || "sliders", { size: 11 })).join("");
+        return `${icons}<span>${formatCountRu(modes.length, "режим", "режима", "режимов")}</span>`;
+    }
+    if (style === "simple") return `${renderIcon("bolt", { size: 12, active: true })}<span>Простые</span>`;
+    if (style === "exotic") return `${renderIcon("sparkles", { size: 12, active: true })}<span>Необычные</span>`;
     return "";
 }
 
@@ -1377,7 +1418,11 @@ function renderWeekStrip() {
         dt.setDate(now.getDate() + mondayOffset + idx);
         const tType = map[idx] || "rest";
         const meta = DAY_TYPE_META[tType] || DAY_TYPE_META.rest;
-        const badge = hasSports ? (tType !== "rest" ? meta.short : "•") : "";
+        const badge = hasSports
+            ? (tType !== "rest"
+                ? renderIcon(meta.iconKey, { size: 11, strokeWidth: 1.7 })
+                : `<span class="nx-day-dot"></span>`)
+            : "";
         return `
             <div class="nx-day-oval ${idx === todayIdx ? "today" : ""} ${idx === store.selectedDayIndex ? "active" : ""}" onclick="selectDay(${idx})">
                 <span class="d-let">${d.short}</span>
@@ -1416,10 +1461,10 @@ export function openDayTypeModal() {
             return `
                 <div class="choice-card ${active ? "active" : ""}" onclick="setDayTrainingType('${k}'); closeModal('day-type-modal');">
                     <div>
-                        <div class="choice-title">${m.icon} ${escapeHtml(m.label)}</div>
+                        <div class="choice-title">${renderIcon(m.iconKey, { size: 16, active })}<span>${escapeHtml(m.label)}</span></div>
                         <div class="choice-sub">${escapeHtml(m.toast)}</div>
                     </div>
-                    <div class="choice-check">${active ? "✓" : ""}</div>
+                    <div class="choice-check">${active ? renderIcon("check", { size: 13, strokeWidth: 2.2 }) : ""}</div>
                 </div>`;
         }).join("");
     }
@@ -1495,7 +1540,7 @@ export function togglePlanMode(mode) {
     if (conflictMsg) {
         showToast(conflictMsg);
     } else if (modes.length) {
-        showToast(`Активно: ${formatCountRu(modes.length, "режим", "режима", "режимов")} ✓`);
+        showToast(`Активно: ${formatCountRu(modes.length, "режим", "режима", "режимов")}`);
     } else {
         showToast("Все режимы сброшены");
     }
@@ -1526,11 +1571,10 @@ export function renderNutritionDiary() {
 
     const chipEl = document.getElementById("nut-active-mode-chip");
     if (chipEl) {
-        const chipText = getActiveMenuBadgeLabel();
-        chipEl.innerText = chipText;
-        chipEl.classList.toggle("hidden", !chipText);
+        const chipHtml = getActiveMenuBadgeHtml();
+        chipEl.innerHTML = chipHtml;
+        chipEl.classList.toggle("hidden", !chipHtml);
         chipEl.onclick = openMenuSettingsModal;
-        chipEl.style.cursor = "pointer";
     }
 
     const availTypes = getAvailableDayTypesForUser(appState.user);
@@ -1542,8 +1586,9 @@ export function renderNutritionDiary() {
         } else {
             cycleBtn.classList.remove("hidden");
             const meta = DAY_TYPE_META[dayType] || DAY_TYPE_META.rest;
-            const suffix = availTypes.length >= 4 ? " ▾" : " ↻";
-            cycleBtn.innerText = `${dayType !== "rest" ? `${meta.icon} ` : ""}${meta.label}${suffix}`;
+            const iconHtml = dayType !== "rest" ? renderIcon(meta.iconKey, { size: 13, active: true }) : "";
+            const tailIcon = renderIcon(availTypes.length >= 4 ? "chevronDown" : "refresh", { size: 12 });
+            cycleBtn.innerHTML = `${iconHtml}<span>${escapeHtml(meta.label)}</span>${tailIcon}`;
             cycleBtn.classList.toggle("train", dayType !== "rest");
         }
     }
@@ -1554,7 +1599,7 @@ export function renderNutritionDiary() {
     const nutBarEl = document.getElementById("nut-kcal-bar");
 
     if (stats.isOver) {
-        const overColor = (stats.overKcal / Math.max(1, stats.goal.kcal)) > 0.10 ? "var(--nx-danger)" : "var(--nx-warning)";
+        const overColor = (stats.overKcal / Math.max(1, stats.goal.kcal)) > 0.15 ? "var(--nx-danger)" : "var(--nx-warning)";
         nutLeftEl.innerText = `+${stats.overKcal} ккал сверх плана`;
         nutLeftEl.style.color = overColor;
         nutBarEl.style.width = "100%";
@@ -1585,7 +1630,7 @@ export function regenerateCurrentDay() {
     rebuildGroceryList();
     saveState();
     renderApp();
-    showToast(`${WEEK_DAYS[store.selectedDayIndex].full}: меню обновлено ✓`);
+    showToast(`${WEEK_DAYS[store.selectedDayIndex].full}: меню обновлено`);
     haptic("medium");
 }
 
@@ -1596,7 +1641,7 @@ export function regenerateFullWeek() {
     });
     generateWeeklyPlanOptimized();
     renderApp();
-    showToast("Недельный план обновлён ✓");
+    showToast("Недельный план обновлён");
     haptic("medium");
 }
 
@@ -1646,13 +1691,16 @@ function renderDetailCookingSteps(meal) {
 
     stepsEl.innerHTML = steps.length ? steps.map((st, i) => {
         const isDone = Boolean(doneMap[i]);
+        const durBadge = st.duration_min
+            ? `<span class="step-duration-pill">${renderIcon("clock", { size: 11 })}<span>${Number(st.duration_min)} мин</span></span>`
+            : "";
         return `
         <div class="step-item ${isDone ? "done" : ""}" onclick="toggleDetailStepDone('${escapeHtml(meal.id)}', ${i})">
-            <div class="step-num">${isDone ? "✓" : (Number(st.step_number) || i + 1)}</div>
-            <div style="flex:1;">
+            <div class="step-num">${isDone ? renderIcon("check", { size: 13, strokeWidth: 2.3 }) : (Number(st.step_number) || i + 1)}</div>
+            <div class="nx-flex-1">
                 <div class="step-stage-header">
                     <span>${escapeHtml(st.stage_name || `Шаг ${i + 1}`)}</span>
-                    <span style="color:var(--nx-text-muted);">${st.duration_min ? `${Number(st.duration_min)} мин` : ""}</span>
+                    ${durBadge}
                 </div>
                 <div class="step-text">${escapeHtml(st.instruction)}</div>
             </div>
@@ -1694,6 +1742,7 @@ export function openMealDetail(mealId) {
 
     ["home", "nutrition", "progress", "profile"].forEach(t => document.getElementById(`tab-${t}`)?.classList.add("hidden"));
     document.getElementById("tab-meal-detail").classList.remove("hidden");
+    syncTelegramBackButton(true);
 
     document.getElementById("detail-slot-badge").innerText = meal.name;
     document.getElementById("detail-category-tag").innerText = meal.primaryCategory || "Сбалансированное";
@@ -1703,7 +1752,7 @@ export function openMealDetail(mealId) {
         const pt = typeof meal.priceTier === "number" ? meal.priceTier : 1;
         priceTag.innerText = pt === 0 ? "₽ Бюджет" : (pt === 2 ? "₽₽₽ Премиум" : "₽₽ Средний");
     }
-    document.getElementById("detail-status-tag").innerText = meal.eaten ? "✓ Съедено" : "По плану";
+    document.getElementById("detail-status-tag").innerText = meal.eaten ? "Съедено" : "По плану";
     document.getElementById("detail-dish-title").innerText = meal.dishTitle;
     document.getElementById("detail-short-desc").innerText = meal.shortDescription || "";
 
@@ -1718,14 +1767,14 @@ export function openMealDetail(mealId) {
     document.getElementById("detail-shelf-life").innerText = `до ${meal.shelfLifeHours || 36} ч (+4 °C)`;
 
     const eatBtn = document.getElementById("detail-eat-btn");
-    eatBtn.innerText = meal.eaten ? "✓ Съедено" : "Отметить";
+    eatBtn.innerHTML = `${renderIcon(meal.eaten ? "checkCircle" : "check", { size: 15, active: Boolean(meal.eaten) })}<span>${meal.eaten ? "Съедено" : "Отметить"}</span>`;
     eatBtn.classList.toggle("active-eat", Boolean(meal.eaten));
 
     const pinBtn = document.getElementById("detail-pin-btn");
     if (pinBtn) {
         const pinned = !meal.isOffPlan && !meal.isExtra && isSlotPinned(meal.name);
         pinBtn.disabled = Boolean(meal.isOffPlan || meal.isExtra);
-        pinBtn.innerText = pinned ? "📌 Закреплено" : "📌 На всю неделю";
+        pinBtn.innerHTML = `${renderIcon("pin", { size: 15, active: pinned })}<span>${pinned ? "Закреплено" : "На всю неделю"}</span>`;
         pinBtn.classList.toggle("active-pin", pinned);
     }
 
@@ -1738,7 +1787,7 @@ export function openMealDetail(mealId) {
     if (mpBar) {
         if (mpInfo) {
             mpBar.classList.remove("hidden");
-            document.getElementById("detail-mealprep-title").innerText = `🍱 Заготовка на 2 дня (${mpInfo.label})`;
+            document.getElementById("detail-mealprep-title").innerText = `Заготовка на 2 дня (${mpInfo.label})`;
             document.getElementById("detail-mealprep-sub").innerText = `Готовь один раз — раздели на ${mpInfo.label}`;
             document.getElementById("pm-x1-btn")?.classList.toggle("active", store.detailPortionMult === 1);
             document.getElementById("pm-x2-btn")?.classList.toggle("active", store.detailPortionMult === 2);
@@ -1753,7 +1802,7 @@ export function openMealDetail(mealId) {
     const tagsEl = document.getElementById("detail-tags-list");
     const dTags = (meal.dietaryTags || []).map(t => `<span class="chip-item dietary">${escapeHtml(t)}</span>`);
     const aTags = (meal.allergens || []).length
-        ? meal.allergens.map(a => `<span class="chip-item allergen">⚠ ${escapeHtml(a)}</span>`)
+        ? meal.allergens.map(a => `<span class="chip-item allergen">${renderIcon("alertTriangle", { size: 12 })}<span>${escapeHtml(a)}</span></span>`)
         : [`<span class="chip-item dietary">Без частых аллергенов</span>`];
     tagsEl.innerHTML = [...dTags, ...aTags].join("");
 
@@ -1788,18 +1837,18 @@ function renderDetailIngredientsWithOneClickSubs(meal) {
         const subChips = subs.map((s, sIdx) => {
             const dK = Math.round((s.dKcal || 0) * ((Number(ing.weight) || 100) / 100));
             const dStr = dK !== 0 ? ` (${dK > 0 ? "+" : ""}${dK} ккал)` : "";
-            return `<button type="button" class="inline-sub-chip" onclick="applyInlineDetailSub('${escapeHtml(meal.id)}', ${idx}, ${sIdx})">⇄ ${escapeHtml(s.target.split("(")[0].trim())}${dStr}</button>`;
+            return `<button type="button" class="inline-sub-chip" onclick="applyInlineDetailSub('${escapeHtml(meal.id)}', ${idx}, ${sIdx})">${renderIcon("swap", { size: 12 })}<span>${escapeHtml(s.target.split("(")[0].trim())}${dStr}</span></button>`;
         }).join("");
 
         const revertBtn = ing.originalSnapshot
-            ? `<button type="button" class="inline-sub-chip revert" onclick="revertInlineDetailSub('${escapeHtml(meal.id)}', ${idx})">↩ Вернуть «${escapeHtml(ing.originalSnapshot.name.split("(")[0].trim())}»</button>`
+            ? `<button type="button" class="inline-sub-chip revert" onclick="revertInlineDetailSub('${escapeHtml(meal.id)}', ${idx})">${renderIcon("undo", { size: 12 })}<span>Вернуть «${escapeHtml(ing.originalSnapshot.name.split("(")[0].trim())}»</span></button>`
             : "";
 
         return `
             <div class="ing-row">
-                <div style="flex:1; min-width:0;">
-                    <div style="font-weight:700;">${escapeHtml(ing.name)}</div>
-                    <div style="font-size:11px; color:var(--nx-text-muted);">${stateLbl}${ing.dept ? ` · ${escapeHtml(ing.dept)}` : ""}${mult === 2 ? " · ×2 дня" : ""}</div>
+                <div class="nx-flex-1">
+                    <div class="ing-name">${escapeHtml(ing.name)}</div>
+                    <div class="ing-meta">${stateLbl}${ing.dept ? ` · ${escapeHtml(ing.dept)}` : ""}${mult === 2 ? " · ×2 дня" : ""}</div>
                     ${(subChips || revertBtn) ? `<div class="inline-sub-strip">${revertBtn || subChips}</div>` : ""}
                 </div>
                 ${qtyHtml}
@@ -1871,6 +1920,7 @@ export function revertInlineDetailSub(mealId, ingIdx) {
 export function closeMealDetail() {
     store.activeDetailMealId = null;
     store.detailPortionMult = 1;
+    syncTelegramBackButton(false);
     switchTab(previousTabBeforeDetail || "nutrition");
 }
 
@@ -1920,7 +1970,7 @@ export function renderRecipesCatalog() {
 
     list = list.slice(0, 45);
     if (!list.length) {
-        box.innerHTML = `<div class="hint-ref-box" style="text-align:center;">Ничего не найдено по запросу или с учётом ваших ограничений.</div>`;
+        box.innerHTML = `<div class="hint-ref-box nx-text-center">Ничего не найдено по запросу или с учётом твоих ограничений.</div>`;
         return;
     }
 
@@ -1928,15 +1978,15 @@ export function renderRecipesCatalog() {
         const n = r.nutrition || {};
         return `
             <div class="nx-cat-row" onclick="assignCatalogRecipeToSelectedDay('${escapeHtml(r.recipe_id)}')">
-                <div style="flex:1; min-width:0;">
-                    <div style="font-size:14px; font-weight:800; line-height:1.28; margin-bottom:4px;">${escapeHtml(r.title_ru)}</div>
-                    <div style="font-size:11px; color:var(--nx-text-muted);">
+                <div class="nx-flex-1">
+                    <div class="nx-cat-title">${escapeHtml(r.title_ru)}</div>
+                    <div class="nx-cat-meta">
                         ${escapeHtml(r.meal_type)} · ${Number(r.total_time_min) || 18} мин ·
-                        <strong style="color:var(--nx-mint);">${Math.round(n.serving_kcal || 400)} ккал</strong>
+                        <strong class="nx-text-accent">${Math.round(n.serving_kcal || 400)} ккал</strong>
                         (Б ${Math.round(n.serving_protein_g || 25)} / Ж ${Math.round(n.serving_fat_g || 12)} / У ${Math.round(n.serving_carbs_g || 35)})
                     </div>
                 </div>
-                <div class="nx-plus-circle">+</div>
+                <div class="nx-plus-circle">${renderIcon("plus", { size: 16, strokeWidth: 1.8 })}</div>
             </div>`;
     }).join("");
 }
@@ -1996,23 +2046,29 @@ export function renderProgressTab() {
     const checkIns = (appState.checkIns?.length) ? appState.checkIns : [{ date: startDate, weight: u.weight }];
     document.getElementById("prog-weight-val").innerText = Number(u.weight).toFixed(1);
     const deltaW = Number((u.weight - checkIns[0].weight).toFixed(1));
-    document.getElementById("prog-weight-delta").innerText = checkIns.length > 1
-        ? `${deltaW > 0 ? "+" : ""}${deltaW} кг со старта · Внести замер ›`
-        : "Стартовая точка · Внести замер ›";
+    const deltaEl = document.getElementById("prog-weight-delta");
+    if (deltaEl) {
+        const deltaText = checkIns.length > 1
+            ? `${deltaW > 0 ? "+" : ""}${deltaW} кг со старта · Внести замер`
+            : "Стартовая точка · Внести замер";
+        deltaEl.innerHTML = `<span>${escapeHtml(deltaText)}</span>${renderIcon("chevronRight", { size: 14 })}`;
+    }
 
     const svg = document.getElementById("prog-weight-svg");
     if (checkIns.length === 1) {
-        svg.innerHTML = `<line x1="12" y1="30" x2="132" y2="30" stroke="var(--nx-border-strong)" stroke-dasharray="4 4" stroke-width="2"/><circle cx="72" cy="30" r="5" fill="var(--nx-mint)"/>`;
+        svg.innerHTML = `<line x1="12" y1="30" x2="132" y2="30" stroke="var(--nx-border-strong)" stroke-dasharray="3 4" stroke-width="1.5"/><circle cx="72" cy="30" r="4" fill="var(--nx-mint)"/>`;
     } else {
         const ws = checkIns.map(c => c.weight);
         const minW = Math.min(...ws) - 0.5, maxW = Math.max(...ws) + 0.5;
         const pts = checkIns.map((c, i) => {
             const x = 10 + (i / (checkIns.length - 1)) * 124;
-            const y = 50 - ((c.weight - minW) / Math.max(0.5, maxW - minW)) * 38;
+            const y = 48 - ((c.weight - minW) / Math.max(0.5, maxW - minW)) * 36;
             return `${x.toFixed(1)},${y.toFixed(1)}`;
         });
+        const firstX = pts[0].split(",")[0];
         const lastPt = pts[pts.length - 1].split(",");
-        svg.innerHTML = `<polyline fill="none" stroke="var(--nx-mint)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${pts.join(" ")}"/><circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="4.5" fill="var(--nx-mint)"/>`;
+        const areaPts = `${firstX},56 ${pts.join(" ")} ${lastPt[0]},56`;
+        svg.innerHTML = `<defs><linearGradient id="nx-w-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--nx-mint)" stop-opacity="0.22"/><stop offset="100%" stop-color="var(--nx-mint)" stop-opacity="0"/></linearGradient></defs><polygon fill="url(#nx-w-grad)" points="${areaPts}"/><polyline fill="none" stroke="var(--nx-mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${pts.join(" ")}"/><circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="3.8" fill="var(--nx-mint)"/>`;
     }
 
     const pK = t.protein * 4, fK = t.fat * 9, cK = t.carbs * 4;
@@ -2028,6 +2084,7 @@ export function renderProgressTab() {
 
 export function renderCloudStatusCard() {
     const card = document.getElementById("cloud-status-card");
+    const iconEl = document.getElementById("cloud-status-icon");
     const titleEl = document.getElementById("cloud-sync-title");
     const subEl = document.getElementById("cloud-sync-sub");
     const btn = document.getElementById("cloud-retry-btn");
@@ -2038,19 +2095,23 @@ export function renderCloudStatusCard() {
     card.classList.toggle("error", st === "error" || st === "limit");
 
     if (!supported) {
-        titleEl.innerText = "💾 Сохранено на этом устройстве";
+        if (iconEl) iconEl.innerHTML = renderIcon("hardDrive", { size: 18, active: true });
+        titleEl.innerText = "Сохранено на этом устройстве";
         subEl.innerText = "Открой NutriX через бота в Telegram, чтобы включить автоматический перенос профиля между телефоном и ПК.";
         btn?.classList.add("hidden");
     } else if (st === "error") {
-        titleEl.innerText = "⚠ Не удалось сохранить в облако";
+        if (iconEl) iconEl.innerHTML = renderIcon("cloudOff", { size: 18 });
+        titleEl.innerText = "Не удалось сохранить в облако";
         subEl.innerText = "Локальная копия в порядке — нажми «Повторить», когда вернётся стабильная сеть.";
         btn?.classList.remove("hidden");
     } else if (st === "limit") {
-        titleEl.innerText = "⚠ Облако переполнено";
+        if (iconEl) iconEl.innerHTML = renderIcon("alertTriangle", { size: 18, active: true });
+        titleEl.innerText = "Облако переполнено";
         subEl.innerText = "Слишком много сохранённых записей — почисти лишние «Мои блюда» и повтори сохранение.";
         btn?.classList.remove("hidden");
     } else {
-        titleEl.innerText = "☁️ Всё сохраняется само";
+        if (iconEl) iconEl.innerHTML = renderIcon("cloudCheck", { size: 18, active: true });
+        titleEl.innerText = "Всё сохраняется само";
         const timeNote = store.lastCloudSyncTime ? ` · обновлено в ${store.lastCloudSyncTime}` : "";
         subEl.innerText = `Данные привязаны к аккаунту Telegram — на другом телефоне или ПК всё откроется автоматически${timeNote}.`;
         btn?.classList.add("hidden");
@@ -2127,7 +2188,11 @@ export function toggleOverlapOptimization() {
 
 export function toggleHideCheckedGroceries() {
     store.hideCheckedGroceries = !store.hideCheckedGroceries;
-    document.getElementById("btn-hide-checked")?.classList.toggle("active-eat", store.hideCheckedGroceries);
+    const hideBtn = document.getElementById("btn-hide-checked");
+    if (hideBtn) {
+        hideBtn.classList.toggle("active-eat", store.hideCheckedGroceries);
+        hideBtn.innerHTML = `${renderIcon(store.hideCheckedGroceries ? "eyeOff" : "eye", { size: 15 })}<span>${store.hideCheckedGroceries ? "Показать" : "Скрыть"}</span>`;
+    }
     renderGroceriesList();
     hapticSelect();
 }
@@ -2208,7 +2273,7 @@ export function renderGroceriesList() {
     Object.entries(list).forEach(([group, items]) => {
         const visible = store.hideCheckedGroceries ? items.filter(i => !i.isChecked) : items;
         if (!visible.length) return;
-        html += `<div class="dept-header">${escapeHtml(group)}</div>`;
+        html += `<div class="dept-header">${escapeHtml(group)}</div><div class="grocery-dept-card">`;
 
         visible.forEach(item => {
             const encName = encodeURIComponent(item.name);
@@ -2216,15 +2281,18 @@ export function renderGroceriesList() {
             const packMain = item.packLabel || (item.weight > 0 ? `${item.weight} г` : "по вкусу");
             const packSub = item.gramsSub ? `<div class="g-pack-sub ${item.checkHome ? "home-hint" : ""}">${escapeHtml(item.gramsSub)}</div>` : "";
             const hasSubs = findInlineSubs(item.name, item.alt).length > 0;
+            const waveHtml = item.waveLabel
+                ? `<span class="wave-badge">${renderIcon("leaf", { size: 11 })}<span>${escapeHtml(item.waveLabel)}</span></span>`
+                : "";
 
             html += `
                 <div class="grocery-row ${item.isChecked ? "checked" : ""}" onclick="toggleGroceryItem('${encName}')">
                     <div class="g-left">
-                        <div class="custom-checkbox">${item.isChecked ? "✓" : ""}</div>
-                        <div style="min-width:0;">
-                            <div class="g-title">${escapeHtml(item.name)}${item.waveLabel ? `<span class="wave-badge">${escapeHtml(item.waveLabel)}</span>` : ""}</div>
+                        <div class="custom-checkbox">${item.isChecked ? renderIcon("check", { size: 12, strokeWidth: 2.4 }) : ""}</div>
+                        <div class="nx-minw0">
+                            <div class="g-title">${escapeHtml(item.name)}${waveHtml}</div>
                             <div class="g-meta-dishes">${escapeHtml(item.dishes || "")}</div>
-                            ${hasSubs ? `<button type="button" class="sub-trigger-btn" onclick="event.stopPropagation(); openSubstitutionModal('${encName}', '${encAlt}')">⇄ Заменить</button>` : ""}
+                            ${hasSubs ? `<button type="button" class="sub-trigger-btn" onclick="event.stopPropagation(); openSubstitutionModal('${encName}', '${encAlt}')">${renderIcon("swap", { size: 12 })}<span>Заменить</span></button>` : ""}
                         </div>
                     </div>
                     <div class="g-weight-col">
@@ -2233,9 +2301,10 @@ export function renderGroceriesList() {
                     </div>
                 </div>`;
         });
+        html += `</div>`;
     });
 
-    container.innerHTML = html || `<div class="hint-ref-box" style="text-align:center;">Все покупки отмечены ✓</div>`;
+    container.innerHTML = html || `<div class="hint-ref-box nx-text-center">Все покупки отмечены</div>`;
 }
 
 let activeSubSourceName = null;
@@ -2250,16 +2319,16 @@ export function openSubstitutionModal(encName, encAlt = "") {
     const box = document.getElementById("sub-options-container");
     box.innerHTML = opts.length ? opts.map((o, idx) => `
         <div class="sub-option-card" onclick="applyIngredientSubstitution(${idx})">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                <strong style="font-size:14px;">${escapeHtml(o.target)}</strong>
+            <div class="nx-row-between">
+                <strong class="choice-title">${escapeHtml(o.target)}</strong>
                 <span class="precision-pill">${escapeHtml(o.eq || "Аналог")}</span>
             </div>
-            <div style="font-size:12px; color:var(--nx-text-muted); margin-top:4px;">${escapeHtml(o.note || "Равноценная замена из справочника")}</div>
+            <div class="choice-sub">${escapeHtml(o.note || "Равноценная замена из справочника")}</div>
             ${(o.dKcal !== 0 || o.dP !== 0) ? `
             <div class="sub-delta-row">
-                <span style="color:var(--nx-mint);">${o.dKcal > 0 ? "+" : ""}${o.dKcal} ккал/100г</span>
-                <span>Б: ${o.dP > 0 ? "+" : ""}${o.dP}г</span>
-                <span>Ж: ${o.dF > 0 ? "+" : ""}${o.dF}г</span>
+                <span class="nx-text-accent">${o.dKcal > 0 ? "+" : ""}${o.dKcal} ккал/100 г</span>
+                <span>Б: ${o.dP > 0 ? "+" : ""}${o.dP} г</span>
+                <span>Ж: ${o.dF > 0 ? "+" : ""}${o.dF} г</span>
             </div>` : ""}
         </div>`).join("") : `<div class="hint-ref-box">Нет замен для этого продукта.</div>`;
 
@@ -2301,7 +2370,7 @@ export function applyIngredientSubstitution(optIdx) {
 
 function buildPlainGroceryText() {
     const pLbl = store.groceryPeriod === 1 ? "на 1 день" : (store.groceryPeriod === 3 ? "на 3 дня" : "на неделю");
-    const lines = [`🛒 NutriX · Список покупок ${pLbl}`];
+    const lines = [`NutriX · Список покупок ${pLbl}`];
     Object.entries(appState.groceryList || {}).forEach(([group, items]) => {
         const pending = items.filter(i => !i.isChecked);
         if (!pending.length) return;
@@ -2324,12 +2393,12 @@ export function copyGroceriesToClipboard() {
         document.body.appendChild(ta);
         ta.focus();
         ta.select();
-        try { document.execCommand("copy"); showToast("Список покупок скопирован ✓"); }
+        try { document.execCommand("copy"); showToast("Список покупок скопирован"); }
         catch (e) { showToast("Не удалось скопировать"); }
         document.body.removeChild(ta);
     };
     if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(() => showToast("Список покупок скопирован ✓")).catch(fallbackCopy);
+        navigator.clipboard.writeText(text).then(() => showToast("Список покупок скопирован")).catch(fallbackCopy);
     } else {
         fallbackCopy();
     }
@@ -2414,7 +2483,7 @@ export function renderWaterModal() {
     document.getElementById("wm-norm-breakdown").innerText = `База ${baseMl} мл (${u.weight} кг) + активность +${bonusMl} мл`;
     document.getElementById("wm-cur-l").innerText = (curMl / 1000).toFixed(2);
     document.getElementById("wm-goal-l").innerText = (goalMl / 1000).toFixed(2);
-    document.getElementById("wm-rem-text").innerText = remMl > 0 ? `До цели осталось ${remMl} мл` : "Суточная норма воды выполнена ✓";
+    document.getElementById("wm-rem-text").innerText = remMl > 0 ? `До цели осталось ${remMl} мл` : "Суточная норма воды выполнена";
 
     const hist = (appState.waterHistory?.[today] || []).slice().reverse();
     document.getElementById("wm-history-list").innerHTML = hist.length
@@ -2458,7 +2527,7 @@ export function submitCheckIn() {
     if (newBf) appState.user.bodyFatPct = newBf;
 
     const trend = computeSmoothedWeightTrend(appState.checkIns, today, appState.lastAutoAdjustDate);
-    let msg = "Замер сохранён ✓";
+    let msg = "Замер сохранён";
     let shouldAdjustCalories = false;
     let deltaKcal = 0;
 
@@ -2541,11 +2610,11 @@ export function openChooseMealSheet(fromCatalog = false) {
     const listEl = document.getElementById("choose-meal-list");
     listEl.innerHTML = (appState.meals || []).map(m => `
         <div class="choice-card" onclick="handleMealChoiceClick('${escapeHtml(m.id)}')">
-            <div style="min-width:0;">
+            <div class="nx-minw0">
                 <div class="choice-title">${escapeHtml(m.name)} · ${Number(m.kcal) || 0} ккал</div>
                 <div class="choice-sub">${escapeHtml(m.dishTitle)}</div>
             </div>
-            <span style="color:var(--nx-mint); font-weight:800;">›</span>
+            ${renderIcon("chevronRight", { size: 17, className: "nx-text-accent" })}
         </div>`).join("");
     document.getElementById("choose-meal-modal").classList.remove("hidden");
     haptic("light");
@@ -2590,14 +2659,14 @@ function renderSavedCustomMealsInModal() {
 
     listEl.innerHTML = list.map(item => `
         <div class="saved-meal-row" onclick="applySavedCustomMealToSlot('${escapeHtml(item.id)}')">
-            <div style="min-width:0; flex:1;">
-                <div style="font-size:13px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
-                <div style="font-size:11px; color:var(--nx-text-muted); margin-top:2px;">
-                    <strong style="color:var(--nx-mint);">${Number(item.kcal) || 0} ккал</strong>
+            <div class="nx-flex-1">
+                <div class="cloud-sync-title">${escapeHtml(item.title)}</div>
+                <div class="ing-meta">
+                    <strong class="nx-text-accent">${Number(item.kcal) || 0} ккал</strong>
                     · Б ${Number(item.protein) || 0} / Ж ${Number(item.fat) || 0} / У ${Number(item.carbs) || 0} · ${Number(item.weight) || 250} г
                 </div>
             </div>
-            <button type="button" class="saved-meal-del" title="Удалить из Моих блюд" onclick="event.stopPropagation(); deleteSavedCustomMeal('${escapeHtml(item.id)}')">×</button>
+            <button type="button" class="saved-meal-del" title="Удалить из Моих блюд" aria-label="Удалить" onclick="event.stopPropagation(); deleteSavedCustomMeal('${escapeHtml(item.id)}')">${renderIcon("close", { size: 14 })}</button>
         </div>
     `).join("");
 }
@@ -2717,10 +2786,10 @@ export async function runAccurateProductLookup() {
 
     if (badge) {
         badge.classList.remove("hidden");
-        badge.innerText = res.source === "openfoodfacts" ? `✓ Этикетка: ${res.matchedLabel}` : `✦ ${res.matchedLabel}`;
+        badge.innerHTML = `${renderIcon(res.source === "openfoodfacts" ? "check" : "sparkles", { size: 13 })}<span>${escapeHtml(res.source === "openfoodfacts" ? `Этикетка: ${res.matchedLabel}` : res.matchedLabel)}</span>`;
     }
     btn.disabled = false;
-    btn.innerText = "✦ Пересчитать КБЖУ";
+    btn.innerHTML = `${renderIcon("sparkles", { size: 16, active: true })}<span>Пересчитать КБЖУ</span>`;
     haptic("medium");
 }
 
@@ -2761,7 +2830,7 @@ export async function submitEditMeal() {
     renderApp();
     closeModal("edit-meal-modal");
     if (store.activeDetailMealId === mealId) openMealDetail(mealId);
-    showToast(shouldSaveToLibrary ? "Блюдо сохранено и добавлено в «Мои блюда» ✓" : "Блюдо сохранено ✓");
+    showToast(shouldSaveToLibrary ? "Блюдо сохранено и добавлено в «Мои блюда»" : "Блюдо сохранено");
     haptic("medium");
 }
 
@@ -2875,7 +2944,7 @@ export function saveWorkerUrl() {
     const val = document.getElementById("worker-url-input").value.trim();
     if (val) setWorkerUrl(val);
     closeModal("worker-modal");
-    showToast("URL воркера обновлён ✓");
+    showToast("URL воркера обновлён");
 }
 
 export async function handleDatabaseFileUpload(input) {
@@ -2891,7 +2960,7 @@ export async function handleDatabaseFileUpload(input) {
             updateDbStatusBadge();
             CloudSync.rehydratePendingWeek();
             closeModal("db-modal");
-            showToast(`Загружено ${parsed.length} рецептов ✓`);
+            showToast(`Загружено ${parsed.length} рецептов`);
         } else {
             showToast("Неизвестный формат JSON");
         }
@@ -2996,11 +3065,11 @@ function renderSavedMealsInAddModal() {
     section.classList.remove("hidden");
     listEl.innerHTML = saved.slice(0, 12).map(item => `
         <div class="saved-meal-row" onclick="addSavedCustomMealAsNew('${escapeHtml(item.id)}')">
-            <div style="min-width:0; flex:1;">
-                <div style="font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
-                <div style="font-size:11px; color:var(--nx-text-muted);">${Number(item.kcal)} ккал · Б ${Number(item.protein)} · Ж ${Number(item.fat)} · У ${Number(item.carbs)}</div>
+            <div class="nx-flex-1">
+                <div class="cloud-sync-title">${escapeHtml(item.title)}</div>
+                <div class="ing-meta">${Number(item.kcal)} ккал · Б ${Number(item.protein)} · Ж ${Number(item.fat)} · У ${Number(item.carbs)}</div>
             </div>
-            <span style="color:var(--nx-mint); font-weight:800; font-size:16px;">+</span>
+            ${renderIcon("plus", { size: 16, className: "nx-text-accent", strokeWidth: 1.8 })}
         </div>`).join("");
 }
 
@@ -3099,11 +3168,11 @@ export function searchRecipesInAddModal(query) {
 
     box.innerHTML = hits.map(r => `
         <div class="db-search-item" onclick="addMasterRecipeAsNew('${escapeHtml(r.recipe_id)}')">
-            <div style="min-width:0; flex:1;">
-                <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(r.title_ru)}</div>
-                <div style="font-size:10px; color:var(--nx-text-muted);">${Math.round(r.nutrition?.serving_kcal || 350)} ккал · ${r.total_time_min || 15} мин</div>
+            <div class="nx-flex-1">
+                <div class="cloud-sync-title">${escapeHtml(r.title_ru)}</div>
+                <div class="ing-meta">${Math.round(r.nutrition?.serving_kcal || 350)} ккал · ${r.total_time_min || 15} мин</div>
             </div>
-            <span style="color:var(--nx-mint); font-weight:800;">+</span>
+            ${renderIcon("plus", { size: 16, className: "nx-text-accent", strokeWidth: 1.8 })}
         </div>`).join("");
     box.classList.remove("hidden");
 }
@@ -3135,10 +3204,13 @@ export async function runAddMealLookup() {
     document.getElementById("add-c").value = res.carbs;
 
     if (badge) {
-        badge.innerText = `✓ ${res.matchedLabel}`;
+        badge.innerHTML = `${renderIcon("check", { size: 13 })}<span>${escapeHtml(res.matchedLabel)}</span>`;
         badge.classList.remove("hidden");
     }
-    if (btn) { btn.disabled = false; btn.innerText = "✦ Найти точное КБЖУ (этикетка / AI)"; }
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `${renderIcon("sparkles", { size: 16, active: true })}<span>Найти точное КБЖУ (этикетка / AI)</span>`;
+    }
     haptic("light");
 }
 
@@ -3196,7 +3268,7 @@ export async function submitAddMeal() {
 
 export async function forceCloudSyncNow() {
     const ok = await CloudSync.push();
-    showToast(ok ? "Данные сохранены в облако Telegram ✓" : "Не удалось сохранить — проверь сеть или открой в Telegram");
+    showToast(ok ? "Данные сохранены в облако Telegram" : "Не удалось сохранить — проверь сеть или открой в Telegram");
     haptic("medium");
 }
 

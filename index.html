@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#0B0D0C">
+    <meta name="theme-color" content="#0C0F0D">
 
     <meta property="og:title" content="NutriX — Умный рацион и корзина покупок">
     <meta property="og:description" content="Научное меню на 7 дней, 2 000 рецептов РФ и умная корзина продуктов.">
@@ -20,7 +20,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-
 
     <!-- ЕДИНЫЙ АДАПТИВНЫЙ ВЕКТОРНЫЙ СПРАЙТ ЛОГОТИПА NUTRIX -->
     <svg xmlns="http://www.w3.org/2000/svg" class="hidden" aria-hidden="true">
@@ -43,7 +42,7 @@
         </defs>
     </svg>
 
-    <!-- 1. ГЛОБАЛЬНЫЙ КРУГОВОЙ ТЕЛЕМЕТРИЧЕСКИЙ ЗАГРУЗЧИК -->
+    <!-- 1. ГЛОБАЛЬНЫЙ ОРБИТАЛЬНЫЙ ТЕЛЕМЕТРИЧЕСКИЙ ЗАГРУЗЧИК -->
     <div id="nx-loader" class="nx-loader-overlay" aria-live="polite">
         <div class="nx-loader-orbital">
             <svg class="nx-loader-svg" viewBox="0 0 158 158">
@@ -53,7 +52,7 @@
                         stroke-dasharray="376.99" stroke-dashoffset="376.99" />
             </svg>
             <div class="nx-loader-center">
-                <svg width="34" height="25" style="margin-bottom:4px;" aria-hidden="true">
+                <svg class="nx-mb-8" width="32" height="23" aria-hidden="true">
                     <use href="#nx-logo-mark"/>
                 </svg>
                 <div id="nx-loader-pct" class="nx-loader-pct">0%</div>
@@ -64,16 +63,16 @@
         <div id="nx-loader-sub" class="nx-loader-sub">Расчёт суточной нормы и подбор блюд…</div>
     </div>
 
-    <!-- 2. ЭНЕРГЕТИЧЕСКАЯ ВОЛНА ZERO GUILT И ТОСТ -->
+    <!-- 2. ИМПУЛЬС ZERO GUILT И ТОСТ -->
     <div id="nx-zg-wave" class="nx-zg-wave"></div>
     <div id="nx-toast" class="nx-toast">Готово</div>
 
-    <!-- ПРИВЕТСТВЕННОЕ ОКНО -->
+    <!-- ПРИВЕТСТВЕННОЕ ОКНО (EDITORIAL) -->
     <section id="welcome-view" class="hidden">
         <div class="welcome-shell">
             <div>
                 <div class="welcome-logo-box">
-                    <svg width="46" height="34" aria-label="NutriX">
+                    <svg width="38" height="28" aria-label="NutriX">
                         <use href="#nx-logo-mark"/>
                     </svg>
                 </div>
@@ -86,9 +85,7 @@
 
                 <div class="welcome-pillars">
                     <div class="welcome-pillar">
-                        <div class="wp-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                        </div>
+                        <div class="wp-icon"><svg class="nx-icon nx-icon--active" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 4 3.5 8.5 12 13l8.5-4.5L12 4Z"/> <path d="M12 4 3.5 8.5 12 13l8.5-4.5L12 4Z"/><path d="M3.5 12.5 12 17l8.5-4.5"/><path d="M3.5 16.5 12 21l8.5-4.5"/></svg></div>
                         <div>
                             <div class="wp-title">Меню под твоё тело и график</div>
                             <div class="wp-desc">Учёт твоих видов спорта, активности, аппетита, тренировочных дней и замеров.</div>
@@ -96,9 +93,7 @@
                     </div>
 
                     <div class="welcome-pillar">
-                        <div class="wp-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                        </div>
+                        <div class="wp-icon"><svg class="nx-icon nx-icon--active" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M6.25 7h14l-1.5 7.5a1.5 1.5 0 0 1-1.48 1.2H8.5a1.5 1.5 0 0 1-1.48-1.24L6.25 7Z"/> <path d="M3 4.5h2.25L7 14.5a1.5 1.5 0 0 0 1.48 1.25h8.8a1.5 1.5 0 0 0 1.47-1.2L20.25 7H6"/><circle cx="9.25" cy="19.5" r="1.25"/><circle cx="16.75" cy="19.5" r="1.25"/></svg></div>
                         <div>
                             <div class="wp-title">Умная корзина на 1, 3 или 7 дней</div>
                             <div class="wp-desc">Покупки сразу в пачках и граммах, быстрые замены и отправка списка в 1 клик.</div>
@@ -106,9 +101,7 @@
                     </div>
 
                     <div class="welcome-pillar">
-                        <div class="wp-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        </div>
+                        <div class="wp-icon"><svg class="nx-icon nx-icon--active" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M13 2.75 4.75 13.5H11l-1 7.75 9.25-10.75H13l0-7.75Z"/> <path d="M13 2.75 4.75 13.5H11l-1 7.75 9.25-10.75H13V2.75Z"/></svg></div>
                         <div>
                             <div class="wp-title">Zero Guilt AI и единый профиль</div>
                             <div class="wp-desc">Синхронизация между телефоном и ПК. Съел что-то вне плана — AI мягко сбалансирует остаток дня.</div>
@@ -119,28 +112,29 @@
 
             <div>
                 <button class="nx-cta-pill" onclick="startFromWelcome()">
-                    Настроить мой рацион →
+                    <span>Настроить мой рацион</span>
+                    <svg class="nx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
                 </button>
-                <div style="text-align:center; font-size:11px; color:var(--nx-text-muted); margin-top:10px;">
+                <div class="welcome-footnote">
                     Займёт меньше минуты · Автосинхронизация через Telegram Cloud
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ПОШАГОВАЯ АНКЕТА -->
+    <!-- 5-ШАГОВАЯ АНКЕТА -->
     <section id="onboarding-view" class="hidden">
         <div class="wizard-shell">
             <div class="wizard-top-bar">
                 <button id="wizard-back-btn" class="nx-icon-circle" onclick="wizardPrevStep()" aria-label="Назад">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    <svg class="nx-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
                 </button>
-                <div style="text-align:center;">
-                    <div id="wizard-step-counter" style="font-size:12px; font-weight:700; color:var(--nx-text-muted);">Шаг 1 из 5</div>
-                    <div id="wizard-precision-pill" class="precision-pill" style="margin-top:4px;">Точность: 72%</div>
+                <div class="nx-text-center">
+                    <div id="wizard-step-counter" class="wizard-step-counter">Шаг 1 из 5</div>
+                    <div id="wizard-precision-pill" class="precision-pill">Точность: 72%</div>
                 </div>
                 <button id="cancel-onboarding-btn" class="nx-icon-circle hidden" onclick="cancelOnboarding()" aria-label="Закрыть">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <svg class="nx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6 6 18"/></svg>
                 </button>
             </div>
 
@@ -158,20 +152,20 @@
         <!-- ВКЛАДКА 1: ГЛАВНАЯ -->
         <div id="tab-home" data-nx-screen="home">
             <div class="nx-screen-head">
-                <div>
+                <div class="nx-minw0">
                     <div class="nx-brand-bar">
                         <span class="nx-brand-mark">
-                            <svg width="20" height="15" aria-hidden="true">
+                            <svg width="18" height="13" aria-hidden="true">
                                 <use href="#nx-logo-mark"/>
                             </svg>
                         </span>
-                        <span class="nx-brand-word">NUTRI<strong style="color:var(--nx-text);">X</strong></span>
+                        <span class="nx-brand-word">NUTRI<strong>X</strong></span>
                     </div>
                     <h1 class="nx-h1" id="home-greeting">Добро пожаловать</h1>
                     <div class="home-greet-sub" id="home-greeting-sub"></div>
                 </div>
                 <button class="nx-avatar-btn" onclick="switchTab('profile')" id="home-avatar-btn" title="Профиль">
-                    <svg width="24" height="18" aria-hidden="true"><use href="#nx-logo-mark"/></svg>
+                    <svg width="22" height="16" aria-hidden="true"><use href="#nx-logo-mark"/></svg>
                 </button>
             </div>
 
@@ -181,12 +175,12 @@
             </div>
 
             <div id="home-checkin-banner" class="checkin-banner hidden" onclick="openCheckInModal()">
-                <div>
-                    <div class="checkin-badge">КОНТРОЛЬНЫЙ ЗАМЕР</div>
-                    <div style="font-size:14px; font-weight:800;" id="checkin-banner-title">Пора обновить вес</div>
-                    <div style="font-size:12px; color:var(--nx-text-muted); margin-top:2px;" id="checkin-banner-sub">Прошло 7 дней — сверим темп и плавно уточним рацион</div>
+                <div class="nx-minw0">
+                    <div class="checkin-badge">Контрольный замер</div>
+                    <div class="checkin-title" id="checkin-banner-title">Пора обновить вес</div>
+                    <div class="checkin-sub" id="checkin-banner-sub">Прошло 7 дней — сверим темп и плавно уточним рацион</div>
                 </div>
-                <span style="color:var(--nx-warning); font-weight:800; font-size:20px;">›</span>
+                <svg class="nx-icon nx-text-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
             </div>
 
             <div id="home-adapt-banner" class="adapt-banner hidden">
@@ -194,16 +188,17 @@
                     <span id="adapt-banner-title">Плавная адаптация</span>
                     <span class="tabular" id="adapt-banner-nums">0 → 0 ккал</span>
                 </div>
-                <div class="nx-bar-track" style="height:5px;">
-                    <div id="adapt-banner-bar" class="nx-bar-fill protein" style="width:40%;"></div>
+                <div class="nx-bar-track">
+                    <div id="adapt-banner-bar" class="nx-bar-fill protein" style="width: 40%;"></div>
                 </div>
                 <div class="adapt-sub" id="adapt-banner-desc">Мягкий выход на целевую норму каждые 4 дня.</div>
             </div>
 
-            <div class="nx-ring-card" data-nx-stagger>
+            <!-- ЕДИНЫЙ АРХИТЕКТУРНЫЙ HERO-БЛОК: КОЛЬЦО + 3 МАКРОНУТРИЕНТА -->
+            <div class="nx-hero-card nx-ring-card" data-nx-stagger>
                 <div class="nx-ring-head">
-                    <span style="font-size:15px; font-weight:700;" id="home-day-type-title">Баланс калорий</span>
-                    <span style="font-size:12px; color:var(--nx-text-muted);" id="home-goal-pct">0% от плана</span>
+                    <span class="nx-ring-title" id="home-day-type-title">Баланс калорий</span>
+                    <span class="nx-ring-pct" id="home-goal-pct">0% от плана</span>
                 </div>
 
                 <div class="nx-ring-wrap">
@@ -215,9 +210,7 @@
                     <div class="nx-ring-center">
                         <div class="nx-ring-number" id="home-kcal-rem">0</div>
                         <div class="nx-ring-sub">ккал осталось</div>
-                        <div class="nx-ring-flame">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c.5 4-2.5 6.5-2.5 10a4.5 4.5 0 0 0 9 0c0-3.5-2.5-6-3-10-1 2-2.5 2.5-3.5 0Z"/></svg>
-                        </div>
+                        <div class="nx-ring-flame"><svg class="nx-icon nx-icon--active" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12.25 3.25c.7 3.5-2.75 5.75-2.75 9.25a4.75 4.75 0 0 0 9.5 0c0-3.5-2.5-6-3.25-9.25-1.1 1.75-2.4 2.25-3.5 0Z"/> <path d="M12 3c.65 3.5-2.75 5.8-2.75 9.25a4.75 4.75 0 0 0 9.5 0c0-3.5-2.5-5.9-3.25-9.25-1.1 1.8-2.45 2.2-3.5 0Z"/></svg></div>
                     </div>
                 </div>
 
@@ -226,50 +219,51 @@
                         <div class="nx-ring-stat-val" id="home-kcal-eaten">0</div>
                         <div class="nx-ring-stat-lbl">Съедено</div>
                     </div>
-                    <div style="text-align:right;">
+                    <div class="nx-text-right">
                         <div class="nx-ring-stat-val" id="home-kcal-goal">0</div>
                         <div class="nx-ring-stat-lbl">План дня</div>
                     </div>
                 </div>
-            </div>
 
-            <div class="nx-macros-3" data-nx-stagger>
-                <div class="nx-macro-card">
-                    <div class="nx-macro-lbl">Белки</div>
-                    <div class="nx-macro-num" id="home-p-val">0 г</div>
-                    <div class="nx-macro-of" id="home-p-of">из 0 г</div>
-                    <div class="nx-bar-track"><div id="home-p-bar" class="nx-bar-fill protein" style="width:0%"></div></div>
-                </div>
-                <div class="nx-macro-card">
-                    <div class="nx-macro-lbl">Жиры</div>
-                    <div class="nx-macro-num" id="home-f-val">0 г</div>
-                    <div class="nx-macro-of" id="home-f-of">из 0 г</div>
-                    <div class="nx-bar-track"><div id="home-f-bar" class="nx-bar-fill fat" style="width:0%"></div></div>
-                </div>
-                <div class="nx-macro-card">
-                    <div class="nx-macro-lbl">Углеводы</div>
-                    <div class="nx-macro-num" id="home-c-val">0 г</div>
-                    <div class="nx-macro-of" id="home-c-of">из 0 г</div>
-                    <div class="nx-bar-track"><div id="home-c-bar" class="nx-bar-fill carb" style="width:0%"></div></div>
+                <div class="nx-hero-macros">
+                    <div class="nx-hero-macro-col">
+                        <div class="nx-macro-lbl">Белки</div>
+                        <div class="nx-macro-num" id="home-p-val">0 г</div>
+                        <div class="nx-macro-of" id="home-p-of">из 0 г</div>
+                        <div class="nx-bar-track nx-bar-track--thin"><div id="home-p-bar" class="nx-bar-fill protein" style="width: 0%;"></div></div>
+                    </div>
+                    <div class="nx-hero-macro-col">
+                        <div class="nx-macro-lbl">Жиры</div>
+                        <div class="nx-macro-num" id="home-f-val">0 г</div>
+                        <div class="nx-macro-of" id="home-f-of">из 0 г</div>
+                        <div class="nx-bar-track nx-bar-track--thin"><div id="home-f-bar" class="nx-bar-fill fat" style="width: 0%;"></div></div>
+                    </div>
+                    <div class="nx-hero-macro-col">
+                        <div class="nx-macro-lbl">Углеводы</div>
+                        <div class="nx-macro-num" id="home-c-val">0 г</div>
+                        <div class="nx-macro-of" id="home-c-of">из 0 г</div>
+                        <div class="nx-bar-track nx-bar-track--thin"><div id="home-c-bar" class="nx-bar-fill carb" style="width: 0%;"></div></div>
+                    </div>
                 </div>
             </div>
 
             <button id="home-complete-day-btn" class="nx-complete-day-btn" onclick="toggleCompleteWholeDay(getTodayDayIndex())" data-nx-stagger>
-                <span id="home-complete-day-label">✓ Отметить: план дня выполнен</span>
-                <span id="home-complete-day-meta" style="font-size:12px; opacity:0.85;">0 / 4</span>
+                <span class="nx-complete-day-left">
+                    <svg class="nx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="12" cy="12" r="8.5"/> <circle cx="12" cy="12" r="8.5"/><path d="m8.75 12.25 2.25 2.25 4.5-4.75"/></svg>
+                    <span id="home-complete-day-label">Отметить: план дня выполнен</span>
+                </span>
+                <span id="home-complete-day-meta" class="nx-complete-day-meta">0 / 4</span>
             </button>
 
-            <div class="nx-card tint tap" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer;" onclick="openZeroGuiltModal()" data-nx-stagger>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="width:38px; height:38px; border-radius:12px; background:var(--nx-mint-dim); color:var(--nx-mint); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    </div>
-                    <div>
-                        <div style="font-size:14px; font-weight:800;">Zero Guilt · Съел вне плана?</div>
-                        <div style="font-size:12px; color:var(--nx-text-muted); margin-top:2px;">Учёт бренда и мягкий пересчёт остатка дня</div>
+            <div class="nx-action-strip" onclick="openZeroGuiltModal()" data-nx-stagger>
+                <div class="nx-row nx-minw0">
+                    <div class="nx-action-strip-icon"><svg class="nx-icon nx-icon--active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M13 2.75 4.75 13.5H11l-1 7.75 9.25-10.75H13l0-7.75Z"/> <path d="M13 2.75 4.75 13.5H11l-1 7.75 9.25-10.75H13V2.75Z"/></svg></div>
+                    <div class="nx-minw0">
+                        <div class="nx-action-strip-title">Zero Guilt · Съел вне плана?</div>
+                        <div class="nx-action-strip-sub">Учёт бренда и мягкий пересчёт остатка дня</div>
                     </div>
                 </div>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--nx-mint)" stroke-width="2.4" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg class="nx-icon nx-text-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
             </div>
 
             <div class="section-header" data-nx-stagger>
@@ -284,7 +278,7 @@
                     <div class="nx-mini-content">
                         <div>
                             <div class="nx-mini-top">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nx-mint)" stroke-width="2.2"><path d="M12 2.7 5.6 10.6a7.5 7.5 0 1 0 12.8 0L12 2.7Z"/></svg>
+                                <svg class="nx-icon nx-icon--active" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 3.25 6.25 10.6a7.25 7.25 0 1 0 11.5 0L12 3.25Z"/> <path d="M12 3.25 6.25 10.6a7.25 7.25 0 1 0 11.5 0L12 3.25Z"/></svg>
                                 <span>Вода</span>
                             </div>
                             <div class="nx-mini-big">
@@ -303,14 +297,14 @@
                     <div class="nx-mini-content">
                         <div>
                             <div class="nx-mini-top">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nx-mint)" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3.75l2.5-6.5 4.5 13 2.75-6.5H21"/></svg>
                                 <span>Активность</span>
                             </div>
                             <div class="nx-mini-big">
                                 <strong id="home-act-score">5</strong><span> / 10</span>
                             </div>
                         </div>
-                        <div class="nx-mini-action" id="home-act-pal">PAL x1.50 · Базовый</div>
+                        <div class="nx-mini-action" id="home-act-pal">PAL ×1.50 · Базовый</div>
                     </div>
                 </div>
             </div>
@@ -318,37 +312,38 @@
 
         <!-- ВКЛАДКА 2: ПИТАНИЕ -->
         <div id="tab-nutrition" class="hidden" data-nx-screen="nutrition">
-            <div class="nx-screen-head" style="align-items:center; margin-bottom:10px;">
-                <div style="min-width:0;">
-                    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                        <h1 class="nx-h1">Питание</h1>
-                        <span id="nut-active-mode-chip" class="nut-active-mode-chip hidden"></span>
-                    </div>
+            <div class="nx-screen-head nx-screen-head--center">
+                <div class="nut-head-title-wrap">
+                    <h1 class="nx-h1">Питание</h1>
+                    <span id="nut-active-mode-chip" class="nut-active-mode-chip hidden"></span>
                 </div>
                 <div class="nut-head-actions">
-                    <button class="nut-settings-btn" onclick="openMenuSettingsModal()">⚙️ Настроить</button>
+                    <button class="nut-settings-btn" onclick="openMenuSettingsModal()">
+                        <svg class="nx-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="9" cy="7" r="2.25"/> <circle class="icon-duotone" cx="15" cy="17" r="2.25"/> <path d="M3.5 7h3.25"/><path d="M11.25 7h9.25"/><circle cx="9" cy="7" r="2.25"/><path d="M3.5 17h9.25"/><path d="M17.25 17h3.25"/><circle cx="15" cy="17" r="2.25"/></svg>
+                        <span>Настроить</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="nx-seg-bar" style="margin-bottom:10px;">
+            <div class="nx-seg-bar">
                 <button id="nut-sub-diary" class="nx-seg-btn active" onclick="switchNutritionSubtab('diary')">Рацион</button>
                 <button id="nut-sub-groceries" class="nx-seg-btn" onclick="switchNutritionSubtab('groceries')">Покупки</button>
                 <button id="nut-sub-recipes" class="nx-seg-btn" onclick="switchNutritionSubtab('recipes')">Рецепты</button>
             </div>
 
             <div id="subtab-diary">
-                <div class="nx-week-ovals" id="week-strip-container" style="margin-bottom:10px;"></div>
+                <div class="nx-week-ovals" id="week-strip-container"></div>
 
                 <div class="nx-day-energy-compact">
                     <div class="day-energy-top">
-                        <div style="display:flex; align-items:baseline; gap:5px;">
-                            <span class="tabular" style="font-size:21px; font-weight:800; letter-spacing:-0.6px;" id="nut-kcal-eaten">0</span>
-                            <span class="tabular" style="font-size:12px; color:var(--nx-text-muted);" id="nut-kcal-goal">/ 0 ккал</span>
+                        <div class="nx-row">
+                            <span class="day-energy-val" id="nut-kcal-eaten">0</span>
+                            <span class="day-energy-goal" id="nut-kcal-goal">/ 0 ккал</span>
                         </div>
-                        <span style="font-size:12px; font-weight:700; color:var(--nx-mint);" id="nut-kcal-left">0 осталось</span>
+                        <span class="day-energy-left" id="nut-kcal-left">0 осталось</span>
                     </div>
-                    <div class="nx-bar-track" style="height:5px; margin-bottom:8px;">
-                        <div id="nut-kcal-bar" class="nx-bar-fill protein" style="width:0%"></div>
+                    <div class="nx-bar-track nx-bar-track--md">
+                        <div id="nut-kcal-bar" class="nx-bar-fill protein" style="width: 0%;"></div>
                     </div>
                     <div class="day-macros-inline">
                         <span>Б: <strong id="nut-p-val">0 / 0 г</strong></span>
@@ -359,24 +354,27 @@
 
                 <div class="day-header-inline">
                     <div class="day-title-group">
-                        <div class="section-title" style="font-size:16px;" id="meals-section-title">Понедельник</div>
-                        <button id="day-type-cycle-btn" class="day-type-cycle-pill" onclick="cycleSelectedDayTrainingType()">Отдых ↻</button>
+                        <div class="section-title" id="meals-section-title">Понедельник</div>
+                        <button id="day-type-cycle-btn" class="day-type-cycle-pill" onclick="cycleSelectedDayTrainingType()">Отдых</button>
                     </div>
-                    <button class="text-btn" onclick="regenerateCurrentDay()">↻ Обновить</button>
+                    <button class="text-btn" onclick="regenerateCurrentDay()">
+                        <svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 11a7.5 7.5 0 0 0-13-4.5L4.5 8.5"/><path d="M4.5 4.5v4h4"/><path d="M4.5 13a7.5 7.5 0 0 0 13 4.5l2-2"/><path d="M19.5 19.5v-4h-4"/></svg>
+                        <span>Обновить</span>
+                    </button>
                 </div>
 
                 <div id="meals-container"></div>
 
                 <button class="nx-cta-pill" onclick="openAddMealModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Добавить приём пищи
+                    <svg class="nx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    <span>Добавить приём пищи</span>
                 </button>
             </div>
 
             <div id="subtab-groceries" class="hidden">
                 <div class="grocery-hero-v10">
                     <div class="grocery-top-line">
-                        <strong id="grocery-range-title" style="font-size:16px;">Закупка · 3 дня</strong>
+                        <strong id="grocery-range-title" class="grocery-range-title">Закупка · 3 дня</strong>
                         <div class="period-switch">
                             <button id="btn-days-1" class="period-btn" onclick="setGroceryPeriod(1)">1 день</button>
                             <button id="btn-days-3" class="period-btn active" onclick="setGroceryPeriod(3)">3 дня</button>
@@ -385,30 +383,42 @@
                     </div>
 
                     <div class="grocery-prog-line">
-                        <span id="grocery-progress-text" style="font-weight:800;">Куплено 0 из 0</span>
-                        <button id="btn-reset-grocery-checks" class="text-btn hidden" style="font-size:12px; padding:0;" onclick="clearGroceryChecks()">Сбросить</button>
+                        <span id="grocery-progress-text">Куплено 0 из 0</span>
+                        <button id="btn-reset-grocery-checks" class="text-btn hidden" onclick="clearGroceryChecks()">Сбросить</button>
                     </div>
-                    <div class="nx-bar-track" style="height:6px; margin-bottom:10px;">
-                        <div id="grocery-progress-bar" class="nx-bar-fill protein" style="width:0%"></div>
+                    <div class="nx-bar-track nx-bar-track--md">
+                        <div id="grocery-progress-bar" class="nx-bar-fill protein" style="width: 0%;"></div>
                     </div>
 
-                    <div class="grocery-toolbar" style="margin-top:0;">
-                        <button class="btn-small" onclick="copyGroceriesToClipboard()">📋 Скопировать</button>
-                        <button class="btn-small" onclick="shareGroceriesToTelegram()">✈️ Поделиться</button>
-                        <button class="btn-small" id="btn-hide-checked" onclick="toggleHideCheckedGroceries()">👁 Скрыть ✓</button>
+                    <div class="grocery-toolbar">
+                        <button class="btn-small" onclick="copyGroceriesToClipboard()">
+                            <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="icon-duotone" x="9" y="9" width="11" height="11" rx="2"/> <rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg>
+                            <span>Копия</span>
+                        </button>
+                        <button class="btn-small" onclick="shareGroceriesToTelegram()">
+                            <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M20 4.5 10.5 14l-5.5-2.5L20 4.5Z"/> <path d="M20 4.5 10.5 14"/><path d="M20 4.5 13.75 20l-3.25-6-6-3.25L20 4.5Z"/></svg>
+                            <span>Поделиться</span>
+                        </button>
+                        <button class="btn-small" id="btn-hide-checked" onclick="toggleHideCheckedGroceries()">
+                            <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/> <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.75"/></svg>
+                            <span>Скрыть</span>
+                        </button>
                     </div>
                 </div>
 
                 <div class="grocery-add-bar">
                     <input type="text" id="custom-grocery-input" class="form-input" placeholder="Добавить своё (кофе, специи, вода…)" onkeydown="if(event.key==='Enter') addCustomGroceryItem()">
-                    <button class="nx-icon-circle" style="background:var(--nx-mint); color:var(--nx-on-mint); border:none; width:46px; height:46px; border-radius:14px; font-size:20px; font-weight:800;" onclick="addCustomGroceryItem()" title="Добавить">+</button>
+                    <button class="grocery-add-btn" onclick="addCustomGroceryItem()" aria-label="Добавить">
+                        <svg class="nx-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    </button>
                 </div>
 
                 <div id="groceries-container"></div>
             </div>
 
             <div id="subtab-recipes" class="hidden">
-                <div class="form-group" style="margin-bottom:12px;">
+                <div class="search-input-wrap">
+                    <span class="search-input-icon"><svg class="nx-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="10.75" cy="10.75" r="6.25"/> <circle cx="10.75" cy="10.75" r="6.25"/><path d="m19.5 19.5-4.1-4.1"/></svg></span>
                     <input type="text" id="catalog-search-input" class="form-input"
                            placeholder="Поиск блюда или ингредиента (курица, форель, овсянка…)"
                            oninput="debouncedCatalogSearch(this.value)">
@@ -431,8 +441,8 @@
                     <h1 class="nx-h1">Прогресс</h1>
                     <div class="nx-subtitle">Реальная динамика с первого дня в NutriX.</div>
                 </div>
-                <button class="nx-icon-circle" onclick="openCheckInModal()" title="Внести замер">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--nx-mint)" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <button class="nx-icon-circle" onclick="openCheckInModal()" title="Внести замер" aria-label="Внести замер">
+                    <svg class="nx-icon nx-text-accent" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                 </button>
             </div>
 
@@ -442,28 +452,28 @@
             </div>
 
             <div class="nx-card" data-nx-stagger>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <span class="nx-kicker" style="color:var(--nx-text-muted); margin:0;">КАЛОРИИ ПО ДНЯМ</span>
-                    <span style="font-size:12px; color:var(--nx-text-muted);" id="prog-period-label">День 1</span>
+                <div class="prog-head-row">
+                    <span class="nx-kicker nx-mb-0 nx-text-muted">КАЛОРИИ ПО ДНЯМ</span>
+                    <span class="section-meta" id="prog-period-label">День 1</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; align-items:baseline; gap:6px;">
-                        <span class="tabular" style="font-size:30px; font-weight:800; letter-spacing:-1px;" id="prog-avg-kcal">0</span>
-                        <span style="font-size:13px; color:var(--nx-text-muted);">ккал в среднем</span>
+                <div class="prog-metric-row">
+                    <div class="nx-row">
+                        <span class="prog-big-num" id="prog-avg-kcal">0</span>
+                        <span class="nx-text-muted">ккал в среднем</span>
                     </div>
                     <span class="precision-pill" id="prog-status-badge">Старт</span>
                 </div>
                 <div class="nx-bar-chart" id="prog-bar-chart"></div>
             </div>
 
-            <div class="nx-card tap" style="display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer;" onclick="openCheckInModal()" data-nx-stagger>
+            <div class="nx-card tap prog-weight-card" onclick="openCheckInModal()" data-nx-stagger>
                 <div>
-                    <div style="font-size:13px; color:var(--nx-text-muted); margin-bottom:4px;">Динамика веса</div>
-                    <div style="display:flex; align-items:baseline; gap:5px;">
-                        <span class="tabular" style="font-size:30px; font-weight:800;" id="prog-weight-val">70.0</span>
-                        <span style="font-size:13px; color:var(--nx-text-muted);">кг</span>
+                    <div class="bio-label">Динамика веса</div>
+                    <div class="nx-row">
+                        <span class="prog-big-num" id="prog-weight-val">70.0</span>
+                        <span class="nx-text-muted">кг</span>
                     </div>
-                    <div style="font-size:12px; color:var(--nx-mint); font-weight:600; margin-top:6px;" id="prog-weight-delta">Внести замер ›</div>
+                    <div class="prog-weight-delta" id="prog-weight-delta">Внести замер</div>
                 </div>
                 <svg id="prog-weight-svg" width="144" height="60" viewBox="0 0 144 60"></svg>
             </div>
@@ -473,23 +483,35 @@
             </div>
             <div class="nx-card" data-nx-stagger>
                 <div class="nx-macro-stacked">
-                    <div id="prog-seg-p" class="nx-macro-seg" style="background:var(--nx-protein); width:30%;"></div>
-                    <div id="prog-seg-f" class="nx-macro-seg" style="background:var(--nx-fat); width:25%;"></div>
-                    <div id="prog-seg-c" class="nx-macro-seg" style="background:var(--nx-carb); width:45%;"></div>
+                    <div id="prog-seg-p" class="nx-macro-seg" style="background: var(--nx-protein); width: 30%;"></div>
+                    <div id="prog-seg-f" class="nx-macro-seg" style="background: var(--nx-fat); width: 25%;"></div>
+                    <div id="prog-seg-c" class="nx-macro-seg" style="background: var(--nx-carb); width: 45%;"></div>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-                    <div><div style="font-size:12px; color:var(--nx-text-muted);">Белки</div><div class="tabular" style="font-size:18px; font-weight:800;" id="prog-pct-p">30%</div></div>
-                    <div><div style="font-size:12px; color:var(--nx-text-muted);">Жиры</div><div class="tabular" style="font-size:18px; font-weight:800;" id="prog-pct-f">25%</div></div>
-                    <div><div style="font-size:12px; color:var(--nx-text-muted);">Углеводы</div><div class="tabular" style="font-size:18px; font-weight:800;" id="prog-pct-c">45%</div></div>
+                <div class="prog-macro-cols">
+                    <div>
+                        <div class="bio-label">Белки</div>
+                        <div class="prog-macro-pct" id="prog-pct-p">30%</div>
+                    </div>
+                    <div>
+                        <div class="bio-label">Жиры</div>
+                        <div class="prog-macro-pct" id="prog-pct-f">25%</div>
+                    </div>
+                    <div>
+                        <div class="bio-label">Углеводы</div>
+                        <div class="prog-macro-pct" id="prog-pct-c">45%</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="nx-card tint tap" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer; padding:15px 16px;" onclick="regenerateFullWeek()" data-nx-stagger>
-                <div>
-                    <div style="font-size:14px; font-weight:800;">Пересобрать меню на 7 дней</div>
-                    <div style="font-size:12px; color:var(--nx-text-muted); margin-top:2px;">Новая ротация блюд и обновлённая корзина</div>
+            <div class="nx-action-strip" onclick="regenerateFullWeek()" data-nx-stagger>
+                <div class="nx-row nx-minw0">
+                    <div class="nx-action-strip-icon"><svg class="nx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 11a7.5 7.5 0 0 0-13-4.5L4.5 8.5"/><path d="M4.5 4.5v4h4"/><path d="M4.5 13a7.5 7.5 0 0 0 13 4.5l2-2"/><path d="M19.5 19.5v-4h-4"/></svg></div>
+                    <div class="nx-minw0">
+                        <div class="nx-action-strip-title">Пересобрать меню на 7 дней</div>
+                        <div class="nx-action-strip-sub">Новая ротация блюд и обновлённая корзина</div>
+                    </div>
                 </div>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--nx-mint)" stroke-width="2.4" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg class="nx-icon nx-text-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
             </div>
         </div>
 
@@ -503,127 +525,151 @@
             </div>
 
             <div class="nx-card tint" data-nx-stagger>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
-                    <div>
-                        <div style="font-size:17px; font-weight:800;" id="prof-goal-title">Профиль</div>
-                        <div style="font-size:12px; color:var(--nx-text-muted); margin-top:2px;" id="prof-formula-sub">Формула: Mifflin-St Jeor</div>
+                <div class="nx-row-between nx-mb-10">
+                    <div class="nx-minw0">
+                        <div class="section-title" id="prof-goal-title">Профиль</div>
+                        <div class="nx-subtitle" id="prof-formula-sub">Формула: Mifflin-St Jeor</div>
                     </div>
                     <span class="precision-pill" id="prof-precision-pct">72%</span>
                 </div>
-                <div class="nx-bar-track" style="height:6px; margin-bottom:8px;">
-                    <div id="prof-precision-bar" class="nx-bar-fill protein" style="width:72%;"></div>
+                <div class="nx-bar-track nx-bar-track--md nx-mb-8">
+                    <div id="prof-precision-bar" class="nx-bar-fill protein" style="width: 72%;"></div>
                 </div>
-                <div id="prof-precision-hint" style="font-size:11px; color:var(--nx-text-muted); line-height:1.4;">
+                <div id="prof-precision-hint" class="detail-yield-hint nx-mb-0">
                     Добавь % жира или сухую массу ниже — расчёт станет ещё точнее.
                 </div>
             </div>
 
             <div class="section-header" data-nx-stagger>
-                <div class="section-title" style="font-size:15px;">Основные данные</div>
-                <span style="font-size:11px; color:var(--nx-text-muted);">Нажми для правки</span>
+                <div class="section-title section-title--sm">Основные данные</div>
+                <span class="section-meta">Нажми для правки</span>
             </div>
             <div class="bio-grid" data-nx-stagger>
-                <div class="bio-item" onclick="openSingleStepEditor('gender')"><span class="bio-edit-hint">›</span><div class="bio-label">Пол</div><div class="bio-val" id="prof-gender">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('age')"><span class="bio-edit-hint">›</span><div class="bio-label">Возраст</div><div class="bio-val" id="prof-age">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('height')"><span class="bio-edit-hint">›</span><div class="bio-label">Рост</div><div class="bio-val" id="prof-height">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('weight')"><span class="bio-edit-hint">›</span><div class="bio-label">Вес тела</div><div class="bio-val" id="prof-weight">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('activityLevel')"><span class="bio-edit-hint">›</span><div class="bio-label">Активность (1–10)</div><div class="bio-val" id="prof-pal">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('sportType')"><span class="bio-edit-hint">›</span><div class="bio-label">Спорт</div><div class="bio-val" style="font-size:13px;" id="prof-sport">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('goal')"><span class="bio-edit-hint">›</span><div class="bio-label">Цель</div><div class="bio-val" style="font-size:13px;" id="prof-goal-short">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('mealsCount')"><span class="bio-edit-hint">›</span><div class="bio-label">Приёмов пищи</div><div class="bio-val" id="prof-meals-count">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('appetiteLevel')"><span class="bio-edit-hint">›</span><div class="bio-label">Аппетит (1–5)</div><div class="bio-val" style="font-size:13px;" id="prof-appetite">--</div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('preferencesText')"><span class="bio-edit-hint">›</span><div class="bio-label">Предпочтения</div><div class="bio-val" style="font-size:13px;" id="prof-prefs-short">Стандарт</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('gender')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Пол</div><div class="bio-val" id="prof-gender">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('age')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Возраст</div><div class="bio-val" id="prof-age">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('height')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Рост</div><div class="bio-val" id="prof-height">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('weight')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Вес тела</div><div class="bio-val" id="prof-weight">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('activityLevel')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Активность (1–10)</div><div class="bio-val" id="prof-pal">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('sportType')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Спорт</div><div class="bio-val bio-val--sm" id="prof-sport">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('goal')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Цель</div><div class="bio-val bio-val--sm" id="prof-goal-short">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('mealsCount')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Приёмов пищи</div><div class="bio-val" id="prof-meals-count">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('appetiteLevel')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Аппетит (1–5)</div><div class="bio-val bio-val--sm" id="prof-appetite">--</div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('preferencesText')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Предпочтения</div><div class="bio-val bio-val--sm" id="prof-prefs-short">Стандарт</div></div>
             </div>
 
             <div class="section-header" data-nx-stagger>
-                <div class="section-title" style="font-size:15px;">Точный расчёт (Pro)</div>
-                <span style="font-size:11px; color:var(--nx-mint);">Опционально</span>
+                <div class="section-title section-title--sm">Точный расчёт (Pro)</div>
+                <span class="section-meta nx-text-accent">Опционально</span>
             </div>
             <div class="bio-grid" data-nx-stagger>
-                <div class="bio-item" onclick="openSingleStepEditor('bodyFatPct')"><span class="bio-edit-hint">›</span><div class="bio-label">Процент жира (BF%)</div><div class="bio-val" id="prof-bf"><span class="bio-empty-tag">+ Добавить</span></div></div>
-                <div class="bio-item" onclick="openSingleStepEditor('leanBodyMass')"><span class="bio-edit-hint">›</span><div class="bio-label">Безжировой вес (LBM)</div><div class="bio-val" id="prof-lbm"><span class="bio-empty-tag">+ Добавить</span></div></div>
-                <div class="bio-item full" onclick="openSingleStepEditor('waistCm')"><span class="bio-edit-hint">›</span><div class="bio-label">Обхват талии</div><div class="bio-val" id="prof-waist"><span class="bio-empty-tag">+ Добавить</span></div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('bodyFatPct')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Процент жира (BF%)</div><div class="bio-val" id="prof-bf"><span class="bio-empty-tag">+ Добавить</span></div></div>
+                <div class="bio-item" onclick="openSingleStepEditor('leanBodyMass')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Безжировой вес (LBM)</div><div class="bio-val" id="prof-lbm"><span class="bio-empty-tag">+ Добавить</span></div></div>
+                <div class="bio-item full" onclick="openSingleStepEditor('waistCm')"><span class="bio-edit-hint"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></span><div class="bio-label">Обхват талии</div><div class="bio-val" id="prof-waist"><span class="bio-empty-tag">+ Добавить</span></div></div>
             </div>
 
             <div class="science-box" data-nx-stagger>
                 <div class="science-title">Расчёт нормы</div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Формула расчёта:</span><strong id="prof-formula-name">Mifflin-St Jeor</strong></div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Базовый обмен (BMR):</span><strong class="tabular" id="prof-bmr">0 ккал</strong></div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Суточный расход (TDEE):</span><strong class="tabular" id="prof-tdee">0 ккал</strong></div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Активный план дня:</span><strong class="tabular" style="color:var(--nx-mint);" id="prof-target-kcal">0 ккал</strong></div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Норма БЖУ (г на кг):</span><strong class="tabular" id="prof-macro-ratios">--</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Формула расчёта</span><strong id="prof-formula-name">Mifflin-St Jeor</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Базовый обмен (BMR)</span><strong class="tabular" id="prof-bmr">0 ккал</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Суточный расход (TDEE)</span><strong class="tabular" id="prof-tdee">0 ккал</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Активный план дня</span><strong class="tabular nx-text-accent" id="prof-target-kcal">0 ккал</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Норма БЖУ (г на кг)</span><strong class="tabular" id="prof-macro-ratios">--</strong></div>
             </div>
 
             <div class="section-header" data-nx-stagger>
-                <div class="section-title" style="font-size:15px;">Оформление</div>
+                <div class="section-title section-title--sm">Оформление</div>
             </div>
             <div class="theme-grid" id="theme-picker-grid" data-nx-stagger></div>
 
             <div id="cloud-status-card" class="cloud-status-card" data-nx-stagger>
-                <div style="min-width:0;">
-                    <div style="font-size:13px; font-weight:800;" id="cloud-sync-title">☁️ Всё сохраняется само</div>
-                    <div style="font-size:11px; color:var(--nx-text-muted); margin-top:2px; line-height:1.35;" id="cloud-sync-sub">Профиль и меню привязаны к аккаунту Telegram — на другом устройстве всё откроется автоматически.</div>
+                <div class="cloud-status-left">
+                    <div id="cloud-status-icon" class="cloud-status-icon"><svg class="nx-icon nx-icon--active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M7.25 18.5h10.25a3.75 3.75 0 0 0 .5-7.46 5.5 5.5 0 0 0-10.65-1.35A4.25 4.25 0 0 0 7.25 18.5Z"/> <path d="M7.25 18.5h10.25a3.75 3.75 0 0 0 .5-7.46 5.5 5.5 0 0 0-10.65-1.35A4.25 4.25 0 0 0 7.25 18.5Z"/><path d="m9.75 13.75 1.75 1.75 3.5-3.5"/></svg></div>
+                    <div class="nx-minw0">
+                        <div class="cloud-sync-title" id="cloud-sync-title">Всё сохраняется само</div>
+                        <div class="cloud-sync-sub" id="cloud-sync-sub">Профиль и меню привязаны к аккаунту Telegram — на другом устройстве всё откроется автоматически.</div>
+                    </div>
                 </div>
                 <button id="cloud-retry-btn" class="cloud-retry-btn hidden" onclick="forceCloudSyncNow()">Повторить</button>
             </div>
 
-            <button class="nx-btn-ghost" style="margin-top:0; margin-bottom:10px;" onclick="openWelcomeReplay()">О NutriX</button>
+            <button class="nx-btn-ghost nx-mt-0 nx-mb-10" onclick="openWelcomeReplay()">О NutriX</button>
 
-            <button id="owner-admin-btn" class="nx-btn-ghost hidden" style="margin-bottom:8px; border-color:rgba(75,208,125,0.45); color:var(--nx-mint);" onclick="openAdminModal()">
-                🛡️ Админ-панель NutriX (Owner)
+            <button id="owner-admin-btn" class="nx-btn-ghost nx-btn-ghost--accent nx-mb-8 hidden" onclick="openAdminModal()">
+                <svg class="nx-icon nx-icon--active" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 3.25 5 6.25v5.5c0 4.4 3 7.8 7 9 4-1.2 7-4.6 7-9v-5.5l-7-3Z"/> <path d="M12 3.25 5 6.25v5.5c0 4.4 3 7.8 7 9 4-1.2 7-4.6 7-9v-5.5l-7-3Z"/><path d="m9.25 12 2 2 3.75-3.75"/></svg>
+                <span>Админ-панель NutriX</span>
             </button>
 
             <button class="nx-cta-pill" onclick="showOnboarding(true)">Пройти анкету заново</button>
         </div>
 
-        <!-- ПАСПОРТ БЛЮДА -->
+        <!-- ПАСПОРТ БЛЮДА (ГАСТРОНОМИЧЕСКИЙ ЖУРНАЛ) -->
         <div id="tab-meal-detail" class="hidden">
             <div class="back-bar">
                 <button class="back-btn" onclick="closeMealDetail()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    Назад
+                    <svg class="nx-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
+                    <span>Назад</span>
                 </button>
                 <span class="meta-tag accent" id="detail-slot-badge">Завтрак</span>
             </div>
 
             <div class="nx-card">
                 <div class="recipe-hero-banner">
-                    <div class="chips-wrap" style="margin-bottom:6px;">
-                        <span class="meta-tag accent" id="detail-category-tag">Категория</span>
-                        <span class="meta-tag" id="detail-cuisine-tag">Кухня</span>
-                        <span class="meta-tag" id="detail-price-tag">₽₽</span>
-                        <span class="meta-tag" id="detail-status-tag">По плану</span>
+                    <div class="recipe-meta-line">
+                        <span id="detail-category-tag">Категория</span>
+                        <span class="recipe-meta-sep">·</span>
+                        <span id="detail-cuisine-tag">Кухня</span>
+                        <span class="recipe-meta-sep">·</span>
+                        <span id="detail-price-tag">₽₽</span>
+                        <span class="recipe-meta-sep">·</span>
+                        <span id="detail-status-tag" class="recipe-meta-status">По плану</span>
                     </div>
                     <h2 class="recipe-hero-title" id="detail-dish-title">Название блюда</h2>
-                    <p id="detail-short-desc" style="font-size:12px; color:var(--nx-text-muted); line-height:1.4;"></p>
+                    <p id="detail-short-desc" class="recipe-short-desc"></p>
                 </div>
 
-                <div class="recipe-macros-5">
-                    <div class="r-macro-box highlight"><div class="r-macro-val" id="detail-kcal">0</div><div class="r-macro-lbl">ккал</div></div>
-                    <div class="r-macro-box"><div class="r-macro-val" id="detail-p">0г</div><div class="r-macro-lbl">Белки</div></div>
-                    <div class="r-macro-box"><div class="r-macro-val" id="detail-f">0г</div><div class="r-macro-lbl">Жиры</div></div>
-                    <div class="r-macro-box"><div class="r-macro-val" id="detail-c">0г</div><div class="r-macro-lbl">Углеводы</div></div>
-                    <div class="r-macro-box"><div class="r-macro-val" id="detail-fiber">0г</div><div class="r-macro-lbl">Клетчатка</div></div>
-                </div>
-
-                <div class="passport-grid">
-                    <div class="passport-cell"><div class="passport-lbl">Время готовки</div><div class="passport-val" id="detail-time-breakdown">15 мин</div></div>
-                    <div class="passport-cell"><div class="passport-lbl">Температура</div><div class="passport-val" id="detail-temp">180 °C</div></div>
-                    <div class="passport-cell"><div class="passport-lbl">Сырой → Готовый вес</div><div class="passport-val" id="detail-weights">350 г → 320 г</div></div>
-                    <div class="passport-cell"><div class="passport-lbl">Хранение</div><div class="passport-val" id="detail-shelf-life">до 36 ч (+4 °C)</div></div>
+                <!-- СТРОГАЯ ТАБЛИЧНАЯ СЕТКА КБЖУ + ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ -->
+                <div class="recipe-spec-card">
+                    <div class="recipe-macros-5">
+                        <div class="r-macro-box highlight"><div class="r-macro-val" id="detail-kcal">0</div><div class="r-macro-lbl">ккал</div></div>
+                        <div class="r-macro-box"><div class="r-macro-val" id="detail-p">0 г</div><div class="r-macro-lbl">Белки</div></div>
+                        <div class="r-macro-box"><div class="r-macro-val" id="detail-f">0 г</div><div class="r-macro-lbl">Жиры</div></div>
+                        <div class="r-macro-box"><div class="r-macro-val" id="detail-c">0 г</div><div class="r-macro-lbl">Углеводы</div></div>
+                        <div class="r-macro-box"><div class="r-macro-val" id="detail-fiber">0 г</div><div class="r-macro-lbl">Клетчатка</div></div>
+                    </div>
+                    <div class="passport-grid">
+                        <div class="passport-cell"><div class="passport-lbl">Время готовки</div><div class="passport-val" id="detail-time-breakdown">15 мин</div></div>
+                        <div class="passport-cell"><div class="passport-lbl">Температура</div><div class="passport-val" id="detail-temp">180 °C</div></div>
+                        <div class="passport-cell"><div class="passport-lbl">Сырой → Готовый вес</div><div class="passport-val" id="detail-weights">350 г → 320 г</div></div>
+                        <div class="passport-cell"><div class="passport-lbl">Хранение</div><div class="passport-val" id="detail-shelf-life">до 36 ч (+4 °C)</div></div>
+                    </div>
                 </div>
 
                 <div class="meal-actions-3">
-                    <button id="detail-eat-btn" class="btn-small" onclick="toggleMealFromDetail()">✓ Съедено</button>
-                    <button class="btn-small" onclick="swapMealFromDetail()">↻ Другое</button>
-                    <button class="btn-small" onclick="openEditFromDetail()">✎ Заменить</button>
-                    <button id="detail-pin-btn" class="btn-small" onclick="togglePinMealFromDetail()">📌 На всю неделю</button>
+                    <button id="detail-eat-btn" class="btn-small" onclick="toggleMealFromDetail()">
+                        <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                        <span>Отметить</span>
+                    </button>
+                    <button class="btn-small" onclick="swapMealFromDetail()">
+                        <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 11a7.5 7.5 0 0 0-13-4.5L4.5 8.5"/><path d="M4.5 4.5v4h4"/><path d="M4.5 13a7.5 7.5 0 0 0 13 4.5l2-2"/><path d="M19.5 19.5v-4h-4"/></svg>
+                        <span>Другое</span>
+                    </button>
+                    <button class="btn-small" onclick="openEditFromDetail()">
+                        <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m15.25 5.25 3.5 3.5-9.5 9.5H5.75v-3.5l9.5-9.5Z"/> <path d="M14.75 5.25a2.12 2.12 0 0 1 3 3l-9.75 9.75-4 1 1-4 9.75-9.75Z"/><path d="m13.25 6.75 3 3"/></svg>
+                        <span>Заменить</span>
+                    </button>
+                    <button id="detail-pin-btn" class="btn-small" onclick="togglePinMealFromDetail()">
+                        <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m14.5 4.5 5 5-3.5 3.5-1.5-.5-3 3-3.5-3.5 3-3-.5-1.5 4-3Z"/> <path d="m14.5 4 5.5 5.5-2 2-1.75-.5-3.5 3.5.5 1.75-1.25 1.25-5.5-5.5 1.25-1.25 1.75.5 3.5-3.5-.5-1.75L14.5 4Z"/><path d="m9.25 14.75-4.75 4.75"/></svg>
+                        <span>На всю неделю</span>
+                    </button>
                 </div>
 
                 <div id="detail-mealprep-bar" class="detail-mealprep-bar hidden">
                     <div>
-                        <div style="font-size:12px; font-weight:800; color:var(--nx-mint);" id="detail-mealprep-title">🍱 Заготовка на 2 дня</div>
-                        <div style="font-size:11px; color:var(--nx-text-muted);" id="detail-mealprep-sub">Удобно приготовить сразу на оба дня</div>
+                        <div class="detail-mealprep-title">
+                            <svg class="nx-icon nx-icon--active" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 4 3.5 8.5 12 13l8.5-4.5L12 4Z"/> <path d="M12 4 3.5 8.5 12 13l8.5-4.5L12 4Z"/><path d="M3.5 12.5 12 17l8.5-4.5"/><path d="M3.5 16.5 12 21l8.5-4.5"/></svg>
+                            <span id="detail-mealprep-title">Заготовка на 2 дня</span>
+                        </div>
+                        <div class="detail-mealprep-sub" id="detail-mealprep-sub">Удобно приготовить сразу на оба дня</div>
                     </div>
                     <div class="weight-mode-switch">
                         <button id="pm-x1-btn" class="wm-btn active" onclick="setDetailPortionMult(1)">1 порция</button>
@@ -632,28 +678,33 @@
                 </div>
 
                 <div class="detail-ing-head">
-                    <div class="section-title" style="font-size:15px; margin:0;">Ингредиенты</div>
+                    <div class="section-title section-title--sm">Ингредиенты</div>
                     <div class="weight-mode-switch">
                         <button id="wm-raw-btn" class="wm-btn active" onclick="setDetailWeightMode('raw')">Сырой</button>
                         <button id="wm-cooked-btn" class="wm-btn" onclick="setDetailWeightMode('cooked')">Готовый</button>
                         <button id="wm-visual-btn" class="wm-btn" onclick="setDetailWeightMode('visual')">Без весов</button>
                     </div>
                 </div>
-                <div id="detail-yield-hint" style="font-size:11px; color:var(--nx-text-muted); margin-bottom:10px;">
+                <div id="detail-yield-hint" class="detail-yield-hint">
                     Показан сырой вес для взвешивания до готовки. Нажми на замену под продуктом, чтобы пересчитать КБЖУ.
                 </div>
 
-                <div id="detail-ingredients-list" style="border-top:1px solid var(--nx-border); padding-top:4px; margin-bottom:16px;"></div>
+                <div id="detail-ingredients-list" class="detail-ingredients-list"></div>
 
-                <div class="section-title" style="font-size:15px; margin-bottom:10px;">Приготовление <span style="font-size:11px; font-weight:600; color:var(--nx-text-muted); margin-left:6px;">(нажми на шаг, чтобы отметить)</span></div>
-                <div id="detail-steps-list" style="margin-bottom:16px;"></div>
+                <div class="section-title section-title--sm nx-mb-10">
+                    Приготовление <span class="steps-head-hint">(нажми на шаг, чтобы отметить)</span>
+                </div>
+                <div id="detail-steps-list" class="nx-mb-14"></div>
 
-                <div class="section-title" style="font-size:14px; margin-bottom:8px;">Особенности и аллергены</div>
+                <div class="section-title section-title--sm nx-mb-8">Особенности и аллергены</div>
                 <div id="detail-tags-list" class="chips-wrap"></div>
 
-                <div class="science-box" style="margin-bottom:0;">
-                    <div class="science-title">Совет от NutriX</div>
-                    <div id="detail-science-tip" style="font-size:12px; color:var(--nx-text-muted); line-height:1.45;"></div>
+                <div class="editorial-callout">
+                    <div class="editorial-callout-head">
+                        <svg class="nx-icon nx-icon--active" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M19.5 4.5C12.5 4.5 6.5 8 6.5 15c0 1.4.35 2.7 1 3.75 1.05.65 2.35 1 3.75 1 7 0 10.5-6 10.5-13 0-.8-.1-1.55-.25-2.25Z"/> <path d="M19.5 4.5C12.2 4.5 6.25 8.1 6.25 15c0 1.65.5 3.15 1.4 4.35 1.2.9 2.7 1.4 4.35 1.4 6.9 0 10.5-5.95 10.5-13.25 0-1-.12-2-.35-3Z"/><path d="M4.5 19.5 14 10"/></svg>
+                        <span>Совет от NutriX</span>
+                    </div>
+                    <div id="detail-science-tip" class="editorial-callout-body"></div>
                 </div>
             </div>
         </div>
@@ -662,24 +713,24 @@
     <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
     <nav id="bottom-nav" class="bottom-nav hidden">
         <button id="nav-home" class="nav-item active" onclick="switchTab('home')">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z"/></svg>
+            <svg class="nx-icon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M4.5 10.5 12 4.5l7.5 6V19a1.5 1.5 0 0 1-1.5 1.5h-4v-5.5h-4v5.5H6A1.5 1.5 0 0 1 4.5 19v-8.5Z"/> <path d="M3.5 10.5 12 3.75l8.5 6.75"/><path d="M5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V9.5"/><path d="M9.5 20.5v-5.75a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5.75"/></svg>
             <span>Главная</span>
         </button>
         <button id="nav-nutrition" class="nav-item" onclick="switchTab('nutrition')">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+            <svg class="nx-icon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 4.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Z"/> <circle cx="12" cy="12" r="7.75"/><circle cx="12" cy="12" r="4"/><path d="M12 4.25V6"/><path d="M19.75 12H18"/></svg>
             <span>Питание</span>
         </button>
         <button id="nav-progress" class="nav-item" onclick="switchTab('progress')">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg class="nx-icon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="icon-duotone" x="10" y="5" width="4" height="15" rx="1.5"/> <rect class="icon-duotone" x="16.5" y="10" width="4" height="10" rx="1.5"/> <path d="M4.5 20v-6.5a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1V20"/><path d="M10.25 20V5.5a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1V20"/><path d="M16 20v-9.5a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1V20"/><path d="M3 20h18"/></svg>
             <span>Прогресс</span>
         </button>
         <button id="nav-profile" class="nav-item" onclick="switchTab('profile')">
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <svg class="nx-icon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="12" cy="8" r="3.75"/> <path class="icon-duotone" d="M5 19.5c0-3.2 3.1-5.25 7-5.25s7 2.05 7 5.25"/> <circle cx="12" cy="8" r="3.75"/><path d="M4.75 19.75c.55-3.3 3.5-5.5 7.25-5.5s6.7 2.2 7.25 5.5"/></svg>
             <span>Профиль</span>
         </button>
     </nav>
 
-    <!-- МОДАЛЬНЫЕ ШТОРКИ -->
+    <!-- МОДАЛЬНЫЕ ШТОРКИ (ЕДИНЫЙ СТАНДАРТ IOS BOTTOM SHEET) -->
     <div id="add-meal-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('add-meal-modal')">
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
@@ -688,7 +739,7 @@
 
             <div class="form-group">
                 <label class="form-label">Название приёма пищи</label>
-                <div class="quick-chips-row" id="add-meal-slot-chips">
+                <div class="quick-chips-row quick-chips-row--wrap" id="add-meal-slot-chips">
                     <button type="button" class="q-chip active" onclick="selectAddMealSlotName('Перекус', this)">Перекус</button>
                     <button type="button" class="q-chip" onclick="selectAddMealSlotName('До тренировки', this)">До тренировки</button>
                     <button type="button" class="q-chip" onclick="selectAddMealSlotName('После тренировки', this)">После тренировки</button>
@@ -701,18 +752,18 @@
                 <label class="form-label">Как учесть в норме дня?</label>
                 <div class="add-mode-toggle">
                     <div id="add-mode-fit" class="add-mode-opt active" onclick="setAddMealBalanceMode('fit')">
-                        <div class="amo-t">⚖️ Вписать в норму</div>
+                        <div class="amo-t"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M4 13.5a2.75 2.75 0 0 0 5.5 0H4Zm10.5 0a2.75 2.75 0 0 0 5.5 0h-5.5Z"/> <path d="M12 4v16"/><path d="M7.5 20h9"/><path d="M5 7.5h14"/><path d="m6.75 7.5-2.5 6h5l-2.5-6Z"/><path d="m17.25 7.5-2.5 6h5l-2.5-6Z"/></svg><span>Вписать в норму</span></div>
                         <div class="amo-s">Мягко уменьшит остаток дня</div>
                     </div>
                     <div id="add-mode-extra" class="add-mode-opt" onclick="setAddMealBalanceMode('extra')">
-                        <div class="amo-t">➕ Добавить сверху</div>
+                        <div class="amo-t"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span>Добавить сверху</span></div>
                         <div class="amo-s">Не трогает остальные блюда</div>
                     </div>
                 </div>
             </div>
 
             <div id="add-saved-meals-section" class="form-group hidden">
-                <label class="form-label">⭐ Мои блюда (вставка в 1 тап)</label>
+                <label class="form-label nx-row"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m12 3.75 2.55 5.15 5.7.83-4.12 4.02.97 5.68L12 16.75l-5.1 2.68.97-5.68-4.12-4.02 5.7-.83L12 3.75Z"/> <path d="m12 3.75 2.55 5.15 5.7.83-4.12 4.02.97 5.68L12 16.75l-5.1 2.68.97-5.68-4.12-4.02 5.7-.83L12 3.75Z"/></svg><span>Мои блюда (вставка в 1 тап)</span></label>
                 <div id="add-saved-meals-list" class="saved-meals-list"></div>
             </div>
 
@@ -730,13 +781,14 @@
                     <input type="number" id="add-meal-weight" class="form-input" placeholder="Вес (г)">
                 </div>
                 <button type="button" id="add-ai-btn" class="btn-ai-spark" onclick="runAddMealLookup()">
-                    ✦ Найти точное КБЖУ (этикетка / AI)
+                    <svg class="nx-icon nx-icon--active" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z"/> <path d="m12 3 1.65 5.1L18.75 9.75l-5.1 1.65L12 16.5l-1.65-5.1-5.1-1.65 5.1-1.65L12 3Z"/><path d="M18.5 15.5v3"/><path d="M17 17h3"/><path d="M5.5 16v2.5"/><path d="M4.25 17.25h2.5"/></svg>
+                    <span>Найти точное КБЖУ (этикетка / AI)</span>
                 </button>
-                <div id="add-source-badge" class="source-verified-tag hidden">✓ Найдено</div>
+                <div id="add-source-badge" class="source-verified-tag hidden">Найдено</div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">КБЖУ порции:</label>
+                <label class="form-label">КБЖУ порции</label>
                 <div class="manual-macros-grid">
                     <div class="mini-inp-wrap"><label>Ккал</label><input type="number" id="add-kcal" class="mini-inp" placeholder="280"></div>
                     <div class="mini-inp-wrap"><label>Белки</label><input type="number" id="add-p" class="mini-inp" placeholder="20"></div>
@@ -763,7 +815,7 @@
             <div class="modal-title" id="day-type-modal-title">Тип дня</div>
             <div class="modal-sub">Выбери нагрузку на этот день — NutriX подстроит углеводы и жиры под тренировку.</div>
             <div id="day-type-options-list" class="choice-stack"></div>
-            <button class="btn-cancel" style="width:100%;" onclick="closeModal('day-type-modal')">Закрыть</button>
+            <button class="btn-cancel nx-w-full" onclick="closeModal('day-type-modal')">Закрыть</button>
         </div>
     </div>
 
@@ -798,14 +850,15 @@
             <div class="modal-sub">Вставь своё блюдо в 1 тап, найди рецепт в каталоге или введи новый продукт.</div>
             <input type="hidden" id="edit-meal-id">
 
-            <button class="nx-btn-ghost" style="margin-top:0; margin-bottom:14px; border-color:rgba(75,208,125,0.35); color:var(--nx-mint);" onclick="quickSwapFromModal()">
-                ↻ Подобрать другое блюдо автоматически
+            <button class="nx-btn-ghost nx-btn-ghost--accent nx-mt-0 nx-mb-14" onclick="quickSwapFromModal()">
+                <svg class="nx-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 11a7.5 7.5 0 0 0-13-4.5L4.5 8.5"/><path d="M4.5 4.5v4h4"/><path d="M4.5 13a7.5 7.5 0 0 0 13 4.5l2-2"/><path d="M19.5 19.5v-4h-4"/></svg>
+                <span>Подобрать другое блюдо автоматически</span>
             </button>
 
             <div id="saved-custom-meals-section" class="form-group hidden">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <label class="form-label" style="margin:0;">⭐ Мои блюда (вставка в 1 тап)</label>
-                    <span id="saved-meals-count" style="font-size:11px; color:var(--nx-text-muted);">0 / 30</span>
+                <div class="nx-row-between nx-mb-8">
+                    <label class="form-label nx-mb-0 nx-row"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m12 3.75 2.55 5.15 5.7.83-4.12 4.02.97 5.68L12 16.75l-5.1 2.68.97-5.68-4.12-4.02 5.7-.83L12 3.75Z"/> <path d="m12 3.75 2.55 5.15 5.7.83-4.12 4.02.97 5.68L12 16.75l-5.1 2.68.97-5.68-4.12-4.02 5.7-.83L12 3.75Z"/></svg><span>Мои блюда (вставка в 1 тап)</span></label>
+                    <span id="saved-meals-count" class="section-meta">0 / 30</span>
                 </div>
                 <div id="saved-custom-meals-list" class="saved-meals-list"></div>
             </div>
@@ -824,13 +877,14 @@
                     <input type="number" id="edit-meal-weight" class="form-input" placeholder="Вес (г)">
                 </div>
                 <button type="button" id="ai-estimate-btn" class="btn-ai-spark" onclick="runAccurateProductLookup()">
-                    ✦ Найти точное КБЖУ (этикетка / AI)
+                    <svg class="nx-icon nx-icon--active" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z"/> <path d="m12 3 1.65 5.1L18.75 9.75l-5.1 1.65L12 16.5l-1.65-5.1-5.1-1.65 5.1-1.65L12 3Z"/><path d="M18.5 15.5v3"/><path d="M17 17h3"/><path d="M5.5 16v2.5"/><path d="M4.25 17.25h2.5"/></svg>
+                    <span>Найти точное КБЖУ (этикетка / AI)</span>
                 </button>
-                <div id="edit-source-badge" class="source-verified-tag hidden">✓ Найдено по этикетке</div>
+                <div id="edit-source-badge" class="source-verified-tag hidden">Найдено по этикетке</div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">КБЖУ порции (можно поправить вручную):</label>
+                <label class="form-label">КБЖУ порции (можно поправить вручную)</label>
                 <div class="manual-macros-grid">
                     <div class="mini-inp-wrap"><label>Ккал</label><input type="number" id="manual-kcal" class="mini-inp" placeholder="450"></div>
                     <div class="mini-inp-wrap"><label>Белки</label><input type="number" id="manual-p" class="mini-inp" placeholder="25"></div>
@@ -857,7 +911,7 @@
             <div class="modal-title">Выбери приём пищи</div>
             <div class="modal-sub">Какой приём пищи заменить или дополнить?</div>
             <div id="choose-meal-list" class="choice-stack"></div>
-            <button class="btn-cancel" style="width:100%;" onclick="closeModal('choose-meal-modal')">Закрыть</button>
+            <button class="btn-cancel nx-w-full" onclick="closeModal('choose-meal-modal')">Закрыть</button>
         </div>
     </div>
 
@@ -867,40 +921,52 @@
             <div class="modal-title">Настроить меню</div>
             <div class="modal-sub">Можно выбрать сразу несколько режимов — изменения применяются мгновенно.</div>
 
-            <div class="form-label">Стиль блюд:</div>
+            <div class="form-label">Стиль блюд</div>
             <div class="sheet-style-row" id="cuisine-style-pills">
-                <button class="sheet-style-btn" data-style="simple" onclick="setCuisineStyle('simple')">⚡ Простые</button>
-                <button class="sheet-style-btn active" data-style="balanced" onclick="setCuisineStyle('balanced')">⚖️ Баланс</button>
-                <button class="sheet-style-btn" data-style="exotic" onclick="setCuisineStyle('exotic')">✨ Необычные</button>
+                <button class="sheet-style-btn" data-style="simple" onclick="setCuisineStyle('simple')">
+                    <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M13 2.75 4.75 13.5H11l-1 7.75 9.25-10.75H13l0-7.75Z"/> <path d="M13 2.75 4.75 13.5H11l-1 7.75 9.25-10.75H13V2.75Z"/></svg>
+                    <span>Простые</span>
+                </button>
+                <button class="sheet-style-btn active" data-style="balanced" onclick="setCuisineStyle('balanced')">
+                    <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M4 13.5a2.75 2.75 0 0 0 5.5 0H4Zm10.5 0a2.75 2.75 0 0 0 5.5 0h-5.5Z"/> <path d="M12 4v16"/><path d="M7.5 20h9"/><path d="M5 7.5h14"/><path d="m6.75 7.5-2.5 6h5l-2.5-6Z"/><path d="m17.25 7.5-2.5 6h5l-2.5-6Z"/></svg>
+                    <span>Баланс</span>
+                </button>
+                <button class="sheet-style-btn" data-style="exotic" onclick="setCuisineStyle('exotic')">
+                    <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z"/> <path d="m12 3 1.65 5.1L18.75 9.75l-5.1 1.65L12 16.5l-1.65-5.1-5.1-1.65 5.1-1.65L12 3Z"/><path d="M18.5 15.5v3"/><path d="M17 17h3"/><path d="M5.5 16v2.5"/><path d="M4.25 17.25h2.5"/></svg>
+                    <span>Необычные</span>
+                </button>
             </div>
 
             <div class="plan-mode-header">
-                <span class="form-label" style="margin:0;">Режимы меню <span id="plan-modes-counter" style="opacity:0.75;">(можно несколько)</span>:</span>
-                <button id="plan-mode-reset-btn" class="text-btn hidden" style="font-size:12px;" onclick="clearAllPlanModes()">Сбросить все</button>
+                <span class="form-label nx-mb-0">Режимы меню <span id="plan-modes-counter">(можно несколько)</span></span>
+                <button id="plan-mode-reset-btn" class="text-btn hidden" onclick="clearAllPlanModes()">Сбросить все</button>
             </div>
             <div class="plan-mode-grid" id="plan-mode-grid">
                 <div class="plan-mode-card" data-mode="quick" onclick="togglePlanMode('quick')">
-                    <div class="pm-title">⚡ Быстро (до 20 мин)</div>
+                    <div class="pm-title"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="12" cy="12" r="8.5"/> <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.75"/></svg><span>Быстро (≤20 мин)</span></div>
                     <div class="pm-sub">Минимум времени у плиты</div>
                 </div>
                 <div class="plan-mode-card" data-mode="budget" onclick="togglePlanMode('budget')">
-                    <div class="pm-title">💰 Экономно</div>
+                    <div class="pm-title"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="icon-duotone" x="3.5" y="6.5" width="17" height="12" rx="2.5"/> <rect x="3.5" y="6.5" width="17" height="12" rx="2.5"/><path d="M16.5 12.5h4"/><path d="M6.5 6.5V5.25A1.75 1.75 0 0 1 8.25 3.5h8.5"/><circle cx="16.5" cy="12.5" r=".75" fill="currentColor" stroke="none"/></svg><span>Экономно</span></div>
                     <div class="pm-sub">Доступные базовые продукты</div>
                 </div>
                 <div class="plan-mode-card" data-mode="mealprep" onclick="togglePlanMode('mealprep')">
-                    <div class="pm-title">🍱 На 2 дня</div>
+                    <div class="pm-title"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 4 3.5 8.5 12 13l8.5-4.5L12 4Z"/> <path d="M12 4 3.5 8.5 12 13l8.5-4.5L12 4Z"/><path d="M3.5 12.5 12 17l8.5-4.5"/><path d="M3.5 16.5 12 21l8.5-4.5"/></svg><span>На 2 дня</span></div>
                     <div class="pm-sub">Одна готовка сразу на два дня</div>
                 </div>
                 <div class="plan-mode-card" data-mode="diverse" onclick="togglePlanMode('diverse')">
-                    <div class="pm-title">🌈 Разнообразие</div>
+                    <div class="pm-title"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z"/> <path d="m12 3 1.65 5.1L18.75 9.75l-5.1 1.65L12 16.5l-1.65-5.1-5.1-1.65 5.1-1.65L12 3Z"/><path d="M18.5 15.5v3"/><path d="M17 17h3"/><path d="M5.5 16v2.5"/><path d="M4.25 17.25h2.5"/></svg><span>Разнообразие</span></div>
                     <div class="pm-sub">Максимум новых вкусов</div>
                 </div>
             </div>
 
-            <div class="overlap-toggle-row" style="margin-bottom:14px;" onclick="toggleOverlapOptimization()">
-                <div>
-                    <div style="font-size:12px; font-weight:800;">♻️ Меньше остатков в холодильнике</div>
-                    <div style="font-size:11px; color:var(--nx-text-muted);">Собирать разные блюда из общих базовых продуктов</div>
+            <div class="overlap-toggle-row" onclick="toggleOverlapOptimization()">
+                <div class="nx-row nx-minw0">
+                    <svg class="nx-icon nx-text-accent" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="12" cy="12" r="7.5"/> <path d="M7.5 6.5A7.5 7.5 0 0 1 18.5 8"/><path d="M16 8h2.75V5.25"/><path d="M16.5 17.5A7.5 7.5 0 0 1 5.5 16"/><path d="M8 16H5.25v2.75"/></svg>
+                    <div class="nx-minw0">
+                        <div class="cloud-sync-title">Меньше остатков в холодильнике</div>
+                        <div class="cloud-sync-sub">Собирать разные блюда из общих базовых продуктов</div>
+                    </div>
                 </div>
                 <span id="overlap-toggle-badge" class="precision-pill">ВКЛ</span>
             </div>
@@ -912,20 +978,20 @@
     <div id="water-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('water-modal')">
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <div class="modal-title" style="margin:0;">Вода сегодня</div>
+            <div class="nx-row-between nx-mb-8">
+                <div class="modal-title nx-mb-0">Вода сегодня</div>
                 <span class="precision-pill" id="wm-pct-badge">0%</span>
             </div>
             <div class="modal-sub" id="wm-norm-breakdown">Базовая норма + поправка на активность</div>
 
-            <div class="nx-card tint" style="text-align:center; padding:16px; margin-bottom:14px;">
-                <div class="tabular" style="font-size:32px; font-weight:800; color:var(--nx-mint);">
-                    <span id="wm-cur-l">0.00</span> <span style="font-size:15px; color:var(--nx-text-muted);">/ <span id="wm-goal-l">2.50</span> л</span>
+            <div class="water-summary-box">
+                <div class="water-big-num">
+                    <span id="wm-cur-l">0.00</span> <span class="water-big-goal">/ <span id="wm-goal-l">2.50</span> л</span>
                 </div>
-                <div id="wm-rem-text" style="font-size:12px; color:var(--nx-text-muted); margin-top:4px;">Осталось 2500 мл</div>
+                <div id="wm-rem-text" class="cloud-sync-sub">Осталось 2500 мл</div>
             </div>
 
-            <div class="form-label">Добавить объём:</div>
+            <div class="form-label">Добавить объём</div>
             <div class="water-vol-grid">
                 <button class="water-vol-btn" onclick="logWaterIntake(150)">+150 мл</button>
                 <button class="water-vol-btn" onclick="logWaterIntake(250)">+250 мл</button>
@@ -933,10 +999,13 @@
                 <button class="water-vol-btn" onclick="logWaterIntake(500)">+500 мл</button>
             </div>
 
-            <div id="wm-history-list" style="max-height:140px; overflow-y:auto; margin-bottom:10px;"></div>
+            <div id="wm-history-list" class="water-history-scroll"></div>
 
             <div class="modal-btns">
-                <button class="btn-cancel" onclick="undoLastWater()">↩ Отменить</button>
+                <button class="btn-cancel" onclick="undoLastWater()">
+                    <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 8H4.5V4"/><path d="M4.5 8a8 8 0 1 1 2 9.5"/></svg>
+                    <span>Отменить</span>
+                </button>
                 <button class="btn-submit" onclick="closeModal('water-modal')">Готово</button>
             </div>
         </div>
@@ -953,12 +1022,12 @@
                 <input type="number" id="ci-weight-input" class="form-input" step="0.1" placeholder="70.0">
             </div>
 
-            <div class="brand-weight-grid" style="margin-bottom:12px;">
-                <div class="form-group" style="margin:0;">
+            <div class="brand-weight-grid nx-mb-12">
+                <div class="form-group nx-mb-0">
                     <label class="form-label">Талия, см (по желанию)</label>
                     <input type="number" id="ci-waist-input" class="form-input" step="0.5" placeholder="Необязательно">
                 </div>
-                <div class="form-group" style="margin:0;">
+                <div class="form-group nx-mb-0">
                     <label class="form-label">Жир тела, % (по желанию)</label>
                     <input type="number" id="ci-bf-input" class="form-input" step="0.5" placeholder="Необязательно">
                 </div>
@@ -981,40 +1050,40 @@
             <div class="modal-title">Умная замена продукта</div>
             <div class="modal-sub" id="sub-modal-source-label">Выбери равноценный аналог — КБЖУ пересчитается само.</div>
             <div id="sub-options-container"></div>
-            <button class="btn-cancel" style="width:100%; margin-top:4px;" onclick="closeModal('substitution-modal')">Оставить как есть</button>
+            <button class="btn-cancel nx-w-full" onclick="closeModal('substitution-modal')">Оставить как есть</button>
         </div>
     </div>
 
     <div id="admin-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('admin-modal')">
         <div class="modal-sheet">
             <div class="sheet-handle"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <div class="modal-title" style="margin:0;">Админ-панель NutriX</div>
+            <div class="nx-row-between nx-mb-12">
+                <div class="modal-title nx-mb-0">Админ-панель NutriX</div>
                 <span class="admin-badge-live"><span class="admin-pulse-dot"></span> OWNER</span>
             </div>
 
             <div class="admin-kpi-grid">
-                <div class="admin-kpi-box"><div class="bio-label">Онлайн (5 мин)</div><div class="bio-val" id="adm-online" style="color:var(--nx-mint);">—</div></div>
+                <div class="admin-kpi-box"><div class="bio-label">Онлайн (5 мин)</div><div class="bio-val nx-text-accent" id="adm-online">—</div></div>
                 <div class="admin-kpi-box"><div class="bio-label">Всего пользователей</div><div class="bio-val" id="adm-total-users">—</div></div>
                 <div class="admin-kpi-box"><div class="bio-label">Пинг AI Worker</div><div class="bio-val" id="adm-worker-ping">—</div></div>
                 <div class="admin-kpi-box"><div class="bio-label">База в памяти</div><div class="bio-val" id="adm-db-count">—</div></div>
             </div>
 
-            <div class="form-label">Телеметрия и диагностика:</div>
+            <div class="form-label">Телеметрия и диагностика</div>
             <div id="adm-log-box" class="admin-log-box">Готово к опросу…</div>
 
-            <div class="meal-actions-3" style="margin-bottom:8px;">
-                <button class="btn-small" onclick="refreshAdminStats()">🔄 Обновить</button>
-                <button class="btn-small" onclick="openDbModal()">🗄 База v4</button>
-                <button class="btn-small" onclick="openWorkerModal()">⚙️ Worker</button>
+            <div class="admin-actions-grid">
+                <button class="btn-small" onclick="refreshAdminStats()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 11a7.5 7.5 0 0 0-13-4.5L4.5 8.5"/><path d="M4.5 4.5v4h4"/><path d="M4.5 13a7.5 7.5 0 0 0 13 4.5l2-2"/><path d="M19.5 19.5v-4h-4"/></svg><span>Обновить</span></button>
+                <button class="btn-small" onclick="openDbModal()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse class="icon-duotone" cx="12" cy="6.25" rx="7.5" ry="2.75"/> <ellipse cx="12" cy="6.25" rx="7.5" ry="2.75"/><path d="M4.5 6.25v11.5c0 1.52 3.36 2.75 7.5 2.75s7.5-1.23 7.5-2.75V6.25"/><path d="M4.5 12c0 1.52 3.36 2.75 7.5 2.75s7.5-1.23 7.5-2.75"/></svg><span>База v4</span></button>
+                <button class="btn-small" onclick="openWorkerModal()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="9" cy="7" r="2.25"/> <circle class="icon-duotone" cx="15" cy="17" r="2.25"/> <path d="M3.5 7h3.25"/><path d="M11.25 7h9.25"/><circle cx="9" cy="7" r="2.25"/><path d="M3.5 17h9.25"/><path d="M17.25 17h3.25"/><circle cx="15" cy="17" r="2.25"/></svg><span>Worker</span></button>
             </div>
-            <div class="meal-actions-3" style="margin-bottom:10px;">
-                <button class="btn-small" onclick="inspectCloudStorageAdmin()">☁️ Cloud</button>
-                <button class="btn-small" onclick="simulateCheckInPromptAdmin()">📅 Тест замера</button>
-                <button class="btn-small" onclick="resetAllAppStateAdmin()" style="color:var(--nx-danger);">🗑 Сброс</button>
+            <div class="admin-actions-grid nx-mb-12">
+                <button class="btn-small" onclick="inspectCloudStorageAdmin()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M7.25 18.5h10.25a3.75 3.75 0 0 0 .5-7.46 5.5 5.5 0 0 0-10.65-1.35A4.25 4.25 0 0 0 7.25 18.5Z"/> <path d="M7.25 18.5h10.25a3.75 3.75 0 0 0 .5-7.46 5.5 5.5 0 0 0-10.65-1.35A4.25 4.25 0 0 0 7.25 18.5Z"/></svg><span>Cloud</span></button>
+                <button class="btn-small" onclick="simulateCheckInPromptAdmin()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="icon-duotone" x="4" y="5.5" width="16" height="4.5" rx="1.5"/> <rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M8.5 3.5v3.5"/><path d="M15.5 3.5v3.5"/><path d="M4 10h16"/></svg><span>Замер</span></button>
+                <button class="btn-small danger-act" onclick="resetAllAppStateAdmin()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M6.5 7.5h11l-.9 11.5a1.5 1.5 0 0 1-1.5 1.5H8.9a1.5 1.5 0 0 1-1.5-1.5L6.5 7.5Z"/> <path d="M4.5 7h15"/><path d="M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2"/><path d="M6.5 7 7.4 18.8a1.75 1.75 0 0 0 1.75 1.7h5.7a1.75 1.75 0 0 0 1.75-1.7L17.5 7"/><path d="M10.25 11v5.5"/><path d="M13.75 11v5.5"/></svg><span>Сброс</span></button>
             </div>
 
-            <button class="btn-cancel" style="width:100%;" onclick="closeModal('admin-modal')">Закрыть панель</button>
+            <button class="btn-cancel nx-w-full" onclick="closeModal('admin-modal')">Закрыть панель</button>
         </div>
     </div>
 
@@ -1025,10 +1094,10 @@
             <div class="modal-sub" id="db-modal-status-text">
                 Автоматически ищет <code>nutrix_db_lite_2000.json</code> (~100 КБ gzip, 2 000 рецептов РФ) рядом с <code>index.html</code> и кэширует в IndexedDB.
             </div>
-            <div class="science-box" style="margin-bottom:14px;">
+            <div class="science-box">
                 <div class="science-title">Состояние реестра</div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Загружено рецептов:</span><strong id="db-stat-recipes">12 рецептов</strong></div>
-                <div class="science-row"><span style="color:var(--nx-text-muted);">Табличных замен:</span><strong id="db-stat-subs">48 пар</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Загружено рецептов</span><strong id="db-stat-recipes">12 рецептов</strong></div>
+                <div class="science-row"><span class="nx-text-muted">Табличных замен</span><strong id="db-stat-subs">48 пар</strong></div>
             </div>
             <div class="form-group">
                 <label class="form-label">Загрузить файл вручную (.json)</label>
@@ -1057,7 +1126,6 @@
         </div>
     </div>
 
-    
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>

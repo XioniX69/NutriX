@@ -843,9 +843,9 @@ export function rebuildGroceryList() {
     });
 
     if (Array.isArray(appState.customGroceries) && appState.customGroceries.length) {
-        agg["✍️ Добавлено вручную"] = {};
+        agg["Добавлено вручную"] = {};
         appState.customGroceries.forEach(ci => {
-            agg["✍️ Добавлено вручную"][ci.name] = {
+            agg["Добавлено вручную"][ci.name] = {
                 rawWeight: 0,
                 cookedWeight: 0,
                 dishes: new Set(["Своя покупка"]),
@@ -871,8 +871,9 @@ export function rebuildGroceryList() {
                 gramsSub: pack.gramsSub,
                 checkHome: pack.checkHome,
                 dishes: Array.from(info.dishes).slice(0, 3).join(" · "),
+                isPerishableWave: Boolean(store.groceryPeriod === 7 && info.isPerishable),
                 waveLabel: (store.groceryPeriod === 7 && info.isPerishable)
-                    ? (info.waves.size === 2 ? "🥬 Скоропорт · Пн + Чт" : (info.waves.has(1) ? "🥬 Скоропорт · Пн–Ср" : "🥬 Скоропорт · Чт–Вс"))
+                    ? (info.waves.size === 2 ? "Скоропорт · Пн + Чт" : (info.waves.has(1) ? "Скоропорт · Пн–Ср" : "Скоропорт · Чт–Вс"))
                     : "",
                 alt: info.alt,
                 isChecked: Boolean(appState.checkedGroceries[name])

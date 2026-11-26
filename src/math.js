@@ -18,9 +18,9 @@ export const WEEK_DAYS = [
 export const MAX_SAVED_CUSTOM_MEALS = 30;
 
 export const NUTRIX_THEMES = [
-    { id: "auto",     name: "Авто",    sub: "Как в Telegram", bg: "linear-gradient(135deg, #0B0D0C 50%, #F3F6F4 50%)", accent: "#4BD07D" },
-    { id: "obsidian", name: "Тёмная",  sub: "Obsidian",       bg: "#0B0D0C", accent: "#4BD07D" },
-    { id: "daylight", name: "Светлая", sub: "Daylight",       bg: "#F3F6F4", accent: "#1FA855" }
+    { id: "auto",     name: "Авто",    sub: "Как в Telegram", bg: "linear-gradient(135deg, #0C0F0D 50%, #F6F5F0 50%)", accent: "#5EC28A" },
+    { id: "obsidian", name: "Тёмная",  sub: "Obsidian",       bg: "#0C0F0D", accent: "#5EC28A" },
+    { id: "daylight", name: "Светлая", sub: "Daylight",       bg: "#F6F5F0", accent: "#174B38" }
 ];
 
 export const ACTIVITY_LEVEL_TIERS = {
@@ -46,13 +46,13 @@ export const SPORT_PROFILES = {
 };
 
 export const DAY_TYPE_META = {
-    rest:      { key: "rest",      label: "Отдых",        icon: "😴", short: "•",  bonusPct: 0.00, fatDelta: +5,  toast: "День отдыха — ровный баланс БЖУ" },
-    strength:  { key: "strength",  label: "Силовая",      icon: "🏋️", short: "🏋️", bonusPct: 0.10, fatDelta: -5,  toast: "🏋️ Силовой день — добавили углеводы на восстановление" },
-    team:      { key: "team",      label: "Игровая",      icon: "🏐", short: "🏐", bonusPct: 0.11, fatDelta: -7,  toast: "🏐 Игровой день — повысили запас гликогена" },
-    sport:     { key: "team",      label: "Игровая",      icon: "🏐", short: "🏐", bonusPct: 0.11, fatDelta: -7,  toast: "🏐 Игровой день — повысили запас гликогена" },
-    endurance: { key: "endurance", label: "Кардио / Бег", icon: "🏃", short: "🏃", bonusPct: 0.12, fatDelta: -8,  toast: "🏃 Кардио-день — максимум сложных углеводов" },
-    combat:    { key: "combat",    label: "Единоборства", icon: "🥊", short: "🥊", bonusPct: 0.12, fatDelta: -6,  toast: "🥊 Тренировка — повышенный запас энергии и белка" },
-    fitness:   { key: "fitness",   label: "Фитнес",       icon: "🧘", short: "🧘", bonusPct: 0.06, fatDelta: -3,  toast: "🧘 День фитнеса — мягкая прибавка энергии" }
+    rest:      { key: "rest",      label: "Отдых",        iconKey: "rest",      bonusPct: 0.00, fatDelta: +5,  toast: "День отдыха — ровный баланс БЖУ" },
+    strength:  { key: "strength",  label: "Силовая",      iconKey: "strength",  bonusPct: 0.10, fatDelta: -5,  toast: "Силовой день — добавили углеводы на восстановление" },
+    team:      { key: "team",      label: "Игровая",      iconKey: "team",      bonusPct: 0.11, fatDelta: -7,  toast: "Игровой день — повысили запас гликогена" },
+    sport:     { key: "team",      label: "Игровая",      iconKey: "team",      bonusPct: 0.11, fatDelta: -7,  toast: "Игровой день — повысили запас гликогена" },
+    endurance: { key: "endurance", label: "Кардио / Бег", iconKey: "endurance", bonusPct: 0.12, fatDelta: -8,  toast: "Кардио-день — максимум сложных углеводов" },
+    combat:    { key: "combat",    label: "Единоборства", iconKey: "combat",    bonusPct: 0.12, fatDelta: -6,  toast: "Тренировка — повышенный запас энергии и белка" },
+    fitness:   { key: "fitness",   label: "Фитнес",       iconKey: "fitness",   bonusPct: 0.06, fatDelta: -3,  toast: "День фитнеса — мягкая прибавка энергии" }
 };
 
 export const GOALS_V4 = [

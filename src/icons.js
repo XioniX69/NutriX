@@ -168,7 +168,54 @@ export const ICONS = {
         <circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>`,
 
     weight: `<rect class="icon-duotone" x="4.5" y="4.5" width="15" height="15" rx="3.5"/>
-        <rect x="4.5" y="4.5" width="15" height="15" rx="3.5"/><path d="M8.25 11.25a4.5 4.5 0 0 1 7.5 0"/><path d="m12 11 1.5-2.25"/>`
+        <rect x="4.5" y="4.5" width="15" height="15" rx="3.5"/><path d="M8.25 11.25a4.5 4.5 0 0 1 7.5 0"/><path d="m12 11 1.5-2.25"/>`,
+
+    /* Режим «Семья» */
+    users: `<circle class="icon-duotone" cx="9" cy="8.25" r="3.25"/>
+        <circle class="icon-duotone" cx="16.5" cy="9.25" r="2.5"/>
+        <circle cx="9" cy="8.25" r="3.25"/><path d="M3.25 19.25c.5-2.85 2.9-4.75 5.75-4.75s5.25 1.9 5.75 4.75"/><circle cx="16.5" cy="9.25" r="2.5"/><path d="M16.5 14.5c2.1 0 3.85 1.35 4.25 3.75"/>`,
+
+    userPlus: `<circle class="icon-duotone" cx="9.5" cy="8.25" r="3.5"/>
+        <circle cx="9.5" cy="8.25" r="3.5"/><path d="M3.5 19.5c.5-3 3-5 6-5s5.5 2 6 5"/><path d="M19 8v6"/><path d="M16 11h6"/>`,
+
+    utensils: `<path class="icon-duotone" d="M15.5 4.5v8.5h3V4.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5Z"/>
+        <path d="M5.5 3.5v5.25a2.75 2.75 0 0 0 5.5 0V3.5"/><path d="M8.25 3.5v17"/><path d="M15.5 13V4.75a1.75 1.75 0 0 1 3.5 0V13h-3.5Zm3.5 0v7.5"/>`,
+
+    bell: `<path class="icon-duotone" d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 2 6.5h-15c.5-1 2-2.5 2-6.5Z"/>
+        <path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 2 6.5h-15c.5-1 2-2.5 2-6.5Z"/><path d="M10 19.25a2.25 2.25 0 0 0 4 0"/>`,
+
+    vote: `<rect class="icon-duotone" x="4" y="4" width="16" height="16" rx="3"/>
+        <rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.75 12.25 2.25 2.25 4.5-4.75"/>`,
+
+    logOut: `<path d="M9.5 4.5h-3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3"/><path d="M15.5 16.5 20 12l-4.5-4.5"/><path d="M20 12H9.5"/>`,
+
+    store: `<path class="icon-duotone" d="M4.5 9.5h15v10a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-10Z"/>
+        <path d="M3.5 9.5 5 4.5h14l1.5 5"/><path d="M3.5 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 2 2.45"/><path d="M5 11.75V19.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7.75"/><path d="M10 20.5v-5h4v5"/>`,
+
+    trophy: `<path class="icon-duotone" d="M7.5 4.5h9v5.5a4.5 4.5 0 0 1-9 0V4.5Z"/>
+        <path d="M7.5 4.5h9v5.5a4.5 4.5 0 0 1-9 0V4.5Z"/><path d="M7.5 6.5H4.75a1.5 1.5 0 0 0 0 3H7.5"/><path d="M16.5 6.5h2.75a1.5 1.5 0 0 1 0 3H16.5"/><path d="M12 14.5v5"/><path d="M8.5 19.5h7"/>`,
+
+    /* Полноэкранный режим «Я в магазине» */
+    moreHorizontal: `<circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.5" fill="currentColor" stroke="none"/>`,
+
+    packageBox: `<path class="icon-duotone" d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/>
+        <path d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/><path d="M4.5 7.25 12 11.25l7.5-4"/><path d="M12 11.25v9.5"/><path d="m8.25 5.25 7.5 4"/>`,
+
+    bookmark: `<path class="icon-duotone" d="M6.5 4.5h11a1 1 0 0 1 1 1V20l-6.5-3.75L5.5 20V5.5a1 1 0 0 1 1-1Z"/>
+        <path d="M6.5 4.5h11a1 1 0 0 1 1 1V20l-6.5-3.75L5.5 20V5.5a1 1 0 0 1 1-1Z"/>`,
+
+    messageNote: `<path class="icon-duotone" d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9.5L5.5 20v-3.5h-1v-10Z"/>
+        <path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9.5L5.5 20v-3.5a1 1 0 0 1-1-1v-9Z"/><path d="M8.5 9.25h7"/><path d="M8.5 12.75h4.5"/>`,
+
+    wifiOff: `<path d="M3.5 3.5 20.5 20.5"/><path d="M16.75 11.1a9.5 9.5 0 0 1 2.75 1.9"/><path d="M4.5 13a10.5 10.5 0 0 1 5.25-2.75"/><path d="M8.5 16.25a5.5 5.5 0 0 1 6.75-.2"/><circle cx="12" cy="19.25" r="1" fill="currentColor" stroke="none"/>`,
+
+    arrowUp: `<path d="M12 18.5v-13"/><path d="m6.5 11 5.5-5.5 5.5 5.5"/>`,
+
+    arrowDown: `<path d="M12 5.5v13"/><path d="m6.5 13 5.5 5.5 5.5-5.5"/>`,
+
+    listOrdered: `<path d="M9.5 6.5h10.5"/><path d="M9.5 12h10.5"/><path d="M9.5 17.5h10.5"/><path d="M4.5 6.5h1.5"/><path d="M4.5 12h1.5"/><path d="M4.5 17.5h1.5"/>`
+
+
 };
 
 /**

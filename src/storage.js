@@ -44,6 +44,13 @@ export const store = {
     hideCheckedGroceries: false,
     detailWeightMode: "raw", // "raw" | "cooked" | "visual"
     detailPortionMult: 1,
+    detailFamilyMode: false,
+    groceryScope: "personal", // "personal" | "family"
+    inStoreFullscreen: false,
+    storeActiveDept: "all",
+    storeCartExpanded: false,
+    storeDeferredExpanded: false,
+    storeWakeLockActive: false,
     variationSeed: 0,
     activeDetailMealId: null,
     checkedStepsByMeal: {},
@@ -68,6 +75,11 @@ export const appState = {
     optimizeOverlap: true,
     checkedGroceries: {},
     customGroceries: [],
+    pantryItems: {},
+    pantryActiveList: [],
+    deferredGroceries: {},
+    groceryNotes: {},
+    deptOrder: [],
     savedCustomMeals: [],
     pinnedSlots: {},
     waterLog: {},
@@ -78,7 +90,8 @@ export const appState = {
     lastUpdated: getTodayStr(),
     updatedAt: 0,
     streakDays: 0,
-    theme: "auto"
+    theme: "auto",
+    mascot: { seenTours: {}, muted: false, lastVisitDate: getTodayStr() }
 };
 
 const hooks = {
@@ -90,7 +103,8 @@ const hooks = {
     onCloudRehydrated: null,
     onApplyTheme: null,
     onToast: null,
-    onCloudStatusChanged: null
+    onCloudStatusChanged: null,
+    onFamilyUpdated: null
 };
 
 export function registerStorageHooks(partial) {
@@ -753,6 +767,7 @@ export const CloudSync = {
             ws: appState.weekStartDate || getWeekStartDateStr(),
             lu: appState.lastUpdated,
             vs: store.variationSeed,
+            mc: appState.mascot || { seenTours: {}, muted: false },
             ps: Object.fromEntries(
                 Object.entries(appState.pinnedSlots || {}).map(([slotName, pin]) => [
                     slotName,
@@ -791,6 +806,9 @@ export const CloudSync = {
                 wh: (appState.waterHistory?.[getTodayStr()] || []).slice(-waterHistLimit),
                 cg: checkedOnlyTrue,
                 cu: (appState.customGroceries || []).slice(0, 15),
+                pi: Object.keys(appState.pantryItems || {}).filter(k => appState.pantryItems[k]).slice(0, 30),
+                do: (appState.deptOrder || []).slice(0, 12),
+                gn: appState.groceryNotes || {},
                 ci: (appState.checkIns || []).slice(-checkInsLimit),
                 dh: recentH,
                 sm: (appState.savedCustomMeals || []).slice(0, savedLimit).map(s => [
@@ -879,6 +897,7 @@ export const CloudSync = {
                 appState.optimizeOverlap = p.oo !== false;
                 store.groceryPeriod = p.gp || 3;
                 store.variationSeed = p.vs || 0;
+                if (p.mc && typeof p.mc === "object") appState.mascot = p.mc;
 
                 appState.pinnedSlots = {};
                 if (p.ps && typeof p.ps === "object") {
@@ -901,6 +920,10 @@ export const CloudSync = {
                     appState.waterHistory = { [getTodayStr()]: m.wh || [] };
                     appState.checkedGroceries = m.cg || {};
                     appState.customGroceries = m.cu || [];
+                    appState.pantryItems = {};
+                    if (Array.isArray(m.pi)) m.pi.forEach(k => { appState.pantryItems[k] = true; });
+                    appState.deptOrder = Array.isArray(m.do) ? m.do : [];
+                    appState.groceryNotes = (m.gn && typeof m.gn === "object") ? m.gn : {};
                     appState.checkIns = m.ci || [];
                     appState.dailyHistory = m.dh || {};
                     if (Array.isArray(m.sm)) {
@@ -974,6 +997,13 @@ export function loadState() {
         if (!appState.dateLogs) appState.dateLogs = {};
         if (!Array.isArray(appState.savedCustomMeals)) appState.savedCustomMeals = [];
         if (!appState.pinnedSlots || typeof appState.pinnedSlots !== "object") appState.pinnedSlots = {};
+        if (!appState.pantryItems || typeof appState.pantryItems !== "object") appState.pantryItems = {};
+        if (!appState.deferredGroceries || typeof appState.deferredGroceries !== "object") appState.deferredGroceries = {};
+        if (!appState.groceryNotes || typeof appState.groceryNotes !== "object") appState.groceryNotes = {};
+        if (!Array.isArray(appState.deptOrder)) appState.deptOrder = [];
+        if (!appState.mascot || typeof appState.mascot !== "object") {
+            appState.mascot = { seenTours: {}, muted: false, lastVisitDate: getTodayStr() };
+        }
         if (typeof appState.lastAutoAdjustDate === "undefined") appState.lastAutoAdjustDate = null;
         if (!Array.isArray(appState.checkIns) || !appState.checkIns.length) {
             appState.checkIns = [{ date: appState.startedAt, weight: appState.user.weight }];

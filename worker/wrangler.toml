@@ -1,0 +1,18 @@
+name = "nutrix"
+main = "worker/worker.js"
+compatibility_date = "2025-10-01"
+
+# 1. Создай базу D1:
+#    npx wrangler d1 create nutrix-db
+# 2. Вставь полученный database_id ниже и примени схему:
+#    npx wrangler d1 execute nutrix-db --remote --file=./worker/schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "nutrix-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# Секреты (задаются через npx wrangler secret put <NAME>):
+# - TELEGRAM_BOT_TOKEN   (токен бота от @BotFather для проверки initData и уведомлений Нико)
+# - OPENROUTER_API_KEY   (ключ OpenRouter для AI-расчёта КБЖУ)
+# - BOT_USERNAME         (например: NutriX_App_Bot — без @, для диплинков)
+# - ADMIN_TG_IDS         (опционально, по умолчанию 1696224717)

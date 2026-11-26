@@ -1,8 +1,8 @@
 /* =========================================================================
-   NUTRIX v10 — src/main.js
-   Точка входа Vite: подключение стилей, связывание ES-модулей, экспорт
-   обработчиков в window, обновление приветствия при возврате (visibilitychange)
-   и неблокирующий bootstrapNutriX().
+   NUTRIX v12 — src/main.js
+   Точка входа Vite: подключение стилей, связывание ES-модулей (включая
+   режим «Семья»), экспорт обработчиков в window, обновление приветствия и
+   семьи при возврате (visibilitychange) и неблокирующий bootstrapNutriX().
    ========================================================================= */
 
 import "./styles.css";
@@ -27,6 +27,56 @@ import {
     generateWeeklyPlanOptimized,
     rebuildUneatenMealsForWeek
 } from "./planner.js";
+import {
+    familyStore,
+    registerFamilyHooks,
+    loadCachedFamily,
+    detectFamilyInviteParam,
+    isFamilyActive,
+    fetchFamilyState,
+    syncMyFamilyProfile
+} from "./family.js";
+import {
+    registerStoreModeHooks,
+    initStoreModeSystem,
+    onFamilyUpdateInStoreMode,
+    openStoreMode,
+    closeStoreMode,
+    finishStoreTrip,
+    requestStoreWakeLock,
+    renderStoreModeView,
+    selectStoreDept,
+    toggleStoreCartAccordion,
+    toggleStoreDeferredAccordion,
+    storeTapItem,
+    storeUncheckItem,
+    storeTapUrgentItem,
+    storeUncheckUrgentItem,
+    restoreDeferredStoreItem,
+    openStoreItemActions,
+    saveStoreItemNote,
+    triggerStoreItemSubstitute,
+    deferActiveStoreItem,
+    markActiveStoreItemPantry,
+    undoLastStoreAction,
+    openStoreQuickAddModal,
+    submitStoreQuickAdd,
+    openPantryModal,
+    restorePantryItem,
+    clearAllPantryItems,
+    openDeptOrderModal,
+    moveDeptOrder,
+    resetDeptOrder
+} from "./storeMode.js";
+import {
+    registerMascotHooks,
+    startNikoOnboardingTour,
+    nextNikoTourStep,
+    skipNikoTour,
+    dismissNikoHint,
+    checkNikoReturnGreeting,
+    replayNikoTourFromProfile
+} from "./mascot.js";
 import {
     showToast,
     applyTheme,
@@ -130,7 +180,35 @@ import {
     simulateCheckInPromptAdmin,
     resetAllAppStateAdmin,
     forceCloudSyncNow,
-    triggerAutoFetchMasterDb
+    triggerAutoFetchMasterDb,
+    openFamilyModal,
+    switchFamilySetupTab,
+    toggleFamilyDraftSlot,
+    submitCreateFamily,
+    submitJoinFamilyByCode,
+    copyFamilyInviteLink,
+    shareFamilyInviteLink,
+    refreshFamilyNow,
+    toggleFamilyLiveSlot,
+    toggleFamilyShareWins,
+    toggleFamilyShopperRole,
+    removeFamilyMemberClick,
+    confirmLeaveFamily,
+    showPendingFamilyInvitePrompt,
+    acceptPendingFamilyInvite,
+    dismissFamilyJoinPrompt,
+    setDetailFamilyMode,
+    toggleDetailEatingOut,
+    toggleDetailCookDuty,
+    notifyDetailDinnerReady,
+    setGroceryScope,
+    toggleFamilyInStoreMode,
+    focusUrgentGroceryInput,
+    toggleFamilyUrgentItem,
+    openDinnerVoteModal,
+    startNewFamilyDinnerVote,
+    castFamilyVoteClick,
+    applyFamilyVoteWinner
 } from "./ui.js";
 
 // 1. Регистрируем колбэки модулей (строго ациклический граф)
@@ -146,6 +224,28 @@ registerStorageHooks({
     onCloudStatusChanged: renderCloudStatusCard
 });
 
+registerFamilyHooks({
+    scaleMasterRecipeToMeal,
+    rebuildGroceryList,
+    onFamilyChanged: () => {
+        if (appState.user) renderApp();
+        onFamilyUpdateInStoreMode();
+    },
+    onToast: showToast
+});
+
+registerStoreModeHooks({
+    onExitStoreMode: () => { if (appState.user) renderApp(); },
+    onOpenSubstitution: openSubstitutionModal,
+    onToast: showToast,
+    onGroceriesChanged: () => { if (appState.user) renderApp(); }
+});
+
+registerMascotHooks({
+    onSwitchTab: switchTab,
+    onToast: showToast
+});
+
 // 2. Автоматическая смена темы Telegram в режиме «Авто»
 if (tg?.onEvent) {
     try {
@@ -156,10 +256,11 @@ if (tg?.onEvent) {
     } catch (e) {}
 }
 
-// 3. Обновление адаптивного приветствия и даты при возврате в Mini App
+// 3. Обновление адаптивного приветствия и семьи при возврате в Mini App
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && appState.user) {
         renderHomeOverview();
+        if (isFamilyActive()) fetchFamilyState(true);
     }
 });
 
@@ -263,7 +364,65 @@ Object.assign(window, {
     simulateCheckInPromptAdmin,
     resetAllAppStateAdmin,
     forceCloudSyncNow,
-    tryAutoFetchMasterDb: triggerAutoFetchMasterDb
+    tryAutoFetchMasterDb: triggerAutoFetchMasterDb,
+    openFamilyModal,
+    switchFamilySetupTab,
+    toggleFamilyDraftSlot,
+    submitCreateFamily,
+    submitJoinFamilyByCode,
+    copyFamilyInviteLink,
+    shareFamilyInviteLink,
+    refreshFamilyNow,
+    toggleFamilyLiveSlot,
+    toggleFamilyShareWins,
+    toggleFamilyShopperRole,
+    removeFamilyMemberClick,
+    confirmLeaveFamily,
+    acceptPendingFamilyInvite,
+    dismissFamilyJoinPrompt,
+    setDetailFamilyMode,
+    toggleDetailEatingOut,
+    toggleDetailCookDuty,
+    notifyDetailDinnerReady,
+    setGroceryScope,
+    toggleFamilyInStoreMode,
+    focusUrgentGroceryInput,
+    toggleFamilyUrgentItem,
+    openDinnerVoteModal,
+    startNewFamilyDinnerVote,
+    castFamilyVoteClick,
+    applyFamilyVoteWinner,
+    openStoreMode,
+    closeStoreMode,
+    finishStoreTrip,
+    requestStoreWakeLock,
+    renderStoreModeView,
+    selectStoreDept,
+    toggleStoreCartAccordion,
+    toggleStoreDeferredAccordion,
+    storeTapItem,
+    storeUncheckItem,
+    storeTapUrgentItem,
+    storeUncheckUrgentItem,
+    restoreDeferredStoreItem,
+    openStoreItemActions,
+    saveStoreItemNote,
+    triggerStoreItemSubstitute,
+    deferActiveStoreItem,
+    markActiveStoreItemPantry,
+    undoLastStoreAction,
+    openStoreQuickAddModal,
+    submitStoreQuickAdd,
+    openPantryModal,
+    restorePantryItem,
+    clearAllPantryItems,
+    openDeptOrderModal,
+    moveDeptOrder,
+    resetDeptOrder,
+    nextNikoTourStep,
+    skipNikoTour,
+    dismissNikoHint,
+    replayNikoTourFromProfile
 });
 
 function withTimeout(promise, ms = 1500) {
@@ -276,6 +435,10 @@ function withTimeout(promise, ms = 1500) {
 function bootstrapNutriX() {
     try {
         NutriXPerf.init();
+        initStoreModeSystem();
+        loadCachedFamily();
+        detectFamilyInviteParam();
+
         let savedTheme = "auto";
         try { savedTheme = localStorage.getItem("nutrix_theme") || "auto"; } catch (e) {}
         applyTheme(savedTheme, false);
@@ -291,6 +454,7 @@ function bootstrapNutriX() {
             document.getElementById("bottom-nav").classList.remove("hidden");
             renderApp();
             switchTab("home");
+            checkNikoReturnGreeting();
         } else if (!seenWelcome) {
             showWelcomeScreen();
         } else {
@@ -315,6 +479,15 @@ function bootstrapNutriX() {
                     switchTab("home");
                 } else if (appState.user) {
                     renderApp();
+                }
+                return withTimeout(fetchFamilyState(true), 2200);
+            })
+            .then(() => {
+                if (!appState.user) return;
+                if (isFamilyActive()) {
+                    syncMyFamilyProfile(false);
+                } else if (familyStore.pendingInviteCode) {
+                    showPendingFamilyInvitePrompt();
                 }
             });
     } catch (err) {

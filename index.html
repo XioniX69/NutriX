@@ -332,6 +332,19 @@
             </div>
 
             <div id="subtab-diary">
+                <div id="family-diary-bar" class="family-diary-bar hidden">
+                    <div class="family-diary-left" onclick="openFamilyModal()">
+                        <div class="family-diary-icon"><svg class="nx-icon nx-icon--active" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="9" cy="8.25" r="3.25"/> <circle class="icon-duotone" cx="16.5" cy="9.25" r="2.5"/> <circle cx="9" cy="8.25" r="3.25"/><path d="M3.25 19.25c.5-2.85 2.9-4.75 5.75-4.75s5.25 1.9 5.75 4.75"/><circle cx="16.5" cy="9.25" r="2.5"/><path d="M16.5 14.5c2.1 0 3.85 1.35 4.25 3.75"/></svg></div>
+                        <div class="nx-minw0">
+                            <div class="family-diary-title" id="family-diary-name">Семья</div>
+                            <div class="family-diary-sub" id="family-diary-sub">Ужин общий · Co-op 0 дн.</div>
+                        </div>
+                    </div>
+                    <button id="family-vote-trigger-btn" class="btn-small" onclick="openDinnerVoteModal()">
+                        <svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="icon-duotone" x="4" y="4" width="16" height="16" rx="3"/> <rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.75 12.25 2.25 2.25 4.5-4.75"/></svg>
+                        <span id="family-vote-btn-label">Ужин</span>
+                    </button>
+                </div>
                 <div class="nx-week-ovals" id="week-strip-container"></div>
 
                 <div class="nx-day-energy-compact">
@@ -372,6 +385,24 @@
             </div>
 
             <div id="subtab-groceries" class="hidden">
+                <div id="family-grocery-scope-bar" class="family-grocery-scope-bar hidden">
+                    <div class="period-switch">
+                        <button id="gscope-personal-btn" class="period-btn active" onclick="setGroceryScope('personal')">Личное</button>
+                        <button id="gscope-family-btn" class="period-btn" onclick="setGroceryScope('family')">Семья</button>
+                    </div>
+                    <button id="btn-family-instore" class="btn-small" onclick="openStoreMode()">
+                        <svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M4.5 9.5h15v10a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-10Z"/> <path d="M3.5 9.5 5 4.5h14l1.5 5"/><path d="M3.5 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 2 2.45"/><path d="M5 11.75V19.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7.75"/><path d="M10 20.5v-5h4v5"/></svg>
+                        <span id="btn-family-instore-label">Я в магазине</span>
+                    </button>
+                </div>
+
+                <div id="family-instore-banner" class="family-instore-banner hidden">
+                    <div class="nx-row nx-minw0">
+                        <svg class="nx-icon nx-icon--active nx-text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M4.5 9.5h15v10a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-10Z"/> <path d="M3.5 9.5 5 4.5h14l1.5 5"/><path d="M3.5 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 2 2.45"/><path d="M5 11.75V19.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7.75"/><path d="M10 20.5v-5h4v5"/></svg>
+                        <span id="family-instore-text" class="nx-minw0">Кто-то в магазине</span>
+                    </div>
+                    <button class="text-btn" onclick="focusUrgentGroceryInput()">Докинуть</button>
+                </div>
                 <div class="grocery-hero-v10">
                     <div class="grocery-top-line">
                         <strong id="grocery-range-title" class="grocery-range-title">Закупка · 3 дня</strong>
@@ -406,6 +437,19 @@
                     </div>
                 </div>
 
+                <button type="button" class="store-launch-cta" onclick="openStoreMode()">
+                    <span class="nx-row">
+                        <svg class="nx-icon nx-icon--active" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M4.5 9.5h15v10a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-10Z"/> <path d="M3.5 9.5 5 4.5h14l1.5 5"/><path d="M3.5 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 2 2.45"/><path d="M5 11.75V19.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7.75"/><path d="M10 20.5v-5h4v5"/></svg>
+                        <span>Я в магазине</span>
+                    </span>
+                    <span class="store-launch-cta-sub">Крупный экран · не гаснет</span>
+                </button>
+
+                <div id="grocery-pantry-bar" class="pantry-summary-bar hidden" onclick="openPantryModal()">
+                    <span class="nx-row"><svg class="nx-icon nx-text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/> <path d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/><path d="M4.5 7.25 12 11.25l7.5-4"/><path d="M12 11.25v9.5"/><path d="m8.25 5.25 7.5 4"/></svg><span>Есть дома: <strong id="grocery-pantry-count">0</strong></span></span>
+                    <span class="nx-text-accent">Открыть</span>
+                </div>
+
                 <div class="grocery-add-bar">
                     <input type="text" id="custom-grocery-input" class="form-input" placeholder="Добавить своё (кофе, специи, вода…)" onkeydown="if(event.key==='Enter') addCustomGroceryItem()">
                     <button class="grocery-add-btn" onclick="addCustomGroceryItem()" aria-label="Добавить">
@@ -413,6 +457,7 @@
                     </button>
                 </div>
 
+                <div id="family-urgent-container" class="hidden"></div>
                 <div id="groceries-container"></div>
             </div>
 
@@ -581,6 +626,16 @@
             </div>
             <div class="theme-grid" id="theme-picker-grid" data-nx-stagger></div>
 
+            <div id="profile-family-card" class="family-profile-card" onclick="openFamilyModal()" data-nx-stagger>
+                <div class="cloud-status-left">
+                    <div class="cloud-status-icon"><svg class="nx-icon nx-icon--active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="9" cy="8.25" r="3.25"/> <circle class="icon-duotone" cx="16.5" cy="9.25" r="2.5"/> <circle cx="9" cy="8.25" r="3.25"/><path d="M3.25 19.25c.5-2.85 2.9-4.75 5.75-4.75s5.25 1.9 5.75 4.75"/><circle cx="16.5" cy="9.25" r="2.5"/><path d="M16.5 14.5c2.1 0 3.85 1.35 4.25 3.75"/></svg></div>
+                    <div class="nx-minw0">
+                        <div class="cloud-sync-title" id="prof-family-title">Режим «Семья»</div>
+                        <div class="cloud-sync-sub" id="prof-family-sub">Готовьте одну кастрюлю под разные КБЖУ и ведите живую корзину покупок.</div>
+                    </div>
+                </div>
+                <svg class="nx-icon nx-text-muted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
+            </div>
             <div id="cloud-status-card" class="cloud-status-card" data-nx-stagger>
                 <div class="cloud-status-left">
                     <div id="cloud-status-icon" class="cloud-status-icon"><svg class="nx-icon nx-icon--active" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M7.25 18.5h10.25a3.75 3.75 0 0 0 .5-7.46 5.5 5.5 0 0 0-10.65-1.35A4.25 4.25 0 0 0 7.25 18.5Z"/> <path d="M7.25 18.5h10.25a3.75 3.75 0 0 0 .5-7.46 5.5 5.5 0 0 0-10.65-1.35A4.25 4.25 0 0 0 7.25 18.5Z"/><path d="m9.75 13.75 1.75 1.75 3.5-3.5"/></svg></div>
@@ -592,7 +647,8 @@
                 <button id="cloud-retry-btn" class="cloud-retry-btn hidden" onclick="forceCloudSyncNow()">Повторить</button>
             </div>
 
-            <button class="nx-btn-ghost nx-mt-0 nx-mb-10" onclick="openWelcomeReplay()">О NutriX</button>
+            <button class="nx-btn-ghost nx-mt-0 nx-mb-8" onclick="openWelcomeReplay()">О NutriX</button>
+            <button class="nx-btn-ghost nx-mt-0 nx-mb-10" onclick="replayNikoTourFromProfile()">Повторить тур с Нико</button>
 
             <button id="owner-admin-btn" class="nx-btn-ghost nx-btn-ghost--accent nx-mb-8 hidden" onclick="openAdminModal()">
                 <svg class="nx-icon nx-icon--active" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 3.25 5 6.25v5.5c0 4.4 3 7.8 7 9 4-1.2 7-4.6 7-9v-5.5l-7-3Z"/> <path d="M12 3.25 5 6.25v5.5c0 4.4 3 7.8 7 9 4-1.2 7-4.6 7-9v-5.5l-7-3Z"/><path d="m9.25 12 2 2 3.75-3.75"/></svg>
@@ -663,6 +719,35 @@
                     </button>
                 </div>
 
+                <div id="detail-family-bar" class="detail-family-bar hidden">
+                    <div class="detail-family-top">
+                        <div class="nx-minw0">
+                            <div class="detail-mealprep-title">
+                                <svg class="nx-icon nx-icon--active" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="9" cy="8.25" r="3.25"/> <circle class="icon-duotone" cx="16.5" cy="9.25" r="2.5"/> <circle cx="9" cy="8.25" r="3.25"/><path d="M3.25 19.25c.5-2.85 2.9-4.75 5.75-4.75s5.25 1.9 5.75 4.75"/><circle cx="16.5" cy="9.25" r="2.5"/><path d="M16.5 14.5c2.1 0 3.85 1.35 4.25 3.75"/></svg>
+                                <span id="detail-family-title">Общее блюдо семьи</span>
+                            </div>
+                            <div class="detail-mealprep-sub" id="detail-family-sub">Одна кастрюля — разные порции</div>
+                        </div>
+                        <div class="weight-mode-switch" id="detail-family-pot-switch">
+                            <button id="fp-self-btn" class="wm-btn active" onclick="setDetailFamilyMode(false)">Для себя</button>
+                            <button id="fp-family-btn" class="wm-btn" onclick="setDetailFamilyMode(true)">Семья</button>
+                        </div>
+                    </div>
+                    <div class="detail-family-actions">
+                        <button id="detail-eatout-btn" class="btn-small" onclick="toggleDetailEatingOut()">
+                            <svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 4.5h-3a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h3"/><path d="M15.5 16.5 20 12l-4.5-4.5"/><path d="M20 12H9.5"/></svg>
+                            <span>Ем вне дома</span>
+                        </button>
+                        <button id="detail-cook-btn" class="btn-small" onclick="toggleDetailCookDuty()">
+                            <svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M15.5 4.5v8.5h3V4.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5Z"/> <path d="M5.5 3.5v5.25a2.75 2.75 0 0 0 5.5 0V3.5"/><path d="M8.25 3.5v17"/><path d="M15.5 13V4.75a1.75 1.75 0 0 1 3.5 0V13h-3.5Zm3.5 0v7.5"/></svg>
+                            <span>Готовлю я</span>
+                        </button>
+                        <button id="detail-dinner-ready-btn" class="btn-small" onclick="notifyDetailDinnerReady()">
+                            <svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 2 6.5h-15c.5-1 2-2.5 2-6.5Z"/> <path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 2 6.5h-15c.5-1 2-2.5 2-6.5Z"/><path d="M10 19.25a2.25 2.25 0 0 0 4 0"/></svg>
+                            <span>Готово</span>
+                        </button>
+                    </div>
+                </div>
                 <div id="detail-mealprep-bar" class="detail-mealprep-bar hidden">
                     <div>
                         <div class="detail-mealprep-title">
@@ -691,6 +776,7 @@
 
                 <div id="detail-ingredients-list" class="detail-ingredients-list"></div>
 
+                <div id="detail-family-plates-box" class="family-plates-card hidden"></div>
                 <div class="section-title section-title--sm nx-mb-10">
                     Приготовление <span class="steps-head-hint">(нажми на шаг, чтобы отметить)</span>
                 </div>
@@ -699,16 +785,103 @@
                 <div class="section-title section-title--sm nx-mb-8">Особенности и аллергены</div>
                 <div id="detail-tags-list" class="chips-wrap"></div>
 
-                <div class="editorial-callout">
-                    <div class="editorial-callout-head">
-                        <svg class="nx-icon nx-icon--active" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M19.5 4.5C12.5 4.5 6.5 8 6.5 15c0 1.4.35 2.7 1 3.75 1.05.65 2.35 1 3.75 1 7 0 10.5-6 10.5-13 0-.8-.1-1.55-.25-2.25Z"/> <path d="M19.5 4.5C12.2 4.5 6.25 8.1 6.25 15c0 1.65.5 3.15 1.4 4.35 1.2.9 2.7 1.4 4.35 1.4 6.9 0 10.5-5.95 10.5-13.25 0-1-.12-2-.35-3Z"/><path d="M4.5 19.5 14 10"/></svg>
-                        <span>Совет от NutriX</span>
+                <div class="editorial-callout editorial-callout--niko">
+                    <div class="niko-callout-avatar">
+                        <img class="niko-sprite" src="./assets/niko/avatar.webp" width="38" height="38" alt="Нико" loading="lazy">
                     </div>
-                    <div id="detail-science-tip" class="editorial-callout-body"></div>
+                    <div class="nx-flex-1">
+                        <div class="editorial-callout-head">
+                            <span>Совет от Нико · NutriX</span>
+                        </div>
+                        <div id="detail-science-tip" class="editorial-callout-body"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ «Я В МАГАЗИНЕ» (FULLSCREEN FOCUS MODE) -->
+    <section id="store-mode-view" class="hidden" aria-label="Режим магазина">
+        <div class="store-mode-shell">
+            <div id="store-active-pane">
+                <header class="store-sticky-head">
+                    <div class="store-head-top">
+                        <div class="store-head-left">
+                            <button type="button" class="store-back-icon-btn" onclick="closeStoreMode(false)" aria-label="Выйти из режима магазина">
+                                <svg class="nx-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
+                            </button>
+                            <div class="nx-minw0">
+                                <div class="store-head-title">В магазине</div>
+                                <div class="store-head-counter" id="store-progress-counter">0 / 0</div>
+                            </div>
+                        </div>
+
+                        <div class="store-head-pills">
+                            <span id="store-family-live-pill" class="admin-badge-live hidden">Live · Семья</span>
+                            <button type="button" id="store-wakelock-pill" class="store-wakelock-pill" onclick="requestStoreWakeLock()" aria-label="Экран не гаснет" title="Экран не погаснет">
+                                <svg class="nx-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="icon-duotone" cx="12" cy="12" r="4.25"/> <circle cx="12" cy="12" r="4.25"/><path d="M12 2.75v2"/><path d="M12 19.25v2"/><path d="M2.75 12h2"/><path d="M19.25 12h2"/><path d="m5.46 5.46 1.42 1.42"/><path d="m17.12 17.12 1.42 1.42"/><path d="m18.54 5.46-1.42 1.42"/><path d="m6.88 17.12-1.42 1.42"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="nx-bar-track nx-bar-track--thin">
+                        <div id="store-progress-bar" class="nx-bar-fill protein" style="width: 0%;"></div>
+                    </div>
+
+                    <div id="store-offline-bar" class="store-offline-bar hidden">
+                        <svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 3.5 20.5 20.5"/><path d="M16.75 11.1a9.5 9.5 0 0 1 2.75 1.9"/><path d="M4.5 13a10.5 10.5 0 0 1 5.25-2.75"/><path d="M8.5 16.25a5.5 5.5 0 0 1 6.75-.2"/><circle cx="12" cy="19.25" r="1" fill="currentColor" stroke="none"/></svg>
+                        <span>Офлайн · сохраним при появлении сети</span>
+                    </div>
+
+                    <div class="store-dept-strip-wrap">
+                        <button type="button" class="store-dept-order-btn" onclick="openDeptOrderModal()" title="Порядок отделов" aria-label="Порядок отделов">
+                            <svg class="nx-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6.5h10.5"/><path d="M9.5 12h10.5"/><path d="M9.5 17.5h10.5"/><path d="M4.5 6.5h1.5"/><path d="M4.5 12h1.5"/><path d="M4.5 17.5h1.5"/></svg>
+                        </button>
+                        <div id="store-dept-strip" class="store-dept-strip"></div>
+                    </div>
+                </header>
+
+                <div class="store-body">
+                    <div id="store-urgent-section" class="hidden"></div>
+                    <div id="store-items-list"></div>
+                    <div id="store-deferred-section" class="store-accordion-card hidden"></div>
+                    <div id="store-cart-section" class="store-accordion-card hidden"></div>
+
+                    <button type="button" id="store-pantry-chip" class="pantry-summary-bar nx-w-full nx-mt-0 hidden" style="margin-top:12px;" onclick="openPantryModal()">
+                        <span class="nx-row"><svg class="nx-icon nx-text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/> <path d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/><path d="M4.5 7.25 12 11.25l7.5-4"/><path d="M12 11.25v9.5"/><path d="m8.25 5.25 7.5 4"/></svg><span>Скрыто «Есть дома»: <strong id="store-pantry-count">0</strong></span></span>
+                        <span class="nx-text-accent">Управлять</span>
+                    </button>
+                </div>
+
+                <div id="store-undo-bar" class="store-undo-bar hidden">
+                    <span id="store-undo-text" class="store-undo-text">В тележке</span>
+                    <button type="button" class="store-undo-btn" onclick="undoLastStoreAction()">Отменить</button>
+                </div>
+
+                <div class="store-bottom-bar">
+                    <button type="button" class="store-bar-add" onclick="openStoreQuickAddModal()">
+                        <svg class="nx-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                        <span>Добавить</span>
+                    </button>
+                    <button type="button" class="store-bar-finish" onclick="finishStoreTrip()">
+                        <svg class="nx-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                        <span>Завершить поход</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="store-complete-pane" class="hidden">
+                <div class="store-complete-screen">
+                    <div class="niko-store-done-wrap">
+                        <img class="niko-sprite niko-breathe" src="./assets/niko/celebrate.webp" width="124" height="124" alt="Нико радуется" loading="lazy">
+                    </div>
+                    <h2 class="store-all-done-title" id="store-done-title">Поход в магазин завершён</h2>
+                    <p class="store-all-done-sub" id="store-done-sub">Все покупки синхронизированы.</p>
+                    <button type="button" class="nx-cta-pill" onclick="closeStoreMode(true)">Вернуться в NutriX</button>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
     <nav id="bottom-nav" class="bottom-nav hidden">
@@ -1126,6 +1299,264 @@
         </div>
     </div>
 
+    <!-- РЕЖИМ «СЕМЬЯ»: СОЗДАНИЕ / ВСТУПЛЕНИЕ / УПРАВЛЕНИЕ -->
+    <div id="family-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('family-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="nx-row-between nx-mb-8">
+                <div class="modal-title nx-mb-0" id="family-modal-title">Режим «Семья»</div>
+                <span id="family-coop-pill" class="precision-pill hidden">Co-op 0 дн.</span>
+            </div>
+            <div class="modal-sub" id="family-modal-sub">Приглашай пользователей NutriX в общую кухню. Вес и личные параметры тела остаются скрытыми.</div>
+
+            <!-- Состояние A: Нет семьи -->
+            <div id="family-setup-pane">
+                <div class="nx-seg-bar">
+                    <button id="fam-tab-create" class="nx-seg-btn active" onclick="switchFamilySetupTab('create')">Создать семью</button>
+                    <button id="fam-tab-join" class="nx-seg-btn" onclick="switchFamilySetupTab('join')">Войти по коду</button>
+                </div>
+
+                <div id="fam-pane-create">
+                    <div class="form-group">
+                        <label class="form-label">Название семьи</label>
+                        <input type="text" id="family-create-name" class="form-input" placeholder="Например: Дом, Наша кухня" value="Наша кухня">
+                    </div>
+                    <div class="form-label">Какие приёмы пищи готовите вместе?</div>
+                    <div class="family-slot-grid" id="family-create-slots">
+                        <button type="button" class="family-slot-pill" data-slot="breakfast" onclick="toggleFamilyDraftSlot('breakfast', this)"><span>Завтрак</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                        <button type="button" class="family-slot-pill" data-slot="lunch" onclick="toggleFamilyDraftSlot('lunch', this)"><span>Обед</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                        <button type="button" class="family-slot-pill" data-slot="snack" onclick="toggleFamilyDraftSlot('snack', this)"><span>Полдник</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                        <button type="button" class="family-slot-pill active" data-slot="dinner" onclick="toggleFamilyDraftSlot('dinner', this)"><span>Ужин</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                    </div>
+                    <div class="hint-ref-box">
+                        В семью добавляются только пользователи NutriX по ссылке-приглашению в Telegram. Каждый сохраняет свой КБЖУ и приватность.
+                    </div>
+                    <button id="family-create-submit-btn" class="nx-cta-pill" onclick="submitCreateFamily()">Создать и получить ссылку</button>
+                </div>
+
+                <div id="fam-pane-join" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Код приглашения из Telegram</label>
+                        <input type="text" id="family-join-code-input" class="form-input" placeholder="Например: A7K9P2" maxlength="12">
+                    </div>
+                    <div class="hint-ref-box">
+                        Попроси создателя семьи прислать ссылку-приглашение или 6-значный код из раздела «Семья».
+                    </div>
+                    <button id="family-join-submit-btn" class="nx-cta-pill" onclick="submitJoinFamilyByCode()">Присоединиться к семье</button>
+                </div>
+            </div>
+
+            <!-- Состояние B: Уже в семье -->
+            <div id="family-manage-pane" class="hidden">
+                <div class="family-code-box">
+                    <div>
+                        <div class="bio-label">Код приглашения в NutriX</div>
+                        <div class="family-code-val" id="family-invite-code-display">------</div>
+                    </div>
+                    <div class="nx-row">
+                        <button class="btn-small" onclick="copyFamilyInviteLink()"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect class="icon-duotone" x="9" y="9" width="11" height="11" rx="2"/> <rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span>Копия</span></button>
+                        <button class="btn-small active-eat" onclick="shareFamilyInviteLink()"><svg class="nx-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M20 4.5 10.5 14l-5.5-2.5L20 4.5Z"/> <path d="M20 4.5 10.5 14"/><path d="M20 4.5 13.75 20l-3.25-6-6-3.25L20 4.5Z"/></svg><span>Позвать</span></button>
+                    </div>
+                </div>
+                <div class="family-invite-hint">
+                    Отправь ссылку близкому в Telegram — после запуска NutriX он автоматически попадёт в вашу семью.
+                </div>
+
+                <div class="nx-row-between nx-mb-8">
+                    <span class="form-label nx-mb-0">Участники (<span id="family-members-count">1</span> / 6)</span>
+                    <button class="text-btn" onclick="refreshFamilyNow()"><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 11a7.5 7.5 0 0 0-13-4.5L4.5 8.5"/><path d="M4.5 4.5v4h4"/><path d="M4.5 13a7.5 7.5 0 0 0 13 4.5l2-2"/><path d="M19.5 19.5v-4h-4"/></svg><span>Обновить</span></button>
+                </div>
+                <div id="family-members-list" class="family-members-list"></div>
+
+                <div class="form-label">Общие приёмы пищи (одна кастрюля)</div>
+                <div class="family-slot-grid" id="family-manage-slots">
+                    <button type="button" class="family-slot-pill" data-slot="breakfast" onclick="toggleFamilyLiveSlot('breakfast')"><span>Завтрак</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                    <button type="button" class="family-slot-pill" data-slot="lunch" onclick="toggleFamilyLiveSlot('lunch')"><span>Обед</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                    <button type="button" class="family-slot-pill" data-slot="snack" onclick="toggleFamilyLiveSlot('snack')"><span>Полдник</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                    <button type="button" class="family-slot-pill" data-slot="dinner" onclick="toggleFamilyLiveSlot('dinner')"><span>Ужин</span><svg class="nx-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                </div>
+
+                <label class="nx-check-row" for="family-share-wins-cb">
+                    <input type="checkbox" id="family-share-wins-cb" checked onchange="toggleFamilyShareWins(this.checked)">
+                    <span>Нико может сообщать семье о моих достижениях</span>
+                </label>
+
+                <label id="family-shopper-role-row" class="nx-check-row hidden" for="family-shopper-only-cb">
+                    <input type="checkbox" id="family-shopper-only-cb" onchange="toggleFamilyShopperRole(this.checked)">
+                    <span>Роль «Только покупки» (не учитывать меня в общих блюдах)</span>
+                </label>
+
+                <div class="modal-btns">
+                    <button class="btn-cancel nx-text-danger" onclick="confirmLeaveFamily()">Выйти из семьи</button>
+                    <button class="btn-submit" onclick="closeModal('family-modal')">Готово</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПРИГЛАШЕНИЕ В СЕМЬЮ ПО ДИПЛИНКУ -->
+    <div id="family-join-prompt-modal" class="modal-overlay hidden" onclick="if(event.target===this) dismissFamilyJoinPrompt()">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title">Приглашение в семью</div>
+            <div class="modal-sub" id="family-join-prompt-sub">Тебя пригласили в общую кухню NutriX. Твой вес и личные параметры тела останутся приватными.</div>
+            <div class="family-code-box">
+                <div>
+                    <div class="bio-label">Код приглашения</div>
+                    <div class="family-code-val" id="family-join-prompt-code">------</div>
+                </div>
+                <span class="precision-pill">NutriX Семья</span>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="dismissFamilyJoinPrompt()">Не сейчас</button>
+                <button id="family-join-prompt-btn" class="btn-submit" onclick="acceptPendingFamilyInvite()">Присоединиться</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ГОЛОСОВАНИЕ ЗА ОБЩИЙ УЖИН -->
+    <div id="family-vote-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('family-vote-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="nx-row-between nx-mb-8">
+                <div class="modal-title nx-mb-0" id="family-vote-title">Голосование за ужин</div>
+                <span class="precision-pill" id="family-vote-day-pill">Сегодня</span>
+            </div>
+            <div class="modal-sub" id="family-vote-sub">Варианты подобраны с учётом ограничений всех участников семьи.</div>
+
+            <div id="family-vote-body"></div>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="startNewFamilyDinnerVote()">Новые варианты</button>
+                <button id="family-vote-apply-btn" class="btn-submit hidden" onclick="applyFamilyVoteWinner()">Выбрать лидера</button>
+            </div>
+        </div>
+    </div>
+    <!-- МАГАЗИН: ДЕЙСТВИЯ ПО ТОВАРУ (СВАЙП ВЛЕВО / ⋯) -->
+    <div id="store-item-actions-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('store-item-actions-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title" id="store-action-item-title">Товар</div>
+            <div class="modal-sub">Уточни заметку, замени продукт или убери из текущего похода.</div>
+
+            <div class="form-group">
+                <label class="form-label">Заметка к товару (бренд, жирность, спелость)</label>
+                <div class="grocery-add-bar nx-mb-0">
+                    <input type="text" id="store-item-note-input" class="form-input" placeholder="Например: 2.5%, мягкий, Зелёная Линия" maxlength="80" onkeydown="if(event.key==='Enter') saveStoreItemNote()">
+                    <button type="button" class="grocery-add-btn" onclick="saveStoreItemNote()" aria-label="Сохранить заметку"><svg class="nx-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>
+                </div>
+            </div>
+
+            <div class="store-action-list">
+                <button type="button" id="store-act-sub-btn" class="store-action-btn" onclick="triggerStoreItemSubstitute()">
+                    <span class="nx-row"><svg class="nx-icon nx-text-accent" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7.5h12"/><path d="m15.5 4 3.5 3.5-3.5 3.5"/><path d="M17 16.5H5"/><path d="m8.5 13-3.5 3.5 3.5 3.5"/></svg><span>Заменить продукт в меню</span></span>
+                    <svg class="nx-icon nx-text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
+                </button>
+                <button type="button" class="store-action-btn" onclick="deferActiveStoreItem()">
+                    <span class="nx-row"><svg class="nx-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M6.5 4.5h11a1 1 0 0 1 1 1V20l-6.5-3.75L5.5 20V5.5a1 1 0 0 1 1-1Z"/> <path d="M6.5 4.5h11a1 1 0 0 1 1 1V20l-6.5-3.75L5.5 20V5.5a1 1 0 0 1 1-1Z"/></svg><span>Отложить (докупить позже)</span></span>
+                    <svg class="nx-icon nx-text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
+                </button>
+                <button type="button" class="store-action-btn" onclick="markActiveStoreItemPantry()">
+                    <span class="nx-row"><svg class="nx-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="icon-duotone" d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/> <path d="M12 3.25 4.5 7.25v9.5L12 20.75l7.5-4v-9.5L12 3.25Z"/><path d="M4.5 7.25 12 11.25l7.5-4"/><path d="M12 11.25v9.5"/><path d="m8.25 5.25 7.5 4"/></svg><span>Уже есть дома</span></span>
+                    <svg class="nx-icon nx-text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
+                </button>
+            </div>
+
+            <button type="button" class="btn-cancel nx-w-full" onclick="closeModal('store-item-actions-modal')">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- МАГАЗИН: БЫСТРОЕ ДОБАВЛЕНИЕ ТОВАРА У ПОЛКИ -->
+    <div id="store-quick-add-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('store-quick-add-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title">Добавить товар</div>
+            <div class="modal-sub">Любая бытовая мелочь или продукт — попадёт в текущий поход.</div>
+
+            <div class="form-group">
+                <label class="form-label">Название товара</label>
+                <input type="text" id="store-quick-add-name" class="form-input" placeholder="Например: Салфетки, вода, кофе" onkeydown="if(event.key==='Enter') submitStoreQuickAdd()">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Комментарий (необязательно)</label>
+                <input type="text" id="store-quick-add-note" class="form-input" placeholder="Например: 2 упаковки, без газа" maxlength="80">
+            </div>
+
+            <label class="nx-check-row" for="store-quick-add-checked">
+                <input type="checkbox" id="store-quick-add-checked">
+                <span>Сразу отметить «В тележке»</span>
+            </label>
+
+            <div class="modal-btns">
+                <button type="button" class="btn-cancel" onclick="closeModal('store-quick-add-modal')">Отмена</button>
+                <button type="button" class="btn-submit" onclick="submitStoreQuickAdd()">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ИНВЕНТАРЬ «ЕСТЬ ДОМА» -->
+    <div id="pantry-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('pantry-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title">Уже есть дома</div>
+            <div class="modal-sub">Эти продукты скрыты из списка покупок, но остаются в твоих рецептах.</div>
+
+            <div id="pantry-items-list" class="saved-meals-list"></div>
+
+            <div class="modal-btns">
+                <button type="button" class="btn-cancel" onclick="clearAllPantryItems()">Вернуть всё</button>
+                <button type="button" class="btn-submit" onclick="closeModal('pantry-modal')">Готово</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- НАСТРОЙКА ПОРЯДКА ОТДЕЛОВ СУПЕРМАРКЕТА -->
+    <div id="store-dept-order-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal('store-dept-order-modal')">
+        <div class="modal-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-title">Порядок отделов</div>
+            <div class="modal-sub">Расставь отделы так, как ты обычно идёшь по своему магазину.</div>
+
+            <div id="dept-order-list" class="dept-order-list"></div>
+
+            <div class="modal-btns">
+                <button type="button" class="btn-cancel" onclick="resetDeptOrder()">Сбросить</button>
+                <button type="button" class="btn-submit" onclick="closeModal('store-dept-order-modal')">Готово</button>
+            </div>
+        </div>
+    </div>
+    <!-- МАСКОТ НИКО: 3-ШАГОВЫЙ ТУР ДЛЯ НОВИЧКОВ -->
+    <div id="niko-tour-overlay" class="niko-tour-overlay hidden" aria-live="polite">
+        <div class="niko-tour-card">
+            <div class="niko-tour-top">
+                <div class="niko-tour-img-wrap">
+                    <img id="niko-tour-img" class="niko-sprite niko-breathe" src="./assets/niko/idle.webp" width="76" height="76" alt="Нико">
+                </div>
+                <div class="nx-flex-1">
+                    <div id="niko-tour-step" class="niko-tour-step">Шаг 1 из 3</div>
+                    <div id="niko-tour-title" class="niko-tour-title">Привет! Я Нико</div>
+                    <div id="niko-tour-text" class="niko-tour-text"></div>
+                </div>
+            </div>
+            <div class="niko-tour-actions">
+                <button type="button" class="text-btn nx-text-muted" onclick="skipNikoTour()">Пропустить</button>
+                <button type="button" id="niko-tour-next-btn" class="btn-submit" style="flex:0 0 auto; padding:10px 22px;" onclick="nextNikoTourStep()">Дальше</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МАСКОТ НИКО: КОНТЕКСТНАЯ ПОДСКАЗКА «ПЕРВАЯ ВСТРЕЧА» -->
+    <div id="niko-hint-banner" class="niko-hint-banner hidden" aria-live="polite">
+        <div class="niko-hint-img-wrap">
+            <img id="niko-hint-img" class="niko-sprite" src="./assets/niko/guide.webp" width="50" height="50" alt="Нико">
+        </div>
+        <div class="nx-flex-1">
+            <div id="niko-hint-title" class="niko-hint-title">Нико</div>
+            <div id="niko-hint-text" class="niko-hint-text"></div>
+        </div>
+        <button type="button" class="niko-hint-ok" onclick="dismissNikoHint()">Понял</button>
+    </div>
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>

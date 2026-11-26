@@ -4165,3 +4165,1254 @@ html.nx-low-power .nx-meal-card-lg {
         transition-duration: 0.01ms !important;
     }
 }
+/* =========================================================================
+   РЕЖИМ «СЕМЬЯ» (BOTANICAL EDITORIAL × PRECISION TELEMETRY)
+   ========================================================================= */
+.family-shared-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 7px;
+    background: var(--nx-mint-dim);
+    border: 1px solid var(--nx-mint-line);
+    color: var(--nx-mint);
+}
+
+.family-out-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 7px;
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border-strong);
+    color: var(--nx-text-muted);
+}
+
+.family-diary-bar {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-lg);
+    padding: 10px 13px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.family-diary-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.family-diary-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--nx-surface-tint);
+    border: 1px solid var(--nx-mint-line);
+    color: var(--nx-mint);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.family-diary-title {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.family-diary-sub {
+    font-size: 11px;
+    color: var(--nx-text-muted);
+    margin-top: 1px;
+}
+
+/* Семейная секция внутри паспорта блюда («Одна кастрюля — разные порции») */
+.detail-family-bar {
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border-strong);
+    border-radius: var(--nx-radius-md);
+    padding: 12px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-family-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.detail-family-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.family-plates-card {
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-md);
+    padding: 12px 14px;
+    margin-bottom: 18px;
+}
+
+.family-plates-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.family-plates-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--nx-mint);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.family-plate-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--nx-border);
+    font-size: 13px;
+}
+
+.family-plate-row:first-of-type {
+    border-top: none;
+    padding-top: 2px;
+}
+
+.family-plate-val {
+    font-weight: 700;
+    color: var(--nx-text);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.family-plate-sub {
+    font-size: 11px;
+    color: var(--nx-text-muted);
+    font-weight: 500;
+}
+
+/* Семейная корзина покупок */
+.family-grocery-scope-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.family-instore-banner {
+    background: var(--nx-surface-tint);
+    border: 1px solid var(--nx-mint-line);
+    border-radius: var(--nx-radius-md);
+    padding: 10px 13px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12.5px;
+}
+
+.family-urgent-card {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-mint-line);
+    border-radius: var(--nx-radius-lg);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.family-urgent-head {
+    padding: 9px 14px;
+    background: var(--nx-surface-tint);
+    border-bottom: 1px solid var(--nx-border);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nx-mint);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Профиль + шторка управления семьёй */
+.family-profile-card {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-lg);
+    padding: 14px 15px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: var(--nx-specular);
+    transition: transform var(--nx-dur-fast) var(--nx-ease-smooth),
+                border-color var(--nx-dur-fast) ease;
+}
+
+.family-profile-card:active {
+    transform: scale(0.985);
+}
+
+.family-profile-card.active {
+    background: var(--nx-surface-tint);
+    border-color: var(--nx-mint-line);
+}
+
+.family-code-box {
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border-strong);
+    border-radius: var(--nx-radius-md);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.family-code-val {
+    font-family: var(--nx-font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--nx-mint);
+}
+
+.family-members-list {
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-md);
+    overflow: hidden;
+    margin-bottom: 14px;
+    background: var(--nx-surface-2);
+}
+
+.family-member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 13px;
+    border-bottom: 1px solid var(--nx-border);
+}
+
+.family-member-row:last-child {
+    border-bottom: none;
+}
+
+.family-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--nx-surface-tint);
+    border: 1px solid var(--nx-mint-line);
+    color: var(--nx-mint);
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.family-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
+.family-slot-pill {
+    min-height: 40px;
+    padding: 8px 10px;
+    border-radius: var(--nx-radius-md);
+    border: 1.5px solid var(--nx-border);
+    background: var(--nx-surface-2);
+    color: var(--nx-text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.family-slot-pill.active {
+    background: var(--nx-surface-tint);
+    border-color: var(--nx-mint);
+    color: var(--nx-mint);
+}
+
+/* Голосование за ужин */
+.vote-option-card {
+    background: var(--nx-surface-2);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-md);
+    padding: 12px 13px;
+    margin-bottom: 9px;
+}
+
+.vote-option-card.leader {
+    border-color: var(--nx-mint-line);
+    background: var(--nx-surface-tint);
+}
+
+.vote-btns-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 9px;
+}
+
+.vote-btn {
+    min-height: 34px;
+    padding: 5px 6px;
+    border-radius: var(--nx-radius-sm);
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface);
+    color: var(--nx-text-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vote-btn.active {
+    background: var(--nx-mint);
+    border-color: var(--nx-mint);
+    color: var(--nx-on-mint);
+}
+
+.vote-btn.active.dislike {
+    background: var(--nx-warning-dim);
+    border-color: var(--nx-warning);
+    color: var(--nx-warning);
+}
+
+.family-invite-hint {
+    font-size: 11.5px;
+    color: var(--nx-text-muted);
+    line-height: 1.42;
+    margin-bottom: 12px;
+}
+/* =========================================================================
+   ПОЛНОЭКРАННЫЙ РЕЖИМ «Я В МАГАЗИНЕ» (#store-mode-view)
+   ========================================================================= */
+body.store-mode-active {
+    padding: 0;
+}
+
+.store-launch-cta {
+    width: 100%;
+    min-height: 48px;
+    background: var(--nx-mint);
+    color: var(--nx-on-mint);
+    border: none;
+    border-radius: var(--nx-radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform var(--nx-dur-fast) var(--nx-ease-smooth);
+}
+
+.store-launch-cta:active {
+    transform: scale(0.98);
+}
+
+.store-launch-cta-sub {
+    font-size: 11.5px;
+    font-weight: 600;
+    opacity: 0.78;
+}
+
+.pantry-summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-md);
+    padding: 10px 13px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pantry-summary-bar:active {
+    background: var(--nx-surface-2);
+}
+
+.store-mode-shell {
+    min-height: 100vh;
+    background: var(--nx-bg);
+    display: flex;
+    flex-direction: column;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+}
+
+.store-sticky-head {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--nx-nav-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--nx-border);
+    padding: 12px 16px 10px 16px;
+}
+
+.store-head-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.store-head-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.store-back-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface);
+    color: var(--nx-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.store-back-icon-btn:active {
+    transform: scale(0.94);
+}
+
+.store-head-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+}
+
+.store-head-counter {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--nx-mint);
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+}
+
+.store-head-pills {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.store-wakelock-pill {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface);
+    color: var(--nx-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.store-wakelock-pill.active {
+    background: var(--nx-mint-dim);
+    border-color: var(--nx-mint-line);
+    color: var(--nx-mint);
+}
+
+.store-offline-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    padding: 7px 10px;
+    border-radius: var(--nx-radius-sm);
+    background: var(--nx-warning-dim);
+    border: 1px solid rgba(214, 155, 82, 0.28);
+    color: var(--nx-warning);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+/* Лента отделов */
+.store-dept-strip-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.store-dept-order-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--nx-radius-pill);
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface);
+    color: var(--nx-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.store-dept-order-btn:active {
+    transform: scale(0.93);
+    color: var(--nx-mint);
+}
+
+.store-dept-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    padding: 1px 0;
+}
+
+.store-dept-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.store-dept-pill {
+    min-height: 34px;
+    padding: 6px 12px;
+    border-radius: var(--nx-radius-pill);
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface);
+    color: var(--nx-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background var(--nx-dur-fast) ease, color var(--nx-dur-fast) ease, border-color var(--nx-dur-fast) ease;
+}
+
+.store-dept-pill.active {
+    background: var(--nx-mint);
+    border-color: var(--nx-mint);
+    color: var(--nx-on-mint);
+}
+
+.store-dept-pill.done {
+    opacity: 0.52;
+    color: var(--nx-mint);
+    border-color: var(--nx-mint-line);
+}
+
+.store-dept-pill.done.active {
+    opacity: 1;
+    color: var(--nx-on-mint);
+}
+
+.store-dept-cnt {
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.72;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Основная область товаров */
+.store-body {
+    padding: 12px 16px 24px 16px;
+    flex: 1;
+}
+
+.store-urgent-box {
+    background: var(--nx-surface);
+    border: 1.5px solid var(--nx-mint-line);
+    border-radius: var(--nx-radius-xl);
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.store-urgent-head {
+    background: var(--nx-surface-tint);
+    padding: 9px 15px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nx-mint);
+    border-bottom: 1px solid var(--nx-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.store-dept-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nx-text-muted);
+    margin: 14px 4px 7px 4px;
+}
+
+.store-dept-heading:first-child {
+    margin-top: 2px;
+}
+
+.store-dept-group {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-xl);
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: var(--nx-specular);
+}
+
+.store-row-shell {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--nx-border);
+    background: var(--nx-surface-2);
+}
+
+.store-dept-group .store-row-shell:last-child {
+    border-bottom: none;
+}
+
+.store-row-swipe-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding-right: 18px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--nx-mint);
+    pointer-events: none;
+}
+
+/* Крупная строка товара от 66px под одну руку */
+.store-item-row {
+    position: relative;
+    z-index: 2;
+    min-height: 66px;
+    padding: 13px 10px 13px 15px;
+    background: var(--nx-surface);
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    cursor: pointer;
+    transform: translate3d(0, 0, 0);
+    transition: transform 220ms var(--nx-ease-smooth), opacity 220ms ease, background 140ms ease;
+    touch-action: pan-y;
+}
+
+.store-item-row.dragging {
+    transition: none;
+}
+
+.store-item-row:active {
+    background: var(--nx-surface-2);
+}
+
+.store-item-row.checking {
+    opacity: 0.45;
+    background: var(--nx-surface-tint);
+}
+
+.store-item-row.checking .store-item-title,
+.store-item-row--done .store-item-title {
+    text-decoration: line-through;
+}
+
+.store-item-row--done,
+.store-item-row--muted {
+    min-height: 58px;
+    padding: 11px 14px;
+    border-top: 1px solid var(--nx-border);
+    opacity: 0.65;
+}
+
+.store-item-row--urgent {
+    border-top: 1px solid var(--nx-border);
+    padding-right: 15px;
+}
+
+.store-urgent-box .store-item-row--urgent:first-of-type {
+    border-top: none;
+}
+
+.store-check-circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.75px solid var(--nx-border-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nx-on-mint);
+    flex-shrink: 0;
+    transition: background 150ms ease, border-color 150ms ease, transform 150ms var(--nx-ease-spring);
+}
+
+.store-check-circle.checked {
+    background: var(--nx-mint);
+    border-color: var(--nx-mint);
+    transform: scale(1.04);
+}
+
+.store-item-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.28;
+    color: var(--nx-text);
+}
+
+.store-item-note {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--nx-mint);
+    margin-top: 3px;
+    line-height: 1.3;
+}
+
+.store-item-sub {
+    font-size: 11.5px;
+    color: var(--nx-text-muted);
+    margin-top: 2px;
+}
+
+.store-pack-col {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.store-pack-main {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--nx-text);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.store-pack-sub {
+    font-size: 11px;
+    color: var(--nx-text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.store-pack-sub.home-hint {
+    color: var(--nx-warning);
+    font-weight: 600;
+}
+
+.store-more-btn {
+    width: 36px;
+    height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--nx-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.store-more-btn:active {
+    background: var(--nx-surface-2);
+    color: var(--nx-text);
+}
+
+/* Аккордеоны «Докупить позже» и «В тележке» */
+.store-accordion-card {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-lg);
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.store-accordion-head {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 15px;
+    background: transparent;
+    border: none;
+    color: var(--nx-text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.store-chev-open {
+    transform: rotate(180deg);
+    transition: transform 200ms var(--nx-ease-smooth);
+}
+
+/* Undo-плашка и нижняя панель большого пальца */
+.store-undo-bar {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    z-index: 80;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-mint-line);
+    border-radius: var(--nx-radius-pill);
+    padding: 10px 12px 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+    animation: nxFadeSlideUp 200ms var(--nx-ease-smooth);
+}
+
+.store-undo-text {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.store-undo-btn {
+    border: none;
+    background: var(--nx-mint-dim);
+    color: var(--nx-mint);
+    font-size: 12.5px;
+    font-weight: 700;
+    min-height: 32px;
+    padding: 5px 12px;
+    border-radius: var(--nx-radius-pill);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.store-bottom-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 70;
+    background: var(--nx-nav-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid var(--nx-border);
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 10px;
+}
+
+.store-bar-add {
+    min-height: 48px;
+    border-radius: var(--nx-radius-pill);
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface);
+    color: var(--nx-text);
+    font-size: 13.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.store-bar-finish {
+    min-height: 48px;
+    border-radius: var(--nx-radius-pill);
+    border: none;
+    background: var(--nx-mint);
+    color: var(--nx-on-mint);
+    font-size: 13.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.store-bar-add:active,
+.store-bar-finish:active {
+    transform: scale(0.97);
+}
+
+/* Финальный экран завершения похода */
+.store-all-done-card,
+.store-complete-screen {
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-xl);
+    padding: 28px 20px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.store-complete-screen {
+    margin: 56px 16px 24px 16px;
+}
+
+.store-all-done-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--nx-surface-tint);
+    border: 1px solid var(--nx-mint-line);
+    color: var(--nx-mint);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.store-all-done-title {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+}
+
+.store-all-done-sub {
+    font-size: 13.5px;
+    color: var(--nx-text-muted);
+    line-height: 1.5;
+    margin-bottom: 18px;
+}
+
+/* Сортировка отделов */
+.dept-order-list {
+    border: 1px solid var(--nx-border);
+    border-radius: var(--nx-radius-md);
+    overflow: hidden;
+    background: var(--nx-surface-2);
+    margin-bottom: 14px;
+}
+
+.dept-order-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px 8px 12px;
+    border-bottom: 1px solid var(--nx-border);
+}
+
+.dept-order-row:last-child {
+    border-bottom: none;
+}
+
+.dept-order-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-border-strong);
+    color: var(--nx-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.store-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.store-action-btn {
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 14px;
+    border-radius: var(--nx-radius-md);
+    border: 1px solid var(--nx-border-strong);
+    background: var(--nx-surface-2);
+    color: var(--nx-text);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.store-action-btn:active {
+    transform: scale(0.985);
+    border-color: var(--nx-mint);
+}
+
+html.nx-low-power .store-sticky-head,
+html.nx-low-power .store-bottom-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+/* =========================================================================
+   МАСКОТ НИКО (NIKO) — СПРАЙТЫ, 3-ШАГОВЫЙ ТУР И КОНТЕКСТНЫЕ ПОДСКАЗКИ
+   ========================================================================= */
+.niko-sprite {
+    display: block;
+    object-fit: contain;
+    flex-shrink: 0;
+    user-select: none;
+    pointer-events: none;
+}
+
+.niko-breathe {
+    animation: nikoBreathe 4s ease-in-out infinite;
+    transform-origin: center bottom;
+}
+
+@keyframes nikoBreathe {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50% { transform: scaleY(1.028) translateY(-1.5px); }
+}
+
+/* Портрет Нико в «Совете от NutriX» (Паспорт блюда) */
+.editorial-callout--niko {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.niko-callout-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-mint-line);
+    padding: 3px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Нико на экране завершения похода в магазин */
+.niko-store-done-wrap {
+    width: 128px;
+    height: 128px;
+    margin: 0 auto 14px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Оверлей 3-шагового тура новичков */
+.niko-tour-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: var(--nx-overlay-bg);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    padding: 16px 16px calc(22px + env(safe-area-inset-bottom, 0px)) 16px;
+    animation: nxFadeIn 180ms ease;
+}
+
+.niko-tour-spotlight {
+    position: relative;
+    z-index: 155 !important;
+    box-shadow: 0 0 0 2px var(--nx-mint), 0 0 0 6px var(--nx-mint-dim) !important;
+    border-radius: var(--nx-radius-xl);
+}
+
+.niko-tour-card {
+    width: 100%;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-mint-line);
+    border-radius: 22px;
+    padding: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    animation: nxSheetUp 240ms var(--nx-ease-smooth);
+}
+
+.niko-tour-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.niko-tour-img-wrap {
+    width: 82px;
+    height: 82px;
+    border-radius: 18px;
+    background: var(--nx-surface-tint);
+    border: 1px solid var(--nx-mint-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.niko-tour-step {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--nx-mint);
+    margin-bottom: 4px;
+}
+
+.niko-tour-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 5px;
+}
+
+.niko-tour-text {
+    font-size: 13px;
+    color: var(--nx-text-muted);
+    line-height: 1.45;
+}
+
+.niko-tour-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* Контекстная плашка «первой встречи» (над нижней панелью) */
+.niko-hint-banner {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    z-index: 95;
+    background: var(--nx-surface);
+    border: 1px solid var(--nx-mint-line);
+    border-radius: 18px;
+    padding: 12px 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+    animation: nxFadeSlideUp 220ms var(--nx-ease-smooth);
+}
+
+.niko-hint-img-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: var(--nx-surface-tint);
+    border: 1px solid var(--nx-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.niko-hint-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--nx-mint);
+    margin-bottom: 3px;
+}
+
+.niko-hint-text {
+    font-size: 12.5px;
+    color: var(--nx-text);
+    line-height: 1.4;
+}
+
+.niko-hint-ok {
+    min-height: 34px;
+    padding: 6px 12px;
+    border-radius: var(--nx-radius-pill);
+    border: none;
+    background: var(--nx-mint);
+    color: var(--nx-on-mint);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+html.nx-low-power .niko-breathe {
+    animation: none !important;
+}
+
+html.nx-low-power .niko-tour-overlay {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}

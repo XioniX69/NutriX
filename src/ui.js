@@ -7,6 +7,7 @@
    ========================================================================= */
 
 import { renderIcon } from "./icons.js";
+import { startNikoOnboardingTour, maybeShowNikoHint } from "./mascot.js";
 
 import {
     WEEK_DAYS,
@@ -23,6 +24,7 @@ import {
     getTodayStr,
     getTodayDayIndex,
     getWeekStartDateStr,
+    getDateStrForWeekDay,
     getAdaptiveGreeting,
     getUserSportTypes,
     getAvailableDayTypesForUser,
@@ -52,6 +54,7 @@ import {
     getWorkerUrl,
     setWorkerUrl,
     getWorkerHeaders,
+    getCurrentTgUserId,
     isOwnerAdmin,
     normalizeThemeId,
     resolveEffectiveTheme,
@@ -90,6 +93,42 @@ import {
     getIncludedDaysForGrocery,
     rebuildGroceryList
 } from "./planner.js";
+
+import {
+    FAMILY_SLOT_LABELS,
+    familyStore,
+    isFamilyActive,
+    getMyFamilyMember,
+    isFamilyOwner,
+    isSlotSharedInFamily,
+    isMeEatingOut,
+    getActiveParticipantsForSlot,
+    getSharedMealInfo,
+    getFamilyInviteLink,
+    computeFamilyPortionSplit,
+    fetchFamilyState,
+    createFamilyApi,
+    joinFamilyApi,
+    leaveFamilyApi,
+    removeFamilyMemberApi,
+    updateFamilySettingsApi,
+    scheduleFamilyProfileSync,
+    syncSharedMealToFamily,
+    toggleEatingOutApi,
+    startDinnerVoteApi,
+    castDinnerVoteApi,
+    applyDinnerVoteApi,
+    syncFamilyGroceryCheckApi,
+    addFamilyUrgentItemApi,
+    toggleFamilyUrgentItemApi,
+    toggleFamilyInStoreApi,
+    clearFamilyGroceryChecksApi,
+    notifyFamilyDinnerReadyApi,
+    notifyFamilyAchievementApi,
+    startFamilyGroceryPolling,
+    stopFamilyGroceryPolling,
+    clearPendingFamilyInvite
+} from "./family.js";
 
 /* =========================================================================
    ТОСТ, КРУГОВОЙ ЗАГРУЗЧИК И 60 FPS АНИМАЦИИ
@@ -844,6 +883,13 @@ export function finishOnboardingWizard() {
         renderApp();
         switchTab(isSingle ? "profile" : "home");
         if (isSingle) showToast("Параметр обновлён");
+        if (isFamilyActive()) {
+            scheduleFamilyProfileSync(false);
+        } else if (familyStore.pendingInviteCode) {
+            setTimeout(() => showPendingFamilyInvitePrompt(), 350);
+        } else if (!isSingle) {
+            setTimeout(() => startNikoOnboardingTour(false), 420);
+        }
         NutriXPerf.notify("success");
     };
 
@@ -911,12 +957,13 @@ export function switchTab(tabName) {
 
     if (tabName === "home") renderHomeOverview();
     else if (tabName === "nutrition") {
-        if (currentNutritionSubtab === "diary") renderNutritionDiary();
-        else if (currentNutritionSubtab === "groceries") renderGroceriesList();
+        if (currentNutritionSubtab === "diary") { renderNutritionDiary(); maybeShowNikoHint("diary"); }
+        else if (currentNutritionSubtab === "groceries") { renderGroceriesList(); maybeShowNikoHint("groceries"); }
         else renderRecipesCatalog();
     } else if (tabName === "progress") renderProgressTab();
     else if (tabName === "profile") renderProfileTab();
 
+    syncFamilyGroceryLivePolling();
     NutriXMotion.staggerScreen(`tab-${tabName}`);
     window.scrollTo({ top: 0, behavior: "instant" });
     hapticSelect();
@@ -928,10 +975,20 @@ export function switchNutritionSubtab(sub) {
         document.getElementById(`subtab-${s}`)?.classList.toggle("hidden", s !== sub);
         document.getElementById(`nut-sub-${s}`)?.classList.toggle("active", s === sub);
     });
-    if (sub === "diary") renderNutritionDiary();
-    else if (sub === "groceries") renderGroceriesList();
+    if (sub === "diary") { renderNutritionDiary(); maybeShowNikoHint("diary"); }
+    else if (sub === "groceries") { renderGroceriesList(); maybeShowNikoHint("groceries"); }
     else renderRecipesCatalog();
+    syncFamilyGroceryLivePolling();
     hapticSelect();
+}
+
+function syncFamilyGroceryLivePolling() {
+    const activeFamilyGroceries = currentTab === "nutrition"
+        && currentNutritionSubtab === "groceries"
+        && store.groceryScope === "family"
+        && isFamilyActive();
+    if (activeFamilyGroceries) startFamilyGroceryPolling();
+    else stopFamilyGroceryPolling();
 }
 
 export function renderApp() {
@@ -988,8 +1045,23 @@ export function createMealRowElement(meal, isHomePreview = false) {
     const mpInfo = getMealPrepPairInfo(dayIdx, meal);
     const canDelete = Boolean(meal.isExtra || meal.isOffPlan);
 
-    const badgesHtml = (pinned || mpInfo) ? `
+    let familyBadgeHtml = "";
+    if (!meal.isOffPlan && !meal.isExtra && isSlotSharedInFamily(meal.slotKey)) {
+        const dStr = getDateStrForWeekDay(dayIdx, appState.weekStartDate);
+        if (isMeEatingOut(dStr, meal.slotKey)) {
+            familyBadgeHtml = `<span class="family-out-badge">${renderIcon("logOut", { size: 12 })}<span>Ем вне дома</span></span>`;
+        } else {
+            const activeP = getActiveParticipantsForSlot(dStr, meal.slotKey);
+            const sharedInfo = getSharedMealInfo(dayIdx, meal.slotKey);
+            const cookSuffix = sharedInfo?.cookName ? ` · готовит ${escapeHtml(sharedInfo.cookName)}` : "";
+            const label = activeP.length >= 2 ? `Семья ×${activeP.length}${cookSuffix}` : `Общий слот${cookSuffix}`;
+            familyBadgeHtml = `<span class="family-shared-badge">${renderIcon("users", { size: 12, active: true })}<span>${label}</span></span>`;
+        }
+    }
+
+    const badgesHtml = (pinned || mpInfo || familyBadgeHtml) ? `
         <div class="mc-badges-row">
+            ${familyBadgeHtml}
             ${pinned ? `<span class="pin-badge">${renderIcon("pin", { size: 12, active: true })}<span>Закреплено на неделю</span></span>` : ""}
             ${mpInfo ? `<span class="mealprep-badge">${renderIcon("layers", { size: 12, active: true })}<span>На 2 дня (${escapeHtml(mpInfo.label)})</span></span>` : ""}
         </div>` : "";
@@ -1082,6 +1154,20 @@ export function deleteExtraMeal(mealId) {
     haptic("light");
 }
 
+function maybeNotifyFamilyMilestones(justCompletedWholeDay = false) {
+    if (!isFamilyActive()) return;
+    const todayMeals = appState.weekPlan?.[getTodayDayIndex()]?.meals || [];
+    const allDoneToday = todayMeals.length > 0 && todayMeals.every(m => m.eaten);
+    scheduleFamilyProfileSync(allDoneToday);
+
+    const s = Number(appState.streakDays) || 0;
+    if ([3, 7, 14, 30, 60, 100].includes(s)) {
+        notifyFamilyAchievementApi("streak", { days: s });
+    } else if (justCompletedWholeDay && allDoneToday) {
+        notifyFamilyAchievementApi("day_done");
+    }
+}
+
 export function toggleMealEaten(mealId) {
     syncSelectedDayMeals();
     const meal = appState.meals.find(m => m.id === mealId);
@@ -1089,6 +1175,7 @@ export function toggleMealEaten(mealId) {
     meal.eaten = !meal.eaten;
     rebuildGroceryList();
     saveState();
+    maybeNotifyFamilyMilestones(false);
     renderHomeOverview();
     renderNutritionDiary();
     renderGroceriesList();
@@ -1120,6 +1207,10 @@ export function swapSingleMeal(mealId) {
 
     rebuildGroceryList();
     saveState();
+    if (!replaced.isCustom && isSlotSharedInFamily(replaced.slotKey)) {
+        syncSharedMealToFamily(store.selectedDayIndex, replaced.slotKey, replaced.recipeId, replaced.dishTitle, { silent: true });
+    }
+    scheduleFamilyProfileSync(false);
     renderHomeOverview();
     renderNutritionDiary();
     if (store.activeDetailMealId === mealId) openMealDetail(mealId);
@@ -1251,6 +1342,7 @@ export function toggleCompleteWholeDay(dayIdx) {
     dayObj.meals.forEach(m => { m.eaten = !allDone; });
     rebuildGroceryList();
     saveState();
+    maybeNotifyFamilyMilestones(!allDone);
     renderApp();
     showToast(allDone ? "Отметка выполнения дня снята" : "План дня выполнен на 100%");
     NutriXPerf.notify("success");
@@ -1563,9 +1655,34 @@ export function setPlanMode(mode) {
     else togglePlanMode(mode);
 }
 
+function renderFamilyDiaryBar() {
+    const bar = document.getElementById("family-diary-bar");
+    if (!bar) return;
+    if (!isFamilyActive()) {
+        bar.classList.add("hidden");
+        return;
+    }
+    const fam = familyStore.family;
+    bar.classList.remove("hidden");
+    const nameEl = document.getElementById("family-diary-name");
+    const subEl = document.getElementById("family-diary-sub");
+    const voteBtn = document.getElementById("family-vote-trigger-btn");
+    const voteLbl = document.getElementById("family-vote-btn-label");
+
+    const cnt = fam.members?.length || 1;
+    const slotsText = (fam.sharedSlots || ["dinner"]).map(k => FAMILY_SLOT_LABELS[k] || k).join(", ");
+    if (nameEl) nameEl.innerText = `${fam.name} · ${cnt} уч.`;
+    if (subEl) subEl.innerText = `Общее: ${slotsText || "корзина"} · Co-op ${fam.coopStreak || 0} дн.`;
+
+    const hasOpenVote = Boolean(fam.activeVote && fam.activeVote.status === "open");
+    if (voteBtn) voteBtn.classList.toggle("active-eat", hasOpenVote);
+    if (voteLbl) voteLbl.innerText = hasOpenVote ? "Голосуем" : "Ужин";
+}
+
 export function renderNutritionDiary() {
     if (!appState.user) return;
     syncSelectedDayMeals();
+    renderFamilyDiaryBar();
     renderWeekStrip();
     syncMenuSettingsSheetState();
 
@@ -1682,10 +1799,113 @@ export function toggleDetailStepDone(mealId, stepIdx) {
     hapticSelect();
 }
 
+function getEffectiveDetailMult(meal) {
+    const mpMult = store.detailPortionMult === 2 ? 2 : 1;
+    if (store.detailFamilyMode && meal && isSlotSharedInFamily(meal.slotKey)) {
+        const split = computeFamilyPortionSplit(meal, store.selectedDayIndex);
+        if (split?.canScalePot) return Number((mpMult * split.potMultiplier).toFixed(2));
+    }
+    return mpMult;
+}
+
+function renderDetailFamilyPlates(meal) {
+    const box = document.getElementById("detail-family-plates-box");
+    if (!box) return;
+    if (!store.detailFamilyMode || !meal || !isSlotSharedInFamily(meal.slotKey)) {
+        box.classList.add("hidden");
+        return;
+    }
+    const split = computeFamilyPortionSplit(meal, store.selectedDayIndex);
+    if (!split || !split.canScalePot) {
+        box.classList.add("hidden");
+        return;
+    }
+    const mpMult = store.detailPortionMult === 2 ? 2 : 1;
+    const totalCooked = Math.round(split.totalCookedG * mpMult);
+    const isVisual = store.detailWeightMode === "visual";
+
+    const rowsHtml = split.splits.map(sp => {
+        const g = Math.round(sp.cookedGrams * mpMult);
+        const primary = isVisual ? sp.visualFraction : `~${g} г готового`;
+        const secondary = isVisual ? `${sp.sharePct}% (~${g} г)` : `${sp.sharePct}% · ${sp.visualFraction}`;
+        return `
+            <div class="family-plate-row">
+                <div><strong>${escapeHtml(sp.firstName)}${sp.isMe ? " (ты)" : ""}</strong></div>
+                <div class="family-plate-val">
+                    <div>${escapeHtml(primary)}</div>
+                    <div class="family-plate-sub">${escapeHtml(secondary)}</div>
+                </div>
+            </div>`;
+    }).join("");
+
+    const outNote = split.eatingOutMembers?.length
+        ? `<div class="family-plate-sub" style="margin-top:6px;">Не едят дома: ${split.eatingOutMembers.map(m => escapeHtml(m.firstName)).join(", ")}</div>`
+        : "";
+
+    box.innerHTML = `
+        <div class="family-plates-head">
+            <span class="family-plates-title">${renderIcon("utensils", { size: 13, active: true })}<span>Как разложить по тарелкам</span></span>
+            <span class="section-meta tabular">Кастрюля ~${totalCooked} г</span>
+        </div>
+        ${rowsHtml}
+        ${outNote}`;
+    box.classList.remove("hidden");
+}
+
+function renderDetailFamilyBar(meal) {
+    const bar = document.getElementById("detail-family-bar");
+    if (!bar) return;
+    if (!meal || meal.isOffPlan || meal.isExtra || !isSlotSharedInFamily(meal.slotKey)) {
+        store.detailFamilyMode = false;
+        bar.classList.add("hidden");
+        return;
+    }
+
+    bar.classList.remove("hidden");
+    const split = computeFamilyPortionSplit(meal, store.selectedDayIndex);
+    const dateStr = getDateStrForWeekDay(store.selectedDayIndex, appState.weekStartDate);
+    const meOut = isMeEatingOut(dateStr, meal.slotKey);
+    const sharedInfo = getSharedMealInfo(store.selectedDayIndex, meal.slotKey);
+    const myId = Number(familyStore.family?.myTgId || getCurrentTgUserId());
+    const iAmCook = Boolean(sharedInfo?.cookTgId && Number(sharedInfo.cookTgId) === myId);
+
+    const pCount = split?.participants?.length || 1;
+    const titleEl = document.getElementById("detail-family-title");
+    const subEl = document.getElementById("detail-family-sub");
+    if (titleEl) {
+        titleEl.innerText = pCount >= 2
+            ? `Общая кастрюля · ${formatCountRu(pCount, "порция", "порции", "порций")}`
+            : "Общий слот семьи (сегодня 1 порция)";
+    }
+    if (subEl) {
+        const cookText = sharedInfo?.cookName ? `Готовит: ${sharedInfo.cookName}` : "Переключи масштаб для всей семьи";
+        subEl.innerText = meOut ? "Ты отметил(а) «Ем вне дома» — твоя порция вычтена" : cookText;
+    }
+
+    const sw = document.getElementById("detail-family-pot-switch");
+    if (sw) sw.classList.toggle("hidden", !split?.canScalePot);
+    if (!split?.canScalePot) store.detailFamilyMode = false;
+
+    document.getElementById("fp-self-btn")?.classList.toggle("active", !store.detailFamilyMode);
+    document.getElementById("fp-family-btn")?.classList.toggle("active", Boolean(store.detailFamilyMode));
+
+    const outBtn = document.getElementById("detail-eatout-btn");
+    if (outBtn) {
+        outBtn.classList.toggle("active-pin", meOut);
+        outBtn.innerHTML = `${renderIcon("logOut", { size: 14 })}<span>${meOut ? "Вернуться" : "Вне дома"}</span>`;
+    }
+
+    const cookBtn = document.getElementById("detail-cook-btn");
+    if (cookBtn) {
+        cookBtn.classList.toggle("active-eat", iAmCook);
+        cookBtn.innerHTML = `${renderIcon("utensils", { size: 14, active: iAmCook })}<span>${iAmCook ? "Я готовлю" : "Готовлю я"}</span>`;
+    }
+}
+
 function renderDetailCookingSteps(meal) {
     const stepsEl = document.getElementById("detail-steps-list");
     if (!stepsEl) return;
-    const mult = store.detailPortionMult === 2 ? 2 : 1;
+    const mult = getEffectiveDetailMult(meal);
     const steps = buildDetailedCookingSteps(meal, store.detailWeightMode, mult);
     const doneMap = store.checkedStepsByMeal[meal.id] || {};
 
@@ -1709,12 +1929,14 @@ function renderDetailCookingSteps(meal) {
 }
 
 function updateDetailWeightsAndIngredients(meal) {
-    const mult = store.detailPortionMult === 2 ? 2 : 1;
-    const rawW = (meal.rawWeightG || 340) * mult;
-    const cookedW = (meal.cookedWeightG || 310) * mult;
-    document.getElementById("detail-weights").innerText = mult === 2
-        ? `${rawW} г → ${cookedW} г (×2)`
-        : `${rawW} г → ${cookedW} г`;
+    const mult = getEffectiveDetailMult(meal);
+    const rawW = Math.round((meal.rawWeightG || 340) * mult);
+    const cookedW = Math.round((meal.cookedWeightG || 310) * mult);
+    const suffixParts = [];
+    if (store.detailFamilyMode && isSlotSharedInFamily(meal.slotKey)) suffixParts.push("семья");
+    if (store.detailPortionMult === 2) suffixParts.push("×2");
+    const suffix = suffixParts.length ? ` (${suffixParts.join(", ")})` : "";
+    document.getElementById("detail-weights").innerText = `${rawW} г → ${cookedW} г${suffix}`;
 
     const hint = document.getElementById("detail-yield-hint");
     if (hint) {
@@ -1723,11 +1945,16 @@ function updateDetailWeightsAndIngredients(meal) {
             : (store.detailWeightMode === "raw"
                 ? "Показан сырой вес для взвешивания до готовки."
                 : "Показан готовый вес ингредиентов на тарелке.");
-        hint.innerText = mult === 2
-            ? `${baseText} Порции умножены на ×2 сразу для двух дней.`
-            : `${baseText} Нажми на замену под продуктом, чтобы пересчитать КБЖУ.`;
+        if (store.detailFamilyMode && isSlotSharedInFamily(meal.slotKey)) {
+            hint.innerText = `${baseText} Граммовки пересчитаны на общую кастрюлю семьи — раскладка по тарелкам ниже.`;
+        } else {
+            hint.innerText = store.detailPortionMult === 2
+                ? `${baseText} Порции умножены на ×2 сразу для двух дней.`
+                : `${baseText} Нажми на замену под продуктом, чтобы пересчитать КБЖУ.`;
+        }
     }
     renderDetailIngredientsWithOneClickSubs(meal);
+    renderDetailFamilyPlates(meal);
     renderDetailCookingSteps(meal);
 }
 
@@ -1736,7 +1963,10 @@ export function openMealDetail(mealId) {
     const meal = appState.meals.find(m => m.id === mealId);
     if (!meal) return;
 
-    if (store.activeDetailMealId !== mealId) store.detailPortionMult = 1;
+    if (store.activeDetailMealId !== mealId) {
+        store.detailPortionMult = 1;
+        store.detailFamilyMode = false;
+    }
     store.activeDetailMealId = mealId;
     previousTabBeforeDetail = currentTab;
 
@@ -1782,6 +2012,7 @@ export function openMealDetail(mealId) {
     document.getElementById("wm-cooked-btn")?.classList.toggle("active", store.detailWeightMode === "cooked");
     document.getElementById("wm-visual-btn")?.classList.toggle("active", store.detailWeightMode === "visual");
 
+    renderDetailFamilyBar(meal);
     const mpInfo = getMealPrepPairInfo(store.selectedDayIndex, meal);
     const mpBar = document.getElementById("detail-mealprep-bar");
     if (mpBar) {
@@ -1810,13 +2041,14 @@ export function openMealDetail(mealId) {
     document.getElementById("detail-science-tip").innerText = generateNutriXAdvice(meal, dayStats, appState.user, mpInfo);
 
     window.scrollTo({ top: 0, behavior: "instant" });
+    maybeShowNikoHint("detail");
     haptic("light");
 }
 
 function renderDetailIngredientsWithOneClickSubs(meal) {
     const container = document.getElementById("detail-ingredients-list");
     if (!container) return;
-    const mult = store.detailPortionMult === 2 ? 2 : 1;
+    const mult = getEffectiveDetailMult(meal);
 
     container.innerHTML = (meal.ingredients || []).map((ing, idx) => {
         let qtyHtml = "";
@@ -1848,7 +2080,7 @@ function renderDetailIngredientsWithOneClickSubs(meal) {
             <div class="ing-row">
                 <div class="nx-flex-1">
                     <div class="ing-name">${escapeHtml(ing.name)}</div>
-                    <div class="ing-meta">${stateLbl}${ing.dept ? ` · ${escapeHtml(ing.dept)}` : ""}${mult === 2 ? " · ×2 дня" : ""}</div>
+                    <div class="ing-meta">${stateLbl}${ing.dept ? ` · ${escapeHtml(ing.dept)}` : ""}${store.detailFamilyMode && isSlotSharedInFamily(meal.slotKey) ? " · на семью" : ""}${store.detailPortionMult === 2 ? " · ×2 дня" : ""}</div>
                     ${(subChips || revertBtn) ? `<div class="inline-sub-strip">${revertBtn || subChips}</div>` : ""}
                 </div>
                 ${qtyHtml}
@@ -2163,6 +2395,7 @@ export function renderProfileTab() {
     document.getElementById("prof-macro-ratios").innerText = `Б ${t.proteinPerKg} · Ж ${t.fatPerKg} · У ${t.carbsPerKg}`;
 
     renderThemePicker();
+    renderProfileFamilyCard();
     renderCloudStatusCard();
 }
 
@@ -2200,10 +2433,36 @@ export function toggleHideCheckedGroceries() {
 export function toggleGroceryItem(encodedName) {
     const name = decodeURIComponent(encodedName);
     if (!appState.checkedGroceries) appState.checkedGroceries = {};
-    appState.checkedGroceries[name] = !appState.checkedGroceries[name];
+    const isFam = store.groceryScope === "family" && isFamilyActive();
+    const currentlyChecked = isFam
+        ? Boolean(familyStore.family?.groceryChecks?.[name]?.checked || appState.checkedGroceries[name])
+        : Boolean(appState.checkedGroceries[name]);
+    const nextVal = !currentlyChecked;
+
+    appState.checkedGroceries[name] = nextVal;
+    if (isFam && familyStore.family) {
+        if (!familyStore.family.groceryChecks) familyStore.family.groceryChecks = {};
+        if (nextVal) {
+            familyStore.family.groceryChecks[name] = { checked: true, actorName: tg?.initDataUnsafe?.user?.first_name || "Ты", updatedAt: Date.now() };
+        } else {
+            delete familyStore.family.groceryChecks[name];
+        }
+        syncFamilyGroceryCheckApi(name, nextVal);
+    }
+
     rebuildGroceryList();
     saveState();
     renderGroceriesList();
+
+    if (isFam && nextVal) {
+        let total = 0, done = 0;
+        Object.values(appState.groceryList || {}).forEach(arr => arr.forEach(i => { total++; if (i.isChecked) done++; }));
+        if (total >= 2 && done === total) {
+            const pLbl = store.groceryPeriod === 1 ? "1 день" : (store.groceryPeriod === 3 ? "3 дня" : "неделю");
+            notifyFamilyAchievementApi("grocery_done", { periodLabel: pLbl });
+            showToast("Семейная закупка завершена");
+        }
+    }
     hapticSelect();
 }
 
@@ -2211,9 +2470,18 @@ export function addCustomGroceryItem() {
     const inp = document.getElementById("custom-grocery-input");
     const val = (inp?.value || "").trim();
     if (!val) return;
+    inp.value = "";
+
+    if (store.groceryScope === "family" && isFamilyActive()) {
+        addFamilyUrgentItemApi(val).then(ok => {
+            if (ok) showToast(`Добавлено в семейную корзину: ${val}`);
+        });
+        haptic("light");
+        return;
+    }
+
     if (!Array.isArray(appState.customGroceries)) appState.customGroceries = [];
     appState.customGroceries.push({ name: val, weight: 0, isCustom: true });
-    inp.value = "";
     rebuildGroceryList();
     saveState();
     renderGroceriesList();
@@ -2224,6 +2492,9 @@ export function addCustomGroceryItem() {
 export function clearGroceryChecks() {
     appState.checkedGroceries = {};
     appState.customGroceries = [];
+    if (store.groceryScope === "family" && isFamilyActive()) {
+        clearFamilyGroceryChecksApi();
+    }
     rebuildGroceryList();
     saveState();
     renderGroceriesList();
@@ -2231,9 +2502,81 @@ export function clearGroceryChecks() {
     haptic("light");
 }
 
+function renderFamilyGroceryChrome() {
+    const scopeBar = document.getElementById("family-grocery-scope-bar");
+    const banner = document.getElementById("family-instore-banner");
+    const urgentBox = document.getElementById("family-urgent-container");
+
+    if (!isFamilyActive()) {
+        scopeBar?.classList.add("hidden");
+        banner?.classList.add("hidden");
+        urgentBox?.classList.add("hidden");
+        return;
+    }
+
+    const fam = familyStore.family;
+    const isFamScope = store.groceryScope === "family";
+    scopeBar?.classList.remove("hidden");
+    document.getElementById("gscope-personal-btn")?.classList.toggle("active", !isFamScope);
+    const famBtn = document.getElementById("gscope-family-btn");
+    if (famBtn) {
+        famBtn.classList.toggle("active", isFamScope);
+        famBtn.innerText = `Семья (${fam.members?.length || 1})`;
+    }
+
+    const me = getMyFamilyMember();
+    const myInStore = Boolean(me?.inStore);
+    const storeBtn = document.getElementById("btn-family-instore");
+    const storeLbl = document.getElementById("btn-family-instore-label");
+    if (storeBtn) storeBtn.classList.toggle("active-eat", myInStore);
+    if (storeLbl) storeLbl.innerText = myInStore ? "В магазине" : "Я в магазине";
+
+    const myId = Number(fam.myTgId || getCurrentTgUserId());
+    const otherShoppers = (fam.members || []).filter(m => Number(m.tgId) !== myId && m.inStore);
+    if (banner) {
+        if (otherShoppers.length) {
+            const names = otherShoppers.map(m => m.firstName).join(", ");
+            const txt = document.getElementById("family-instore-text");
+            if (txt) txt.innerText = `${names} сейчас в магазине — можно докинуть товар`;
+            banner.classList.remove("hidden");
+        } else {
+            banner.classList.add("hidden");
+        }
+    }
+
+    if (urgentBox) {
+        const urgents = isFamScope ? (fam.urgentItems || []) : [];
+        const visibleUrgents = store.hideCheckedGroceries ? urgents.filter(u => !u.checked) : urgents;
+        if (!visibleUrgents.length) {
+            urgentBox.classList.add("hidden");
+            urgentBox.innerHTML = "";
+        } else {
+            urgentBox.classList.remove("hidden");
+            urgentBox.innerHTML = `
+                <div class="family-urgent-card">
+                    <div class="family-urgent-head">
+                        <span>Срочный дозаказ семьи</span>
+                        <span>${visibleUrgents.length}</span>
+                    </div>
+                    ${visibleUrgents.map(u => `
+                        <div class="grocery-row ${u.checked ? "checked" : ""}" onclick="toggleFamilyUrgentItem('${escapeHtml(u.id)}', ${u.checked ? "false" : "true"})">
+                            <div class="g-left">
+                                <div class="custom-checkbox">${u.checked ? renderIcon("check", { size: 12, strokeWidth: 2.4 }) : ""}</div>
+                                <div class="nx-minw0">
+                                    <div class="g-title">${escapeHtml(u.name)}</div>
+                                    <div class="g-meta-dishes">Добавил(а) ${escapeHtml(u.addedByName || "Семья")}${u.note ? ` · ${escapeHtml(u.note)}` : ""}</div>
+                                </div>
+                            </div>
+                        </div>`).join("")}
+                </div>`;
+        }
+    }
+}
+
 export function renderGroceriesList() {
     const container = document.getElementById("groceries-container");
     if (!container) return;
+    renderFamilyGroceryChrome();
 
     const incDays = getIncludedDaysForGrocery();
     let rangeLbl = "Закупка · Неделя";
@@ -2269,6 +2612,14 @@ export function renderGroceriesList() {
     const hasResettable = checkedItems > 0 || (Array.isArray(appState.customGroceries) && appState.customGroceries.length > 0);
     document.getElementById("btn-reset-grocery-checks")?.classList.toggle("hidden", !hasResettable);
 
+    const pantryTotal = Object.keys(appState.pantryItems || {}).filter(k => appState.pantryItems[k]).length;
+    const pantryBar = document.getElementById("grocery-pantry-bar");
+    if (pantryBar) {
+        pantryBar.classList.toggle("hidden", pantryTotal === 0);
+        const cntEl = document.getElementById("grocery-pantry-count");
+        if (cntEl) cntEl.innerText = String(pantryTotal);
+    }
+
     let html = "";
     Object.entries(list).forEach(([group, items]) => {
         const visible = store.hideCheckedGroceries ? items.filter(i => !i.isChecked) : items;
@@ -2291,7 +2642,8 @@ export function renderGroceriesList() {
                         <div class="custom-checkbox">${item.isChecked ? renderIcon("check", { size: 12, strokeWidth: 2.4 }) : ""}</div>
                         <div class="nx-minw0">
                             <div class="g-title">${escapeHtml(item.name)}${waveHtml}</div>
-                            <div class="g-meta-dishes">${escapeHtml(item.dishes || "")}</div>
+                            ${item.note ? `<div class="store-item-note">${escapeHtml(item.note)}</div>` : ""}
+                            <div class="g-meta-dishes">${escapeHtml(item.dishes || "")}${item.isDeferred ? " · отложено" : ""}${item.isChecked && item.checkedBy ? ` · взял(а) ${escapeHtml(item.checkedBy)}` : ""}</div>
                             ${hasSubs ? `<button type="button" class="sub-trigger-btn" onclick="event.stopPropagation(); openSubstitutionModal('${encName}', '${encAlt}')">${renderIcon("swap", { size: 12 })}<span>Заменить</span></button>` : ""}
                         </div>
                     </div>
@@ -2364,6 +2716,9 @@ export function applyIngredientSubstitution(optIdx) {
     saveState();
     renderApp();
     closeModal("substitution-modal");
+    if (store.inStoreFullscreen && typeof window.renderStoreModeView === "function") {
+        window.renderStoreModeView();
+    }
     showToast(`Заменено на «${chosen.target.split("(")[0].trim()}» (${formatCountRu(replacedCount, "блюдо", "блюда", "блюд")})`);
     haptic("medium");
 }
@@ -2641,6 +2996,11 @@ function applyMasterRecipeToMealSlot(mealId, master) {
     appState.meals[idx] = scaleMasterRecipeToMeal(master, cur.name, cur.slotKey || "lunch", cur.id, cur.kcal);
     rebuildGroceryList();
     saveState();
+    const updatedMeal = appState.meals[idx];
+    if (updatedMeal && isSlotSharedInFamily(updatedMeal.slotKey)) {
+        syncSharedMealToFamily(store.selectedDayIndex, updatedMeal.slotKey, updatedMeal.recipeId, updatedMeal.dishTitle, { silent: true });
+    }
+    scheduleFamilyProfileSync(false);
     renderApp();
     if (store.activeDetailMealId === mealId) openMealDetail(mealId);
     showToast(`Установлено: ${master.title_ru.slice(0, 34)}…`);
@@ -3276,4 +3636,538 @@ export async function triggerAutoFetchMasterDb(notify = true) {
     const ok = await tryAutoFetchMasterDb(notify);
     if (ok && notify) closeModal("db-modal");
     return ok;
+}
+/* =========================================================================
+   UI-КОНТРОЛЛЕР РЕЖИМА «СЕМЬЯ» (МОДАЛКИ, ИНВАЙТЫ, ПОРЦИИ, ГОЛОСОВАНИЕ)
+   ========================================================================= */
+let familyDraftSlots = ["dinner"];
+
+export function renderProfileFamilyCard() {
+    const card = document.getElementById("profile-family-card");
+    const titleEl = document.getElementById("prof-family-title");
+    const subEl = document.getElementById("prof-family-sub");
+    if (!card || !titleEl || !subEl) return;
+
+    if (isFamilyActive()) {
+        const fam = familyStore.family;
+        const cnt = fam.members?.length || 1;
+        const slotsText = (fam.sharedSlots || ["dinner"]).map(k => FAMILY_SLOT_LABELS[k] || k).join(", ");
+        card.classList.add("active");
+        titleEl.innerText = `Семья «${fam.name}»`;
+        subEl.innerText = `${formatCountRu(cnt, "участник", "участника", "участников")} · ${slotsText || "общая корзина"} · Co-op ${fam.coopStreak || 0} дн.`;
+    } else {
+        card.classList.remove("active");
+        titleEl.innerText = "Режим «Семья»";
+        subEl.innerText = "Готовьте одну кастрюлю под разные КБЖУ и ведите живую корзину покупок.";
+    }
+}
+
+export function openFamilyModal() {
+    renderFamilyModal();
+    document.getElementById("family-modal")?.classList.remove("hidden");
+    if (tg?.initData) fetchFamilyState(true).then(() => renderFamilyModal());
+    haptic("light");
+}
+
+export function switchFamilySetupTab(tab) {
+    const isCreate = tab !== "join";
+    document.getElementById("fam-tab-create")?.classList.toggle("active", isCreate);
+    document.getElementById("fam-tab-join")?.classList.toggle("active", !isCreate);
+    document.getElementById("fam-pane-create")?.classList.toggle("hidden", !isCreate);
+    document.getElementById("fam-pane-join")?.classList.toggle("hidden", isCreate);
+    hapticSelect();
+}
+
+export function toggleFamilyDraftSlot(slotKey, btnEl) {
+    const idx = familyDraftSlots.indexOf(slotKey);
+    if (idx >= 0) {
+        if (familyDraftSlots.length > 1) familyDraftSlots.splice(idx, 1);
+    } else {
+        familyDraftSlots.push(slotKey);
+    }
+    document.querySelectorAll("#family-create-slots .family-slot-pill").forEach(el => {
+        el.classList.toggle("active", familyDraftSlots.includes(el.dataset.slot));
+    });
+    hapticSelect();
+}
+
+export async function submitCreateFamily() {
+    const name = (document.getElementById("family-create-name")?.value || "Наша кухня").trim();
+    const btn = document.getElementById("family-create-submit-btn");
+    if (btn) { btn.disabled = true; btn.innerText = "Создаём семью…"; }
+    const ok = await createFamilyApi(name, familyDraftSlots.slice());
+    if (btn) { btn.disabled = false; btn.innerText = "Создать и получить ссылку"; }
+    if (ok) {
+        renderFamilyModal();
+        renderApp();
+        showToast(`Семья «${familyStore.family?.name || name}» создана`);
+        NutriXPerf.notify("success");
+    }
+}
+
+export async function submitJoinFamilyByCode() {
+    const code = (document.getElementById("family-join-code-input")?.value || "").trim();
+    const btn = document.getElementById("family-join-submit-btn");
+    if (btn) { btn.disabled = true; btn.innerText = "Подключаемся…"; }
+    const ok = await joinFamilyApi(code);
+    if (btn) { btn.disabled = false; btn.innerText = "Присоединиться к семье"; }
+    if (ok) {
+        renderFamilyModal();
+        renderApp();
+        showToast(`Ты в семье «${familyStore.family?.name || "Семья"}»`);
+        NutriXPerf.notify("success");
+    }
+}
+
+export function renderFamilyModal() {
+    const setupPane = document.getElementById("family-setup-pane");
+    const managePane = document.getElementById("family-manage-pane");
+    const titleEl = document.getElementById("family-modal-title");
+    const subEl = document.getElementById("family-modal-sub");
+    const coopPill = document.getElementById("family-coop-pill");
+    if (!setupPane || !managePane) return;
+
+    if (!isFamilyActive()) {
+        setupPane.classList.remove("hidden");
+        managePane.classList.add("hidden");
+        coopPill?.classList.add("hidden");
+        if (titleEl) titleEl.innerText = "Режим «Семья»";
+        if (subEl) subEl.innerText = "Приглашай пользователей NutriX в общую кухню. Вес и личные параметры тела остаются скрытыми.";
+        return;
+    }
+
+    const fam = familyStore.family;
+    const owner = isFamilyOwner();
+    const me = getMyFamilyMember();
+    const myId = Number(fam.myTgId || getCurrentTgUserId());
+
+    setupPane.classList.add("hidden");
+    managePane.classList.remove("hidden");
+    if (titleEl) titleEl.innerText = fam.name;
+    if (subEl) subEl.innerText = "Общие блюда пересчитываются под норму каждого участника. Личные параметры тела скрыты.";
+    if (coopPill) {
+        coopPill.innerText = `Co-op ${fam.coopStreak || 0} дн.`;
+        coopPill.classList.remove("hidden");
+    }
+
+    const codeEl = document.getElementById("family-invite-code-display");
+    if (codeEl) codeEl.innerText = fam.inviteCode || "------";
+    const cntEl = document.getElementById("family-members-count");
+    if (cntEl) cntEl.innerText = String(fam.members?.length || 1);
+
+    const listEl = document.getElementById("family-members-list");
+    if (listEl) {
+        const today = getTodayStr();
+        listEl.innerHTML = (fam.members || []).map(m => {
+            const isMe = Number(m.tgId) === myId;
+            const roleLbl = m.role === "owner" ? "Создатель" : (m.role === "shopper_only" ? "Только покупки" : "Участник");
+            const doneToday = m.lastDayDoneDate === today;
+            const statusParts = [roleLbl];
+            if (m.inStore) statusParts.push("в магазине");
+            else if (doneToday) statusParts.push("план дня закрыт");
+            if (m.streakDays > 0) statusParts.push(`серия ${m.streakDays} дн.`);
+
+            const delBtn = (owner && !isMe)
+                ? `<button type="button" class="saved-meal-del" title="Удалить из семьи" aria-label="Удалить" onclick="removeFamilyMemberClick(${Number(m.tgId)})">${renderIcon("close", { size: 14 })}</button>`
+                : "";
+            const initial = (m.firstName || "U")[0].toUpperCase();
+            return `
+                <div class="family-member-row">
+                    <div class="nx-row nx-minw0">
+                        <div class="family-avatar">${escapeHtml(initial)}</div>
+                        <div class="nx-minw0">
+                            <div class="cloud-sync-title">${escapeHtml(m.firstName)}${isMe ? " (ты)" : ""}</div>
+                            <div class="ing-meta">${escapeHtml(statusParts.join(" · "))}</div>
+                        </div>
+                    </div>
+                    ${delBtn}
+                </div>`;
+        }).join("");
+    }
+
+    const shared = Array.isArray(fam.sharedSlots) ? fam.sharedSlots : ["dinner"];
+    document.querySelectorAll("#family-manage-slots .family-slot-pill").forEach(el => {
+        el.classList.toggle("active", shared.includes(el.dataset.slot));
+    });
+
+    const winsCb = document.getElementById("family-share-wins-cb");
+    if (winsCb) winsCb.checked = me ? Boolean(me.shareWins) : true;
+
+    const shopperRow = document.getElementById("family-shopper-role-row");
+    const shopperCb = document.getElementById("family-shopper-only-cb");
+    if (shopperRow && shopperCb) {
+        shopperRow.classList.toggle("hidden", owner);
+        shopperCb.checked = me?.role === "shopper_only";
+    }
+}
+
+export function copyFamilyInviteLink() {
+    const link = getFamilyInviteLink();
+    const code = familyStore.family?.inviteCode || "";
+    const text = link || code;
+    if (!text) return;
+    const fallback = () => {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0;";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand("copy"); showToast(link ? "Ссылка-приглашение скопирована" : "Код скопирован"); }
+        catch (e) { showToast("Не удалось скопировать"); }
+        document.body.removeChild(ta);
+    };
+    if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text)
+            .then(() => showToast(link ? "Ссылка-приглашение скопирована" : "Код приглашения скопирован"))
+            .catch(fallback);
+    } else {
+        fallback();
+    }
+    haptic("medium");
+}
+
+export function shareFamilyInviteLink() {
+    const fam = familyStore.family;
+    if (!fam) return;
+    const link = getFamilyInviteLink();
+    const shareText = link
+        ? `Присоединяйся к нашей семье «${fam.name}» в NutriX — общие ужины под разные КБЖУ и живая корзина покупок.`
+        : `Присоединяйся к семье «${fam.name}» в NutriX! Открой Профиль → Режим «Семья» и введи код: ${fam.inviteCode}`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent(link || " ")}&text=${encodeURIComponent(shareText)}`;
+    if (tg?.openTelegramLink) tg.openTelegramLink(url);
+    else window.open(url, "_blank");
+    haptic("light");
+}
+
+export async function refreshFamilyNow() {
+    const ok = await fetchFamilyState(false);
+    renderFamilyModal();
+    if (ok) showToast("Данные семьи обновлены");
+    haptic("light");
+}
+
+export async function toggleFamilyLiveSlot(slotKey) {
+    if (!isFamilyActive()) return;
+    const cur = Array.isArray(familyStore.family.sharedSlots) ? familyStore.family.sharedSlots.slice() : ["dinner"];
+    const idx = cur.indexOf(slotKey);
+    if (idx >= 0) cur.splice(idx, 1);
+    else cur.push(slotKey);
+    const ok = await updateFamilySettingsApi({ sharedSlots: cur });
+    if (ok) {
+        renderFamilyModal();
+        renderApp();
+        showToast("Общие приёмы пищи обновлены");
+    }
+    hapticSelect();
+}
+
+export async function toggleFamilyShareWins(checked) {
+    const ok = await updateFamilySettingsApi({ shareWins: Boolean(checked) });
+    if (ok) showToast(checked ? "Нико будет делиться твоими победами" : "Уведомления о победах выключены");
+    hapticSelect();
+}
+
+export async function toggleFamilyShopperRole(isShopperOnly) {
+    const ok = await updateFamilySettingsApi({ myRole: isShopperOnly ? "shopper_only" : "member" });
+    if (ok) {
+        renderFamilyModal();
+        renderApp();
+        showToast(isShopperOnly ? "Включён режим «Только покупки»" : "Ты снова участвуешь в общих блюдах");
+    }
+    hapticSelect();
+}
+
+export async function removeFamilyMemberClick(targetTgId) {
+    if (!confirm("Удалить участника из семьи?")) return;
+    const ok = await removeFamilyMemberApi(targetTgId);
+    if (ok) {
+        renderFamilyModal();
+        renderApp();
+        showToast("Участник удалён из семьи");
+    }
+}
+
+export async function confirmLeaveFamily() {
+    if (!confirm("Выйти из текущей семьи? Твоё личное меню и прогресс сохранятся.")) return;
+    const ok = await leaveFamilyApi();
+    if (ok) {
+        renderFamilyModal();
+        renderApp();
+        closeModal("family-modal");
+        showToast("Ты вышел(ла) из семьи");
+    }
+}
+
+/* --- Приглашение по диплинку (startapp=fam_CODE) --- */
+export function showPendingFamilyInvitePrompt() {
+    const code = familyStore.pendingInviteCode;
+    if (!code || isFamilyActive() || !appState.user) return;
+    const codeEl = document.getElementById("family-join-prompt-code");
+    if (codeEl) codeEl.innerText = code;
+    document.getElementById("family-join-prompt-modal")?.classList.remove("hidden");
+    haptic("light");
+}
+
+export async function acceptPendingFamilyInvite() {
+    const code = familyStore.pendingInviteCode;
+    if (!code) { closeModal("family-join-prompt-modal"); return; }
+    const btn = document.getElementById("family-join-prompt-btn");
+    if (btn) { btn.disabled = true; btn.innerText = "Подключаемся…"; }
+    const ok = await joinFamilyApi(code);
+    if (btn) { btn.disabled = false; btn.innerText = "Присоединиться"; }
+    if (ok) {
+        closeModal("family-join-prompt-modal");
+        renderApp();
+        showToast(`Добро пожаловать в семью «${familyStore.family?.name || "Семья"}»`);
+        NutriXPerf.notify("success");
+    }
+}
+
+export function dismissFamilyJoinPrompt() {
+    clearPendingFamilyInvite();
+    closeModal("family-join-prompt-modal");
+}
+
+/* --- Семейные действия в Паспорте блюда --- */
+export function setDetailFamilyMode(enabled) {
+    store.detailFamilyMode = Boolean(enabled);
+    document.getElementById("fp-self-btn")?.classList.toggle("active", !store.detailFamilyMode);
+    document.getElementById("fp-family-btn")?.classList.toggle("active", store.detailFamilyMode);
+    if (store.activeDetailMealId) {
+        syncSelectedDayMeals();
+        const meal = appState.meals.find(m => m.id === store.activeDetailMealId);
+        if (meal) updateDetailWeightsAndIngredients(meal);
+    }
+    hapticSelect();
+}
+
+export async function toggleDetailEatingOut() {
+    if (!store.activeDetailMealId) return;
+    syncSelectedDayMeals();
+    const meal = appState.meals.find(m => m.id === store.activeDetailMealId);
+    if (!meal) return;
+    const dateStr = getDateStrForWeekDay(store.selectedDayIndex, appState.weekStartDate);
+    const ok = await toggleEatingOutApi(dateStr, meal.slotKey);
+    if (ok) {
+        const nowOut = isMeEatingOut(dateStr, meal.slotKey);
+        openMealDetail(meal.id);
+        renderNutritionDiary();
+        renderGroceriesList();
+        showToast(nowOut ? "Отмечено: ем вне дома — порция вычтена" : "Ты снова в общей кастрюле");
+    }
+    haptic("medium");
+}
+
+export async function toggleDetailCookDuty() {
+    if (!store.activeDetailMealId) return;
+    syncSelectedDayMeals();
+    const meal = appState.meals.find(m => m.id === store.activeDetailMealId);
+    if (!meal) return;
+    const sharedInfo = getSharedMealInfo(store.selectedDayIndex, meal.slotKey);
+    const myId = Number(familyStore.family?.myTgId || getCurrentTgUserId());
+    const alreadyMe = Boolean(sharedInfo?.cookTgId && Number(sharedInfo.cookTgId) === myId);
+    const ok = await syncSharedMealToFamily(
+        store.selectedDayIndex,
+        meal.slotKey,
+        meal.recipeId,
+        meal.dishTitle,
+        { toggleCook: true, setCook: !alreadyMe, silent: false }
+    );
+    if (ok) {
+        openMealDetail(meal.id);
+        renderNutritionDiary();
+        showToast(!alreadyMe ? "Отмечено: сегодня готовишь ты" : "Дежурство снято");
+    }
+    haptic("light");
+}
+
+export async function notifyDetailDinnerReady() {
+    if (!store.activeDetailMealId) return;
+    syncSelectedDayMeals();
+    const meal = appState.meals.find(m => m.id === store.activeDetailMealId);
+    if (!meal) return;
+    const split = computeFamilyPortionSplit(meal, store.selectedDayIndex);
+    const portions = (split?.splits || []).map(sp => ({
+        tgId: sp.tgId,
+        grams: sp.cookedGrams,
+        pct: sp.sharePct
+    }));
+    const btn = document.getElementById("detail-dinner-ready-btn");
+    if (btn) btn.disabled = true;
+    const res = await notifyFamilyDinnerReadyApi(meal.dishTitle, portions);
+    if (btn) btn.disabled = false;
+    if (res?.ok) {
+        showToast(res.data?.sent > 0 ? "Нико позвал семью к столу" : "Других участников пока нет в семье");
+        NutriXPerf.notify("success");
+    } else {
+        showToast(res?.error || "Не удалось отправить уведомление");
+    }
+}
+
+/* --- Семейная корзина покупок --- */
+export function setGroceryScope(scope) {
+    store.groceryScope = (scope === "family" && isFamilyActive()) ? "family" : "personal";
+    rebuildGroceryList();
+    renderGroceriesList();
+    syncFamilyGroceryLivePolling();
+    if (store.groceryScope === "family") fetchFamilyState(true);
+    hapticSelect();
+}
+
+export async function toggleFamilyInStoreMode() {
+    if (!isFamilyActive()) return;
+    const me = getMyFamilyMember();
+    const nextInStore = !Boolean(me?.inStore);
+    const ok = await toggleFamilyInStoreApi(nextInStore);
+    if (ok) {
+        if (nextInStore) store.groceryScope = "family";
+        rebuildGroceryList();
+        renderGroceriesList();
+        syncFamilyGroceryLivePolling();
+        showToast(nextInStore ? "Режим «Я в магазине» включён — семья уведомлена" : "Поход в магазин завершён");
+    }
+    haptic("medium");
+}
+
+export function focusUrgentGroceryInput() {
+    const inp = document.getElementById("custom-grocery-input");
+    if (!inp) return;
+    inp.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => inp.focus(), 180);
+    haptic("light");
+}
+
+export async function toggleFamilyUrgentItem(urgentId, nextChecked) {
+    const fam = familyStore.family;
+    const item = fam?.urgentItems?.find(u => u.id === urgentId);
+    if (item) item.checked = Boolean(nextChecked);
+    renderGroceriesList();
+    await toggleFamilyUrgentItemApi(urgentId, Boolean(nextChecked));
+    hapticSelect();
+}
+
+/* --- Голосование за общий ужин --- */
+function pickDinnerVoteCandidates(dayIdx) {
+    const slotKey = "dinner";
+    const pool = filterMasterRecipesForUser(slotKey, appState.user)
+        .slice()
+        .sort((a, b) => scoreRecipeForUser(b, appState.user) - scoreRecipeForUser(a, appState.user));
+    const top = pool.slice(0, Math.min(pool.length, 24));
+    const chosen = [];
+    const seen = new Set();
+    while (chosen.length < 4 && seen.size < top.length) {
+        const pick = top[Math.floor(Math.random() * top.length)];
+        if (!pick || seen.has(pick.recipe_id)) continue;
+        seen.add(pick.recipe_id);
+        chosen.push({
+            recipe_id: pick.recipe_id,
+            title_ru: pick.title_ru,
+            kcal: Math.round(pick.nutrition?.serving_kcal || 420),
+            time_min: Number(pick.total_time_min) || 20
+        });
+    }
+    return chosen;
+}
+
+export function openDinnerVoteModal() {
+    if (!isFamilyActive()) { openFamilyModal(); return; }
+    renderDinnerVoteModal();
+    document.getElementById("family-vote-modal")?.classList.remove("hidden");
+    fetchFamilyState(true).then(() => renderDinnerVoteModal());
+    haptic("light");
+}
+
+export function renderDinnerVoteModal() {
+    const bodyEl = document.getElementById("family-vote-body");
+    const dayPill = document.getElementById("family-vote-day-pill");
+    const applyBtn = document.getElementById("family-vote-apply-btn");
+    if (!bodyEl) return;
+
+    const fam = familyStore.family;
+    const vote = fam?.activeVote;
+    const dayIdx = vote ? vote.dayIndex : store.selectedDayIndex;
+    if (dayPill) dayPill.innerText = WEEK_DAYS[dayIdx]?.full || "Сегодня";
+
+    if (!vote || vote.status !== "open" || !vote.candidates?.length) {
+        applyBtn?.classList.add("hidden");
+        bodyEl.innerHTML = `
+            <div class="hint-ref-box nx-text-center">
+                Открытого голосования пока нет. Нажми «Новые варианты», чтобы Нико предложил 4 ужина с учётом ограничений всей семьи.
+            </div>`;
+        return;
+    }
+
+    const myIdStr = String(fam.myTgId || getCurrentTgUserId() || "");
+    const myVotes = vote.votes?.[myIdStr] || {};
+
+    const scored = vote.candidates.map(c => {
+        let total = 0;
+        let voters = 0;
+        Object.values(vote.votes || {}).forEach(userMap => {
+            if (typeof userMap?.[c.recipe_id] === "number") {
+                total += userMap[c.recipe_id];
+                voters++;
+            }
+        });
+        return { cand: c, total, voters };
+    });
+
+    const maxScore = Math.max(...scored.map(s => s.total));
+    applyBtn?.classList.remove("hidden");
+
+    bodyEl.innerHTML = scored.map(({ cand, total, voters }) => {
+        const myChoice = myVotes[cand.recipe_id];
+        const isLeader = voters > 0 && total === maxScore;
+        return `
+            <div class="vote-option-card ${isLeader ? "leader" : ""}">
+                <div class="nx-row-between">
+                    <div class="cloud-sync-title">${escapeHtml(cand.title_ru)}</div>
+                    <span class="precision-pill">${total > 0 ? `+${total}` : total}</span>
+                </div>
+                <div class="ing-meta">${Number(cand.kcal)} ккал · ${Number(cand.time_min)} мин${voters ? ` · голосов: ${voters}` : ""}</div>
+                <div class="vote-btns-row">
+                    <button type="button" class="vote-btn ${myChoice === 2 ? "active" : ""}" onclick="castFamilyVoteClick('${escapeHtml(vote.id)}', '${escapeHtml(cand.recipe_id)}', 2)">Хочу</button>
+                    <button type="button" class="vote-btn ${myChoice === 1 ? "active" : ""}" onclick="castFamilyVoteClick('${escapeHtml(vote.id)}', '${escapeHtml(cand.recipe_id)}', 1)">Нормально</button>
+                    <button type="button" class="vote-btn dislike ${myChoice === -1 ? "active" : ""}" onclick="castFamilyVoteClick('${escapeHtml(vote.id)}', '${escapeHtml(cand.recipe_id)}', -1)">Не сегодня</button>
+                </div>
+            </div>`;
+    }).join("");
+}
+
+export async function startNewFamilyDinnerVote() {
+    const cands = pickDinnerVoteCandidates(store.selectedDayIndex);
+    if (cands.length < 2) { showToast("Недостаточно рецептов для голосования"); return; }
+    const ok = await startDinnerVoteApi(store.selectedDayIndex, "dinner", cands);
+    if (ok) {
+        renderDinnerVoteModal();
+        renderFamilyDiaryBar();
+        showToast("Голосование запущено — семья уведомлена");
+        haptic("medium");
+    }
+}
+
+export async function castFamilyVoteClick(voteId, recipeId, score) {
+    const ok = await castDinnerVoteApi(voteId, recipeId, score);
+    if (ok) renderDinnerVoteModal();
+    hapticSelect();
+}
+
+export async function applyFamilyVoteWinner() {
+    const vote = familyStore.family?.activeVote;
+    if (!vote?.candidates?.length) return;
+    let best = vote.candidates[0];
+    let bestScore = -999;
+    vote.candidates.forEach(c => {
+        let sum = 0;
+        Object.values(vote.votes || {}).forEach(u => { sum += Number(u?.[c.recipe_id]) || 0; });
+        if (sum > bestScore) { bestScore = sum; best = c; }
+    });
+    const ok = await applyDinnerVoteApi(vote.id, best.recipe_id, best.title_ru);
+    if (ok) {
+        closeModal("family-vote-modal");
+        renderApp();
+        showToast(`Ужин выбран: ${best.title_ru.slice(0, 32)}`);
+        NutriXPerf.notify("success");
+    }
 }

@@ -10,6 +10,7 @@ import {
     MAX_SAVED_CUSTOM_MEALS,
     getTodayDayIndex,
     getWeekStartDateStr,
+    getDateStrForWeekDay,
     reconcileMealMacros,
     inferYieldFactor,
     toRawStoreGrams,
@@ -23,11 +24,20 @@ import {
 import {
     store,
     appState,
+    getCurrentTgUserId,
     getDayTypeTargets,
     syncSelectedDayMeals,
     saveState,
     getActiveSubTable
 } from "./storage.js";
+
+import {
+    familyStore,
+    isFamilyActive,
+    isSlotSharedInFamily,
+    isMeEatingOut,
+    getMergedFamilyPreferences
+} from "./family.js";
 
 const EXOTIC_KEYWORDS = ["амарант", "тахини", "сейтан", "артишок", "ткемали", "конопл", "су-вид", "поке", "эдамаме", "чиа", "киноа", "креветк", "кальмар", "парфе", "матча", "страчателл", "краб", "осьминог"];
 const SIMPLE_KEYWORDS = ["курин", "индейк", "греч", "рис", "овсян", "яйц", "творог", "говяж", "йогурт", "банан", "хлеб", "минтай", "горбуш", "картофел"];
@@ -88,15 +98,18 @@ export function filterMasterRecipesForUser(slotKey, user, excludeId = null) {
         snack: ["Перекус", "Десерт", "Завтрак"]
     };
     const allowedTypes = slotMap[slotKey] || ["Обед"];
+    const effectiveUser = (user && isSlotSharedInFamily(slotKey))
+        ? Object.assign({}, user, { preferencesText: getMergedFamilyPreferences(slotKey) })
+        : user;
 
     const filtered = store.MASTER_RECIPES_DB.filter(r => {
         if (excludeId && r.recipe_id === excludeId) return false;
         if (!allowedTypes.includes(r.meal_type)) return false;
-        return recipeMatchesUserConstraints(r, user);
+        return recipeMatchesUserConstraints(r, effectiveUser);
     });
     if (filtered.length > 0) return filtered;
 
-    const anySafe = store.MASTER_RECIPES_DB.filter(r => r.recipe_id !== excludeId && recipeMatchesUserConstraints(r, user));
+    const anySafe = store.MASTER_RECIPES_DB.filter(r => r.recipe_id !== excludeId && recipeMatchesUserConstraints(r, effectiveUser));
     if (anySafe.length > 0) return anySafe;
 
     const byType = store.MASTER_RECIPES_DB.filter(r => allowedTypes.includes(r.meal_type) && r.recipe_id !== excludeId);
@@ -806,12 +819,16 @@ export function rebuildGroceryList() {
     let totalUses = 0;
     let uniqueCount = 0;
 
+    const isFamilyGrocery = store.groceryScope === "family" && isFamilyActive();
+
     targetDays.forEach((dayObj, idxInPeriod) => {
         const wave = idxInPeriod <= 2 ? 1 : 2;
         const isToday = dayObj.dayIndex === todayIdx;
+        const dateStr = getDateStrForWeekDay(dayObj.dayIndex, appState.weekStartDate);
         (dayObj.meals || []).forEach(meal => {
             if (meal.isOffPlan) return;
             if (isToday && meal.eaten) return;
+            if (isSlotSharedInFamily(meal.slotKey) && isMeEatingOut(dateStr, meal.slotKey)) return;
             const validIngs = (meal.ingredients || []).filter(ing => isRealRecipeIngredient(ing, meal));
             if (meal.isCustom && validIngs.length === 0) return;
 
@@ -842,6 +859,37 @@ export function rebuildGroceryList() {
         });
     });
 
+    if (isFamilyGrocery && familyStore.family?.members?.length) {
+        const myId = Number(familyStore.family.myTgId || getCurrentTgUserId());
+        const periodRatio = Math.max(1, Number(store.groceryPeriod) || 3) / 7;
+        familyStore.family.members.forEach(member => {
+            if (Number(member.tgId) === myId || member.role === "shopper_only") return;
+            const contribs = Array.isArray(member.groceryContrib) ? member.groceryContrib : [];
+            contribs.forEach(c => {
+                if (!c?.n || !Number(c.g)) return;
+                const groupKey = c.d || "Бакалея и крупы";
+                const cleanKey = String(c.n).trim();
+                const addG = Math.max(5, Math.round(Number(c.g) * periodRatio));
+                if (!agg[groupKey]) agg[groupKey] = {};
+                if (!agg[groupKey][cleanKey]) {
+                    agg[groupKey][cleanKey] = {
+                        rawWeight: 0,
+                        cookedWeight: 0,
+                        dishes: new Set(),
+                        waves: new Set([1]),
+                        alt: "",
+                        isPerishable: isPerishableIngredient(groupKey, cleanKey)
+                    };
+                    uniqueCount++;
+                }
+                agg[groupKey][cleanKey].rawWeight += addG;
+                agg[groupKey][cleanKey].cookedWeight += addG;
+                agg[groupKey][cleanKey].dishes.add(member.firstName || "Семья");
+                totalUses++;
+            });
+        });
+    }
+
     if (Array.isArray(appState.customGroceries) && appState.customGroceries.length) {
         agg["Добавлено вручную"] = {};
         appState.customGroceries.forEach(ci => {
@@ -851,20 +899,29 @@ export function rebuildGroceryList() {
                 dishes: new Set(["Своя покупка"]),
                 waves: new Set([1]),
                 alt: "",
-                isPerishable: false
+                isPerishable: false,
+                isCustom: true
             };
         });
     }
 
+    if (!appState.pantryItems || typeof appState.pantryItems !== "object") appState.pantryItems = {};
+    if (!appState.deferredGroceries || typeof appState.deferredGroceries !== "object") appState.deferredGroceries = {};
+    if (!appState.groceryNotes || typeof appState.groceryNotes !== "object") appState.groceryNotes = {};
+
+    const orderedGroups = sortDepartmentKeys(Object.keys(agg));
     const activeItemNames = new Set();
+    const pantryActive = [];
     const list = {};
-    Object.keys(agg).forEach(group => {
-        list[group] = Object.entries(agg[group]).map(([name, info]) => {
-            activeItemNames.add(name);
+
+    orderedGroups.forEach(group => {
+        const items = [];
+        Object.entries(agg[group]).forEach(([name, info]) => {
             const rawW = Math.round(info.rawWeight);
             const pack = formatRetailPack(name, rawW);
-            return {
+            const itemObj = {
                 name,
+                dept: group,
                 weight: rawW,
                 cookedWeight: Math.round(info.cookedWeight),
                 packLabel: pack.packLabel,
@@ -876,15 +933,65 @@ export function rebuildGroceryList() {
                     ? (info.waves.size === 2 ? "Скоропорт · Пн + Чт" : (info.waves.has(1) ? "Скоропорт · Пн–Ср" : "Скоропорт · Чт–Вс"))
                     : "",
                 alt: info.alt,
-                isChecked: Boolean(appState.checkedGroceries[name])
+                isCustom: Boolean(info.isCustom),
+                note: String(appState.groceryNotes[name] || "").trim(),
+                isDeferred: Boolean(appState.deferredGroceries[name]),
+                checkedBy: isFamilyGrocery ? (familyStore.family?.groceryChecks?.[name]?.actorName || "") : "",
+                isChecked: isFamilyGrocery
+                    ? Boolean(familyStore.family?.groceryChecks?.[name]?.checked || appState.checkedGroceries[name])
+                    : Boolean(appState.checkedGroceries[name])
             };
+
+            if (appState.pantryItems[name]) {
+                pantryActive.push(itemObj);
+            } else {
+                activeItemNames.add(name);
+                items.push(itemObj);
+            }
         });
+        if (items.length) list[group] = items;
     });
 
     Object.keys(appState.checkedGroceries).forEach(key => {
         if (!activeItemNames.has(key)) delete appState.checkedGroceries[key];
     });
+    Object.keys(appState.deferredGroceries).forEach(key => {
+        if (!activeItemNames.has(key)) delete appState.deferredGroceries[key];
+    });
 
     appState.groceryList = list;
+    appState.pantryActiveList = pantryActive;
     appState.groceryReusePct = totalUses > 0 ? Math.max(0, Math.round((1 - uniqueCount / totalUses) * 100)) : 0;
+}
+
+export const DEFAULT_DEPT_ORDER = [
+    "Овощи, фрукты и зелень",
+    "Мясо и птица",
+    "Рыба и морепродукты",
+    "Молочные продукты и яйца",
+    "Бакалея и крупы",
+    "Орехи, масла и соусы",
+    "Растительные и спорт-продукты",
+    "Добавлено вручную"
+];
+
+export function sortDepartmentKeys(keys) {
+    const custom = Array.isArray(appState.deptOrder) && appState.deptOrder.length
+        ? appState.deptOrder
+        : DEFAULT_DEPT_ORDER;
+    return keys.slice().sort((a, b) => {
+        const ia = custom.indexOf(a);
+        const ib = custom.indexOf(b);
+        if (ia === -1 && ib === -1) return a.localeCompare(b, "ru");
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+    });
+}
+
+export function getAllManagedDepartments() {
+    const set = new Set(DEFAULT_DEPT_ORDER);
+    Object.keys(appState.groceryList || {}).forEach(k => set.add(k));
+    (appState.deptOrder || []).forEach(k => set.add(k));
+    return sortDepartmentKeys(Array.from(set));
 }
